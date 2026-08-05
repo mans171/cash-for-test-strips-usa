@@ -2357,25 +2357,35 @@ import { isValidSession, ADMIN_SESSION_COOKIE_NAME } from '@/lib/admin-auth'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 
 export async function GET() {
-  const cookieStore = await cookies()
-  const session = cookieStore.get(ADMIN_SESSION_COOKIE_NAME)?.value
-  if (!isValidSession(session)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  try {
+    const cookieStore = await cookies()
+    const session = cookieStore.get(ADMIN_SESSION_COOKIE_NAME)?.value
+    if (!isValidSession(session)) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const [submissions, leads, clicks, missingPhones] = await Promise.all([
+      supabaseAdmin.from('submissions').select('*').eq('status', 'pending').order('created_at', { ascending: false }),
+      supabaseAdmin.from('leads').select('*').order('created_at', { ascending: false }).limit(50),
+      supabaseAdmin.from('clicks').select('*').order('created_at', { ascending: false }).limit(50),
+      supabaseAdmin.from('companies').select('id, name, city, states').or('phone.is.null,phone.eq.'),
+    ])
+
+    const firstError = [submissions, leads, clicks, missingPhones].find((r) => r.error)?.error
+    if (firstError) {
+      return NextResponse.json({ error: firstError.message }, { status: 500 })
+    }
+
+    return NextResponse.json({
+      submissions: submissions.data ?? [],
+      leads: leads.data ?? [],
+      clicks: clicks.data ?? [],
+      missingPhones: missingPhones.data ?? [],
+    })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unexpected error'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
-
-  const [submissions, leads, clicks, missingPhones] = await Promise.all([
-    supabaseAdmin.from('submissions').select('*').eq('status', 'pending').order('created_at', { ascending: false }),
-    supabaseAdmin.from('leads').select('*').order('created_at', { ascending: false }).limit(50),
-    supabaseAdmin.from('clicks').select('*').order('created_at', { ascending: false }).limit(50),
-    supabaseAdmin.from('companies').select('id, name, city, states').or('phone.is.null,phone.eq.'),
-  ])
-
-  return NextResponse.json({
-    submissions: submissions.data ?? [],
-    leads: leads.data ?? [],
-    clicks: clicks.data ?? [],
-    missingPhones: missingPhones.data ?? [],
-  })
 }
 ```
 
@@ -2470,10 +2480,21 @@ type DashboardData = {
 export function AdminDashboardClient() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [tab, setTab] = useState<"submissions" | "leads" | "clicks" | "missingPhones">("submissions");
+  const [error, setError] = useState<string | null>(null);
 
   async function load() {
-    const res = await fetch("/api/admin/data");
-    if (res.ok) setData(await res.json());
+    try {
+      const res = await fetch("/api/admin/data");
+      const body = await res.json();
+      if (!res.ok) {
+        setError(body.error ?? "Failed to load dashboard data");
+        return;
+      }
+      setError(null);
+      setData(body);
+    } catch {
+      setError("Couldn't reach the server. Check your connection and try again.");
+    }
   }
 
   useEffect(() => {
@@ -2481,12 +2502,32 @@ export function AdminDashboardClient() {
   }, []);
 
   async function review(submissionId: string, action: "approve" | "reject") {
-    await fetch("/api/admin/review", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ submissionId, action }),
-    });
-    load();
+    try {
+      const res = await fetch("/api/admin/review", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ submissionId, action }),
+      });
+      const body = await res.json();
+      if (!res.ok) {
+        setError(body.error ?? "Failed to review submission");
+        return;
+      }
+      await load();
+    } catch {
+      setError("Couldn't reach the server. Check your connection and try again.");
+    }
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-red-600 text-sm mb-3">{error}</p>
+        <button onClick={() => { setError(null); load(); }} className="text-xs text-emerald-600 hover:underline">
+          Try again
+        </button>
+      </div>
+    );
   }
 
   if (!data) return <p>Loading...</p>;
