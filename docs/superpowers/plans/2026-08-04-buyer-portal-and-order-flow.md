@@ -845,13 +845,16 @@ const cleanupCompanySlugs: string[] = []
 const cleanupSubmissionIds: string[] = []
 
 afterEach(async () => {
-  if (cleanupCompanySlugs.length) {
-    await supabaseAdmin.from('companies').delete().in('slug', cleanupCompanySlugs)
-    cleanupCompanySlugs.length = 0
-  }
+  // Submissions before companies: submissions.target_company_id has a foreign
+  // key to companies(id), so deleting the company first would violate the
+  // constraint and silently leave the company orphaned (found during Task 9).
   if (cleanupSubmissionIds.length) {
     await supabaseAdmin.from('submissions').delete().in('id', cleanupSubmissionIds)
     cleanupSubmissionIds.length = 0
+  }
+  if (cleanupCompanySlugs.length) {
+    await supabaseAdmin.from('companies').delete().in('slug', cleanupCompanySlugs)
+    cleanupCompanySlugs.length = 0
   }
 })
 
