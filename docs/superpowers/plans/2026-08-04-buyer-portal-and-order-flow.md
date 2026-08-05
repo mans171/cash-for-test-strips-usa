@@ -1338,15 +1338,20 @@ import { NextResponse } from 'next/server'
 import { lookupCompaniesByPhone } from '@/lib/buyer-lookup'
 
 export async function POST(request: Request) {
-  const body = await request.json()
-  const phone = body?.phone
+  try {
+    const body = await request.json()
+    const phone = body?.phone
 
-  if (!phone || typeof phone !== 'string') {
-    return NextResponse.json({ error: 'phone is required' }, { status: 400 })
+    if (!phone || typeof phone !== 'string') {
+      return NextResponse.json({ error: 'phone is required' }, { status: 400 })
+    }
+
+    const companies = await lookupCompaniesByPhone(phone)
+    return NextResponse.json({ companies })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unexpected error'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
-
-  const companies = await lookupCompaniesByPhone(phone)
-  return NextResponse.json({ companies })
 }
 ```
 
@@ -1436,25 +1441,30 @@ import { NextResponse } from 'next/server'
 import { createSubmission, validateSubmissionPayload } from '@/lib/submissions'
 
 export async function POST(request: Request) {
-  const body = await request.json()
-  const { targetCompanyId, submittedPhone, payload } = body ?? {}
+  try {
+    const body = await request.json()
+    const { targetCompanyId, submittedPhone, payload } = body ?? {}
 
-  if (!submittedPhone || !payload) {
-    return NextResponse.json({ error: 'submittedPhone and payload are required' }, { status: 400 })
+    if (!submittedPhone || !payload) {
+      return NextResponse.json({ error: 'submittedPhone and payload are required' }, { status: 400 })
+    }
+
+    const validation = validateSubmissionPayload(payload)
+    if (!validation.valid) {
+      return NextResponse.json({ error: validation.errors.join(', ') }, { status: 400 })
+    }
+
+    const submission = await createSubmission({
+      targetCompanyId: targetCompanyId ?? null,
+      submittedPhone,
+      payload,
+    })
+
+    return NextResponse.json({ submissionId: submission.id })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unexpected error'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
-
-  const validation = validateSubmissionPayload(payload)
-  if (!validation.valid) {
-    return NextResponse.json({ error: validation.errors.join(', ') }, { status: 400 })
-  }
-
-  const submission = await createSubmission({
-    targetCompanyId: targetCompanyId ?? null,
-    submittedPhone,
-    payload,
-  })
-
-  return NextResponse.json({ submissionId: submission.id })
 }
 ```
 
@@ -1557,25 +1567,30 @@ import { buildQuoteMessage } from '@/lib/message-template'
 import type { OrderItem } from '@/lib/types'
 
 export async function POST(request: Request) {
-  const body = await request.json()
-  const { items, matchedCompanyId, channel, sourcePage } = body ?? {}
+  try {
+    const body = await request.json()
+    const { items, matchedCompanyId, channel, sourcePage } = body ?? {}
 
-  if (!Array.isArray(items) || items.length === 0) {
-    return NextResponse.json({ error: 'At least one item is required' }, { status: 400 })
+    if (!Array.isArray(items) || items.length === 0) {
+      return NextResponse.json({ error: 'At least one item is required' }, { status: 400 })
+    }
+    if (channel !== 'sms' && channel !== 'email') {
+      return NextResponse.json({ error: 'channel must be sms or email' }, { status: 400 })
+    }
+
+    const lead = await createLead({
+      items: items as OrderItem[],
+      matchedCompanyId: matchedCompanyId ?? null,
+      channel,
+      sourcePage: sourcePage ?? null,
+    })
+    const message = buildQuoteMessage(items as OrderItem[])
+
+    return NextResponse.json({ leadId: lead.id, message })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unexpected error'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
-  if (channel !== 'sms' && channel !== 'email') {
-    return NextResponse.json({ error: 'channel must be sms or email' }, { status: 400 })
-  }
-
-  const lead = await createLead({
-    items: items as OrderItem[],
-    matchedCompanyId: matchedCompanyId ?? null,
-    channel,
-    sourcePage: sourcePage ?? null,
-  })
-  const message = buildQuoteMessage(items as OrderItem[])
-
-  return NextResponse.json({ leadId: lead.id, message })
 }
 ```
 
@@ -1680,22 +1695,27 @@ import { NextResponse } from 'next/server'
 import { checkPassword, signSession, ADMIN_SESSION_COOKIE_NAME } from '@/lib/admin-auth'
 
 export async function POST(request: Request) {
-  const body = await request.json()
-  const password = body?.password
+  try {
+    const body = await request.json()
+    const password = body?.password
 
-  if (typeof password !== 'string' || !checkPassword(password)) {
-    return NextResponse.json({ error: 'Invalid password' }, { status: 401 })
+    if (typeof password !== 'string' || !checkPassword(password)) {
+      return NextResponse.json({ error: 'Invalid password' }, { status: 401 })
+    }
+
+    const response = NextResponse.json({ ok: true })
+    response.cookies.set(ADMIN_SESSION_COOKIE_NAME, signSession(), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 60 * 24 * 7,
+    })
+    return response
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unexpected error'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
-
-  const response = NextResponse.json({ ok: true })
-  response.cookies.set(ADMIN_SESSION_COOKIE_NAME, signSession(), {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    path: '/',
-    maxAge: 60 * 60 * 24 * 7,
-  })
-  return response
 }
 ```
 
@@ -1714,25 +1734,30 @@ function getCookie(request: Request, name: string): string | undefined {
 }
 
 export async function POST(request: Request) {
-  const session = getCookie(request, ADMIN_SESSION_COOKIE_NAME)
-  if (!isValidSession(session)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  try {
+    const session = getCookie(request, ADMIN_SESSION_COOKIE_NAME)
+    if (!isValidSession(session)) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const body = await request.json()
+    const { submissionId, action } = body ?? {}
+
+    if (!submissionId || (action !== 'approve' && action !== 'reject')) {
+      return NextResponse.json({ error: 'submissionId and a valid action are required' }, { status: 400 })
+    }
+
+    if (action === 'approve') {
+      await approveSubmission(submissionId)
+    } else {
+      await rejectSubmission(submissionId)
+    }
+
+    return NextResponse.json({ ok: true })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unexpected error'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
-
-  const body = await request.json()
-  const { submissionId, action } = body ?? {}
-
-  if (!submissionId || (action !== 'approve' && action !== 'reject')) {
-    return NextResponse.json({ error: 'submissionId and a valid action are required' }, { status: 400 })
-  }
-
-  if (action === 'approve') {
-    await approveSubmission(submissionId)
-  } else {
-    await rejectSubmission(submissionId)
-  }
-
-  return NextResponse.json({ ok: true })
 }
 ```
 
