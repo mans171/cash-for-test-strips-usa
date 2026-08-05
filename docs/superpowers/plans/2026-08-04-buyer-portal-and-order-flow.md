@@ -239,26 +239,31 @@ describe('buyer portal schema', () => {
   })
 
   it('anon key can insert into submissions but cannot read it back', async () => {
-    const { data: inserted, error: insertError } = await supabase
+    // NOTE: Postgres RLS governs INSERT...RETURNING through SELECT policies, not
+    // the INSERT policy. Since anon has no SELECT policy on submissions (by design —
+    // customers can write but not read others' data), any `.insert().select()` call
+    // fails outright, even though the bare insert succeeds. So this test — and every
+    // later insert into submissions/leads from the anon client — generates its own id
+    // client-side and inserts it explicitly, instead of relying on RETURNING.
+    const insertedId = crypto.randomUUID()
+    const { error: insertError } = await supabase
       .from('submissions')
       .insert({
+        id: insertedId,
         target_company_id: null,
         payload: { name: 'Schema Test Co', states: ['NY'] },
         submitted_phone: '5555550000',
       })
-      .select('id')
-      .single()
     expect(insertError).toBeNull()
-    expect(inserted).toBeDefined()
 
     const { data: readBack } = await supabase
       .from('submissions')
       .select('id')
-      .eq('id', inserted!.id)
+      .eq('id', insertedId)
     expect(readBack).toEqual([])
 
     // cleanup via admin client, since anon has no delete policy
-    await supabaseAdmin.from('submissions').delete().eq('id', inserted!.id)
+    await supabaseAdmin.from('submissions').delete().eq('id', insertedId)
   })
 })
 ```
@@ -981,18 +986,30 @@ export async function createSubmission(input: CreateSubmissionInput): Promise<Su
     throw new Error(`Invalid submission: ${validation.errors.join(', ')}`)
   }
 
-  const { data, error } = await supabase
-    .from('submissions')
-    .insert({
-      target_company_id: input.targetCompanyId,
-      payload: input.payload,
-      submitted_phone: input.submittedPhone,
-    })
-    .select('id, target_company_id, payload, submitted_phone, status, created_at, reviewed_at')
-    .single()
+  // Generate the id client-side and insert it explicitly rather than relying on
+  // `.select()`/RETURNING: Postgres RLS governs RETURNING through SELECT policies,
+  // and anon intentionally has no SELECT policy on submissions (write-only, by design).
+  // `.insert().select()` would fail outright even though the bare insert succeeds.
+  const id = crypto.randomUUID()
+  const createdAt = new Date().toISOString()
+  const { error } = await supabase.from('submissions').insert({
+    id,
+    target_company_id: input.targetCompanyId,
+    payload: input.payload,
+    submitted_phone: input.submittedPhone,
+  })
 
   if (error) throw new Error(`Failed to create submission: ${error.message}`)
-  return data as Submission
+
+  return {
+    id,
+    target_company_id: input.targetCompanyId,
+    payload: input.payload,
+    submitted_phone: input.submittedPhone,
+    status: 'pending',
+    created_at: createdAt,
+    reviewed_at: null,
+  }
 }
 
 function slugify(name: string): string {
@@ -1143,19 +1160,30 @@ export type Lead = {
 }
 
 export async function createLead(input: CreateLeadInput): Promise<Lead> {
-  const { data, error } = await supabase
-    .from('leads')
-    .insert({
-      items: input.items,
-      matched_company_id: input.matchedCompanyId,
-      channel: input.channel,
-      source_page: input.sourcePage,
-    })
-    .select('id, items, matched_company_id, channel, source_page, created_at')
-    .single()
+  // Generate the id client-side and insert it explicitly rather than relying on
+  // `.select()`/RETURNING: anon has no SELECT policy on leads (write-only, by
+  // design), so `.insert().select()` fails outright even though the bare insert
+  // succeeds — Postgres RLS governs RETURNING through SELECT policies.
+  const id = crypto.randomUUID()
+  const createdAt = new Date().toISOString()
+  const { error } = await supabase.from('leads').insert({
+    id,
+    items: input.items,
+    matched_company_id: input.matchedCompanyId,
+    channel: input.channel,
+    source_page: input.sourcePage,
+  })
 
   if (error) throw new Error(`Failed to create lead: ${error.message}`)
-  return data as Lead
+
+  return {
+    id,
+    items: input.items,
+    matched_company_id: input.matchedCompanyId,
+    channel: input.channel,
+    source_page: input.sourcePage,
+    created_at: createdAt,
+  }
 }
 ```
 
