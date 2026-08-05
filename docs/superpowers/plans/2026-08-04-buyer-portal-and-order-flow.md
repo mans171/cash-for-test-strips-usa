@@ -2133,6 +2133,7 @@ export function SellFlowClient() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [sending, setSending] = useState(false);
 
   function updateItem(index: number, patch: Partial<OrderItem>) {
     setItems((prev) => prev.map((item, i) => (i === index ? { ...item, ...patch } : item)));
@@ -2154,40 +2155,53 @@ export function SellFlowClient() {
       return;
     }
     setLoading(true);
-    const res = await fetch("/api/sell/match", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ state }),
-    });
-    const body = await res.json();
-    setLoading(false);
-    if (!res.ok) {
-      setError(body.error ?? "Something went wrong");
-      return;
+    try {
+      const res = await fetch("/api/sell/match", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ state }),
+      });
+      const body = await res.json();
+      if (!res.ok) {
+        setError(body.error ?? "Something went wrong");
+        return;
+      }
+      setBuyers(body.buyers ?? []);
+      setMailIn(body.mailIn ?? null);
+      setStage("results");
+    } catch {
+      setError("Couldn't reach the server. Check your connection and try again.");
+    } finally {
+      setLoading(false);
     }
-    setBuyers(body.buyers ?? []);
-    setMailIn(body.mailIn ?? null);
-    setStage("results");
   }
 
   async function handleSend(buyer: Company, channel: "sms" | "email") {
     setSelectedBuyer(buyer);
-    const res = await fetch("/api/leads", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ items, matchedCompanyId: buyer.id, channel, sourcePage: "/sell" }),
-    });
-    const body = await res.json();
-    if (!res.ok) {
-      setError(body.error ?? "Something went wrong");
-      return;
-    }
-    setMessage(body.message);
-    setStage("sent");
-    if (channel === "sms" && buyer.phone) {
-      window.open(`sms:${buyer.phone}?body=${encodeURIComponent(body.message)}`, "_blank");
-    } else if (channel === "email" && buyer.email) {
-      window.open(`mailto:${buyer.email}?subject=${encodeURIComponent("Quote request from cash4teststripsusa.com")}&body=${encodeURIComponent(body.message)}`, "_blank");
+    setError(null);
+    setSending(true);
+    try {
+      const res = await fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items, matchedCompanyId: buyer.id, channel, sourcePage: "/sell" }),
+      });
+      const body = await res.json();
+      if (!res.ok) {
+        setError(body.error ?? "Something went wrong");
+        return;
+      }
+      setMessage(body.message);
+      setStage("sent");
+      if (channel === "sms" && buyer.phone) {
+        window.open(`sms:${buyer.phone}?body=${encodeURIComponent(body.message)}`, "_blank");
+      } else if (channel === "email" && buyer.email) {
+        window.open(`mailto:${buyer.email}?subject=${encodeURIComponent("Quote request from cash4teststripsusa.com")}&body=${encodeURIComponent(body.message)}`, "_blank");
+      }
+    } catch {
+      setError("Couldn't reach the server. Check your connection and try again.");
+    } finally {
+      setSending(false);
     }
   }
 
@@ -2227,17 +2241,19 @@ export function SellFlowClient() {
               {c.phone && (
                 <button
                   onClick={() => handleSend(c, "sms")}
-                  className="text-xs font-medium bg-emerald-600 text-white px-3 py-2 rounded-lg"
+                  disabled={sending}
+                  className="text-xs font-medium bg-emerald-600 text-white px-3 py-2 rounded-lg disabled:opacity-50"
                 >
-                  Text
+                  {sending && selectedBuyer?.id === c.id ? "Sending..." : "Text"}
                 </button>
               )}
               {c.email && (
                 <button
                   onClick={() => handleSend(c, "email")}
-                  className="text-xs font-medium border border-emerald-600 text-emerald-700 px-3 py-2 rounded-lg"
+                  disabled={sending}
+                  className="text-xs font-medium border border-emerald-600 text-emerald-700 px-3 py-2 rounded-lg disabled:opacity-50"
                 >
-                  Email
+                  {sending && selectedBuyer?.id === c.id ? "Sending..." : "Email"}
                 </button>
               )}
             </div>
