@@ -21,6 +21,7 @@ export default async function DirectoryPage({
   let query = supabase
     .from("companies")
     .select("id, name, slug, url, city, owner_name, states, payment_methods, accepted_brands, rating, description, featured")
+    .eq("mail_in", false)
     .order("featured", { ascending: false })
     .order("name");
 

@@ -30,11 +30,11 @@ export default async function CompanyPage({ params }: Props) {
 
   const { data: company } = await supabase
     .from("companies")
-    .select("id, name, slug, url, city, owner_name, states, payment_methods, accepted_brands, rating, description, featured, phone")
+    .select("id, name, slug, url, city, owner_name, states, payment_methods, accepted_brands, rating, description, featured, phone, mail_in")
     .eq("slug", slug)
     .single();
 
-  if (!company) notFound();
+  if (!company || company.mail_in) notFound();
 
   const stateNames = company.states.map((s: string) => STATE_LABELS[s] ?? s);
 
