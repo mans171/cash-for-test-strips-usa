@@ -135,6 +135,82 @@ describe('createSubmission + approveSubmission (edit existing buyer)', () => {
   })
 })
 
+describe('createSubmission phone verification (edit target)', () => {
+  it('rejects an edit submission whose submittedPhone does not match the target company phone', async () => {
+    const { data: existing } = await supabaseAdmin
+      .from('companies')
+      .insert({ name: 'Test Phone Guard Co', slug: 'test-phone-guard-co', states: ['NY'], active: true, phone: '5559990201' })
+      .select('id, slug')
+      .single()
+    cleanupCompanySlugs.push(existing!.slug)
+
+    await expect(
+      createSubmission({
+        targetCompanyId: existing!.id,
+        submittedPhone: '5559990202', // does not match the company's real phone
+        payload: { name: 'Test Phone Guard Co', states: ['NY'], phone: '5559990202' },
+      })
+    ).rejects.toThrow('Phone number does not match the listing you are trying to edit')
+  })
+
+  it('accepts an edit submission whose submittedPhone matches the target company phone (ignoring formatting)', async () => {
+    const { data: existing } = await supabaseAdmin
+      .from('companies')
+      .insert({ name: 'Test Phone Match Co', slug: 'test-phone-match-co', states: ['NY'], active: true, phone: '(555) 999-0301' })
+      .select('id, slug')
+      .single()
+    cleanupCompanySlugs.push(existing!.slug)
+
+    const submission = await createSubmission({
+      targetCompanyId: existing!.id,
+      submittedPhone: '555-999-0301', // same digits, different formatting
+      payload: { name: 'Test Phone Match Co', states: ['NY'], phone: '5559990301' },
+    })
+    cleanupSubmissionIds.push(submission.id)
+    expect(submission.status).toBe('pending')
+  })
+})
+
+describe('approveSubmission slug collision handling', () => {
+  it('creates both companies with different slugs when their names slugify identically', async () => {
+    // Multiple live DB round trips (2 creates + 2 approves) — needs more than the default 5s.
+    const submissionA = await createSubmission({
+      targetCompanyId: null,
+      submittedPhone: '5559990401',
+      payload: { name: 'Slug Collision Co', states: ['NY'], phone: '5559990401' },
+    })
+    cleanupSubmissionIds.push(submissionA.id)
+
+    const submissionB = await createSubmission({
+      targetCompanyId: null,
+      submittedPhone: '5559990402',
+      payload: { name: 'Slug Collision Co', states: ['NY'], phone: '5559990402' },
+    })
+    cleanupSubmissionIds.push(submissionB.id)
+
+    await approveSubmission(submissionA.id)
+    await approveSubmission(submissionB.id)
+
+    const { data: companyA } = await supabaseAdmin
+      .from('companies')
+      .select('id, slug')
+      .eq('phone', '5559990401')
+      .single()
+    const { data: companyB } = await supabaseAdmin
+      .from('companies')
+      .select('id, slug')
+      .eq('phone', '5559990402')
+      .single()
+
+    expect(companyA?.slug).toBeTruthy()
+    expect(companyB?.slug).toBeTruthy()
+    expect(companyA?.slug).not.toBe(companyB?.slug)
+
+    if (companyA) cleanupCompanySlugs.push(companyA.slug)
+    if (companyB) cleanupCompanySlugs.push(companyB.slug)
+  }, 15000)
+})
+
 describe('rejectSubmission', () => {
   it('marks the submission rejected without touching companies', async () => {
     const submission = await createSubmission({

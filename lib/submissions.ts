@@ -15,6 +15,9 @@ export function validateSubmissionPayload(payload: SubmissionPayload): { valid: 
   if (!payload.states || payload.states.length === 0) {
     errors.push('At least one state is required')
   } else {
+    if (payload.states.length > 50) {
+      errors.push('Too many states submitted')
+    }
     for (const state of payload.states) {
       if (!VALID_STATE_CODES.has(state)) {
         errors.push(`Invalid state code: ${state}`)
@@ -22,7 +25,18 @@ export function validateSubmissionPayload(payload: SubmissionPayload): { valid: 
     }
   }
 
+  if (payload.payment_methods && payload.payment_methods.length > 50) {
+    errors.push('Too many payment methods submitted')
+  }
+  if (payload.accepted_brands && payload.accepted_brands.length > 50) {
+    errors.push('Too many accepted brands submitted')
+  }
+
   return { valid: errors.length === 0, errors }
+}
+
+function normalizePhone(phone: string): string {
+  return phone.replace(/\D/g, '')
 }
 
 export type CreateSubmissionInput = {
@@ -45,6 +59,29 @@ export async function createSubmission(input: CreateSubmissionInput): Promise<Su
   const validation = validateSubmissionPayload(input.payload)
   if (!validation.valid) {
     throw new Error(`Invalid submission: ${validation.errors.join(', ')}`)
+  }
+
+  // Security: when this submission is an edit targeting an existing company,
+  // verify the submitter actually knows that company's current phone number.
+  // Company IDs are public (returned by /api/sell/match and the directory), so
+  // without this check anyone could submit an "edit" for a competitor's listing
+  // and silently take over its phone number.
+  if (input.targetCompanyId) {
+    const { data: targetCompany, error: lookupError } = await supabaseAdmin
+      .from('companies')
+      .select('phone')
+      .eq('id', input.targetCompanyId)
+      .single()
+
+    if (lookupError || !targetCompany) {
+      throw new Error('The listing you are trying to edit could not be found')
+    }
+
+    const currentPhone = normalizePhone(targetCompany.phone ?? '')
+    const submittedPhone = normalizePhone(input.submittedPhone)
+    if (!currentPhone || currentPhone !== submittedPhone) {
+      throw new Error('Phone number does not match the listing you are trying to edit')
+    }
   }
 
   // Generate the id client-side and insert it explicitly rather than relying on
@@ -78,6 +115,15 @@ function slugify(name: string): string {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)/g, '')
+}
+
+function randomSuffix(): string {
+  return Math.random().toString(36).slice(2, 6)
+}
+
+function baseSlugFor(name: string): string {
+  const slug = slugify(name)
+  return slug.length > 0 ? slug : `buyer-${randomSuffix()}`
 }
 
 export async function approveSubmission(submissionId: string): Promise<void> {
@@ -114,10 +160,24 @@ export async function approveSubmission(submissionId: string): Promise<void> {
       .single()
     if (error) throw new Error(`Failed to update company: ${error.message}`)
   } else {
-    const { error } = await supabaseAdmin
-      .from('companies')
-      .insert({ ...companyData, slug: slugify(payload.name) })
-    if (error) throw new Error(`Failed to create company: ${error.message}`)
+    const slug = baseSlugFor(payload.name)
+    const { error } = await supabaseAdmin.from('companies').insert({ ...companyData, slug })
+
+    if (error) {
+      // Postgres unique_violation on companies.slug: retry once with a random
+      // suffix appended rather than failing the whole approval (two buyers with
+      // the same/similar name, or a name that slugifies to an empty string,
+      // would otherwise leave the submission stuck in `pending` forever).
+      if (error.code === '23505') {
+        const retrySlug = `${slug}-${randomSuffix()}`
+        const { error: retryError } = await supabaseAdmin
+          .from('companies')
+          .insert({ ...companyData, slug: retrySlug })
+        if (retryError) throw new Error(`Failed to create company: ${retryError.message}`)
+      } else {
+        throw new Error(`Failed to create company: ${error.message}`)
+      }
+    }
   }
 
   const { error: statusError } = await supabaseAdmin

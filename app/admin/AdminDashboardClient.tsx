@@ -1,9 +1,34 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
+
+type SubmissionPayload = {
+  name: string;
+  phone?: string | null;
+  email?: string | null;
+  city?: string | null;
+  states?: string[];
+};
+
+type CurrentCompany = {
+  id: string;
+  name: string;
+  phone: string | null;
+  email: string | null;
+  city: string | null;
+  states: string[];
+  owner_name: string | null;
+};
 
 type DashboardData = {
-  submissions: Array<{ id: string; payload: { name: string }; submitted_phone: string; target_company_id: string | null; created_at: string }>;
+  submissions: Array<{
+    id: string;
+    payload: SubmissionPayload;
+    submitted_phone: string;
+    target_company_id: string | null;
+    currentCompany: CurrentCompany | null;
+    created_at: string;
+  }>;
   leads: Array<{ id: string; items: unknown; channel: string; created_at: string }>;
   clicks: Array<{ id: string; company_id: string; created_at: string }>;
   missingPhones: Array<{ id: string; name: string; city: string | null }>;
@@ -81,15 +106,30 @@ export function AdminDashboardClient() {
       {tab === "submissions" && (
         <div className="flex flex-col gap-3">
           {data.submissions.map((s) => (
-            <div key={s.id} className="border border-gray-200 rounded-lg p-4 flex items-center justify-between">
-              <div>
-                <p className="font-medium">{s.payload.name}</p>
-                <p className="text-xs text-gray-400">{s.target_company_id ? "Edit" : "New"} · submitted from {s.submitted_phone}</p>
+            <div key={s.id} className="border border-gray-200 rounded-lg p-4 flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">{s.payload.name}</p>
+                  <p className="text-xs text-gray-400">{s.target_company_id ? "Edit" : "New"} · submitted from {s.submitted_phone}</p>
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={() => review(s.id, "approve")} className="text-xs bg-emerald-600 text-white px-3 py-1.5 rounded-lg">Approve</button>
+                  <button onClick={() => review(s.id, "reject")} className="text-xs border border-red-300 text-red-600 px-3 py-1.5 rounded-lg">Reject</button>
+                </div>
               </div>
-              <div className="flex gap-2">
-                <button onClick={() => review(s.id, "approve")} className="text-xs bg-emerald-600 text-white px-3 py-1.5 rounded-lg">Approve</button>
-                <button onClick={() => review(s.id, "reject")} className="text-xs border border-red-300 text-red-600 px-3 py-1.5 rounded-lg">Reject</button>
-              </div>
+              {s.currentCompany ? (
+                <SubmissionDiff current={s.currentCompany} proposed={s.payload} />
+              ) : (
+                <div className="text-xs text-gray-500 bg-gray-50 rounded-lg p-3">
+                  <p><span className="font-semibold">Name:</span> {s.payload.name}</p>
+                  {s.payload.phone && <p><span className="font-semibold">Phone:</span> {s.payload.phone}</p>}
+                  {s.payload.email && <p><span className="font-semibold">Email:</span> {s.payload.email}</p>}
+                  {s.payload.city && <p><span className="font-semibold">City:</span> {s.payload.city}</p>}
+                  {s.payload.states && s.payload.states.length > 0 && (
+                    <p><span className="font-semibold">States:</span> {s.payload.states.join(", ")}</p>
+                  )}
+                </div>
+              )}
             </div>
           ))}
           {data.submissions.length === 0 && <p className="text-sm text-gray-400">No pending submissions.</p>}
@@ -126,6 +166,38 @@ export function AdminDashboardClient() {
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+function SubmissionDiff({ current, proposed }: { current: CurrentCompany; proposed: SubmissionPayload }) {
+  const rows: Array<{ label: string; before: string; after: string }> = [
+    { label: "Name", before: current.name ?? "—", after: proposed.name ?? "—" },
+    { label: "Phone", before: current.phone ?? "—", after: proposed.phone ?? "—" },
+    { label: "Email", before: current.email ?? "—", after: proposed.email ?? "—" },
+    { label: "City", before: current.city ?? "—", after: proposed.city ?? "—" },
+    {
+      label: "States",
+      before: current.states?.join(", ") || "—",
+      after: proposed.states?.join(", ") || "—",
+    },
+  ];
+
+  return (
+    <div className="text-xs bg-gray-50 rounded-lg p-3 grid grid-cols-[auto_1fr_1fr] gap-x-3 gap-y-1.5">
+      <span className="font-semibold text-gray-400"></span>
+      <span className="font-semibold text-gray-400">Current</span>
+      <span className="font-semibold text-gray-400">Proposed</span>
+      {rows.map((row) => {
+        const changed = row.before !== row.after;
+        return (
+          <Fragment key={row.label}>
+            <span className="font-semibold text-gray-500">{row.label}</span>
+            <span className={changed ? "text-gray-500" : "text-gray-700"}>{row.before}</span>
+            <span className={changed ? "text-red-600 font-medium" : "text-gray-700"}>{row.after}</span>
+          </Fragment>
+        );
+      })}
     </div>
   );
 }
