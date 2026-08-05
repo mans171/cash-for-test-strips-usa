@@ -11,7 +11,8 @@ export function checkPassword(password: string): boolean {
 }
 
 function sign(value: string): string {
-  const secret = process.env.ADMIN_SESSION_SECRET!
+  const secret = process.env.ADMIN_SESSION_SECRET
+  if (!secret) throw new Error('ADMIN_SESSION_SECRET is not set')
   return crypto.createHmac('sha256', secret).update(value).digest('hex')
 }
 
@@ -21,7 +22,9 @@ export function signSession(): string {
 
 export function isValidSession(cookieValue: string | undefined): boolean {
   if (!cookieValue) return false
-  const [value, sig] = cookieValue.split('.')
+  const parts = cookieValue.split('.')
+  if (parts.length !== 2) return false
+  const [value, sig] = parts
   if (value !== SESSION_VALUE || !sig) return false
 
   const expectedSig = sign(SESSION_VALUE)

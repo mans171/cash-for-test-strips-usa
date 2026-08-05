@@ -16,4 +16,9 @@ describe('admin-auth', () => {
     expect(isValidSession(undefined)).toBe(false)
     expect(isValidSession('admin-authenticated.tampered-signature')).toBe(false)
   })
+
+  it('a session with no dot or extra dots is invalid', () => {
+    expect(isValidSession('admin-authenticated')).toBe(false)
+    expect(isValidSession('admin-authenticated.sig.extra')).toBe(false)
+  })
 })
