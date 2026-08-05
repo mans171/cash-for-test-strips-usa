@@ -50,4 +50,20 @@ describe('buyer portal schema', () => {
     // cleanup via admin client, since anon has no delete policy
     await supabaseAdmin.from('submissions').delete().eq('id', insertedId)
   })
+
+  it('rejects an anon insert that tries to pre-set status to approved', async () => {
+    const spoofedId = crypto.randomUUID()
+    const { error } = await supabase.from('submissions').insert({
+      id: spoofedId,
+      target_company_id: null,
+      payload: { name: 'Spoof Test Co', states: ['NY'] },
+      submitted_phone: '5555550099',
+      status: 'approved',
+      reviewed_at: new Date().toISOString(),
+    })
+    expect(error).not.toBeNull()
+
+    // cleanup in case the insert somehow succeeded
+    await supabaseAdmin.from('submissions').delete().eq('id', spoofedId)
+  })
 })
