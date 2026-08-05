@@ -18,7 +18,7 @@ export async function POST(request: Request) {
     const mailIn = await getMailInFallback()
     return NextResponse.json({ buyers: [], mailIn })
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unexpected error'
-    return NextResponse.json({ error: message }, { status: 500 })
+    console.error('[POST /api/sell/match]', error)
+    return NextResponse.json({ error: 'Something went wrong. Please try again.' }, { status: 500 })
   }
 }

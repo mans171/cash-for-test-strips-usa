@@ -23,7 +23,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ submissionId: submission.id })
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unexpected error'
-    return NextResponse.json({ error: message }, { status: 500 })
+    console.error('[POST /api/submissions]', error)
+    return NextResponse.json({ error: 'Something went wrong. Please try again.' }, { status: 500 })
   }
 }

@@ -13,7 +13,7 @@ export async function POST(request: Request) {
     const companies = await lookupCompaniesByPhone(phone)
     return NextResponse.json({ companies })
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unexpected error'
-    return NextResponse.json({ error: message }, { status: 500 })
+    console.error('[POST /api/buyer-lookup]', error)
+    return NextResponse.json({ error: 'Something went wrong. Please try again.' }, { status: 500 })
   }
 }
