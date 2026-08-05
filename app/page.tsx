@@ -13,6 +13,7 @@ type Company = {
   name: string;
   slug: string;
   url: string | null;
+  phone: string | null;
   city: string | null;
   states: string[];
   payment_methods: string[];
@@ -40,7 +41,7 @@ const POPULAR_STATES = ["NY", "TX", "FL", "CA", "PA", "NC", "OH", "GA", "MA", "N
 export default async function HomePage() {
   const { data: featured } = await supabase
     .from("companies")
-    .select("id, name, slug, url, city, states, payment_methods, accepted_brands, rating, description, featured")
+    .select("id, name, slug, url, phone, city, states, payment_methods, accepted_brands, rating, description, featured")
     .eq("featured", true)
     .limit(6);
 
@@ -238,7 +239,7 @@ function CompanyCard({ company }: { company: Company }) {
           </a>
         ) : (
           <a
-            href="tel:5187799751"
+            href={`tel:${company.phone ?? "5187799751"}`}
             className="flex-1 text-center text-xs font-medium bg-emerald-600 text-white px-3 py-2 rounded-lg hover:bg-emerald-700 transition-colors"
           >
             Contact
