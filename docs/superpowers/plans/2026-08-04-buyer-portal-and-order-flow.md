@@ -947,6 +947,26 @@ describe('createSubmission + approveSubmission (edit existing buyer)', () => {
     expect(updated?.phone).toBe('5559990099')
     expect(updated?.states).toEqual(['NY', 'NJ'])
   })
+
+  it('throws instead of silently succeeding if the target company was deleted before approval', async () => {
+    const { data: existing } = await supabaseAdmin
+      .from('companies')
+      .insert({ name: 'Test Deleted Target Co', slug: 'test-deleted-target-co', states: ['NY'], active: true, phone: '5559990098' })
+      .select('id')
+      .single()
+
+    const submission = await createSubmission({
+      targetCompanyId: existing!.id,
+      submittedPhone: '5559990098',
+      payload: { name: 'Test Deleted Target Co', states: ['NY'], phone: '5559990098' },
+    })
+    cleanupSubmissionIds.push(submission.id)
+
+    // Simulate a race: the target company is deleted before the submission is approved.
+    await supabaseAdmin.from('companies').delete().eq('id', existing!.id)
+
+    await expect(approveSubmission(submission.id)).rejects.toThrow()
+  })
 })
 
 describe('rejectSubmission', () => {
@@ -1093,10 +1113,17 @@ export async function approveSubmission(submissionId: string): Promise<void> {
   }
 
   if (submission.target_company_id) {
+    // .select().single() is safe here (supabaseAdmin bypasses RLS) and catches
+    // the case where the target company was deleted between submission and
+    // approval — Supabase-js doesn't error on a zero-row update by default,
+    // so without this the submission would silently mark itself approved
+    // even though nothing was actually updated.
     const { error } = await supabaseAdmin
       .from('companies')
       .update(companyData)
       .eq('id', submission.target_company_id)
+      .select('id')
+      .single()
     if (error) throw new Error(`Failed to update company: ${error.message}`)
   } else {
     const { error } = await supabaseAdmin
