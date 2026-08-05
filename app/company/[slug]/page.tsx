@@ -2,20 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import type { Metadata } from "next";
-
-const STATE_LABELS: Record<string, string> = {
-  AL: "Alabama", AK: "Alaska", AZ: "Arizona", AR: "Arkansas", CA: "California",
-  CO: "Colorado", CT: "Connecticut", DE: "Delaware", FL: "Florida", GA: "Georgia",
-  HI: "Hawaii", ID: "Idaho", IL: "Illinois", IN: "Indiana", IA: "Iowa",
-  KS: "Kansas", KY: "Kentucky", LA: "Louisiana", ME: "Maine", MD: "Maryland",
-  MA: "Massachusetts", MI: "Michigan", MN: "Minnesota", MS: "Mississippi", MO: "Missouri",
-  MT: "Montana", NE: "Nebraska", NV: "Nevada", NH: "New Hampshire", NJ: "New Jersey",
-  NM: "New Mexico", NY: "New York", NC: "North Carolina", ND: "North Dakota", OH: "Ohio",
-  OK: "Oklahoma", OR: "Oregon", PA: "Pennsylvania", RI: "Rhode Island", SC: "South Carolina",
-  SD: "South Dakota", TN: "Tennessee", TX: "Texas", UT: "Utah", VT: "Vermont",
-  VA: "Virginia", WA: "Washington", WV: "West Virginia", WI: "Wisconsin", WY: "Wyoming",
-  CANADA: "Canada",
-};
+import { STATE_LABELS } from "@/lib/states";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -43,11 +30,11 @@ export default async function CompanyPage({ params }: Props) {
 
   const { data: company } = await supabase
     .from("companies")
-    .select("id, name, slug, url, city, owner_name, states, payment_methods, accepted_brands, rating, description, featured, phone")
+    .select("id, name, slug, url, city, owner_name, states, payment_methods, accepted_brands, rating, description, featured, phone, mail_in")
     .eq("slug", slug)
     .single();
 
-  if (!company) notFound();
+  if (!company || company.mail_in) notFound();
 
   const stateNames = company.states.map((s: string) => STATE_LABELS[s] ?? s);
 

@@ -239,26 +239,31 @@ describe('buyer portal schema', () => {
   })
 
   it('anon key can insert into submissions but cannot read it back', async () => {
-    const { data: inserted, error: insertError } = await supabase
+    // NOTE: Postgres RLS governs INSERT...RETURNING through SELECT policies, not
+    // the INSERT policy. Since anon has no SELECT policy on submissions (by design —
+    // customers can write but not read others' data), any `.insert().select()` call
+    // fails outright, even though the bare insert succeeds. So this test — and every
+    // later insert into submissions/leads from the anon client — generates its own id
+    // client-side and inserts it explicitly, instead of relying on RETURNING.
+    const insertedId = crypto.randomUUID()
+    const { error: insertError } = await supabase
       .from('submissions')
       .insert({
+        id: insertedId,
         target_company_id: null,
         payload: { name: 'Schema Test Co', states: ['NY'] },
         submitted_phone: '5555550000',
       })
-      .select('id')
-      .single()
     expect(insertError).toBeNull()
-    expect(inserted).toBeDefined()
 
     const { data: readBack } = await supabase
       .from('submissions')
       .select('id')
-      .eq('id', inserted!.id)
+      .eq('id', insertedId)
     expect(readBack).toEqual([])
 
     // cleanup via admin client, since anon has no delete policy
-    await supabaseAdmin.from('submissions').delete().eq('id', inserted!.id)
+    await supabaseAdmin.from('submissions').delete().eq('id', insertedId)
   })
 })
 ```
@@ -268,10 +273,47 @@ describe('buyer portal schema', () => {
 Run: `npm test`
 Expected: 3 passed
 
+- [ ] **Step 4b: Tighten the insert policy (follow-up, found during review)**
+
+Task review flagged that `submissions_insert_anon`'s `with check (true)` lets any anon caller (not just this app) insert a row with `status: 'approved'` and a fake `reviewed_at` already set, bypassing the intended pending→admin-review flow. The app's own `createSubmission` (Task 9) never sets those fields on insert, so this tightening has no effect on legitimate behavior.
+
+Create `supabase/migrations/20260805000000_tighten_submissions_insert_policy.sql`:
+
+```sql
+-- supabase/migrations/20260805000000_tighten_submissions_insert_policy.sql
+
+alter policy submissions_insert_anon on submissions
+  with check (status = 'pending' and reviewed_at is null);
+```
+
+Apply via `apply_migration` against project `whgwneuarnrsktolmqdj` (name: `tighten_submissions_insert_policy`).
+
+Add one more test to `lib/__tests__/schema.test.ts`, inside the `describe('buyer portal schema')` block:
+
+```typescript
+  it('rejects an anon insert that tries to pre-set status to approved', async () => {
+    const spoofedId = crypto.randomUUID()
+    const { error } = await supabase.from('submissions').insert({
+      id: spoofedId,
+      target_company_id: null,
+      payload: { name: 'Spoof Test Co', states: ['NY'] },
+      submitted_phone: '5555550099',
+      status: 'approved',
+      reviewed_at: new Date().toISOString(),
+    })
+    expect(error).not.toBeNull()
+
+    // cleanup in case the insert somehow succeeded
+    await supabaseAdmin.from('submissions').delete().eq('id', spoofedId)
+  })
+```
+
+Run `npm test` again — 4 tests in this file should now pass, output pristine.
+
 - [ ] **Step 5: Commit**
 
 ```bash
-git add supabase/migrations/20260804000000_buyer_portal_and_orders.sql lib/__tests__/schema.test.ts
+git add supabase/migrations/20260804000000_buyer_portal_and_orders.sql supabase/migrations/20260805000000_tighten_submissions_insert_policy.sql lib/__tests__/schema.test.ts
 git commit -m "feat: migrate schema for buyer portal and order flow"
 ```
 
@@ -708,6 +750,11 @@ describe('admin-auth', () => {
     expect(isValidSession(undefined)).toBe(false)
     expect(isValidSession('admin-authenticated.tampered-signature')).toBe(false)
   })
+
+  it('a session with no dot or extra dots is invalid', () => {
+    expect(isValidSession('admin-authenticated')).toBe(false)
+    expect(isValidSession('admin-authenticated.sig.extra')).toBe(false)
+  })
 })
 ```
 
@@ -733,7 +780,8 @@ export function checkPassword(password: string): boolean {
 }
 
 function sign(value: string): string {
-  const secret = process.env.ADMIN_SESSION_SECRET!
+  const secret = process.env.ADMIN_SESSION_SECRET
+  if (!secret) throw new Error('ADMIN_SESSION_SECRET is not set')
   return crypto.createHmac('sha256', secret).update(value).digest('hex')
 }
 
@@ -743,7 +791,9 @@ export function signSession(): string {
 
 export function isValidSession(cookieValue: string | undefined): boolean {
   if (!cookieValue) return false
-  const [value, sig] = cookieValue.split('.')
+  const parts = cookieValue.split('.')
+  if (parts.length !== 2) return false
+  const [value, sig] = parts
   if (value !== SESSION_VALUE || !sig) return false
 
   const expectedSig = sign(SESSION_VALUE)
@@ -795,13 +845,16 @@ const cleanupCompanySlugs: string[] = []
 const cleanupSubmissionIds: string[] = []
 
 afterEach(async () => {
-  if (cleanupCompanySlugs.length) {
-    await supabaseAdmin.from('companies').delete().in('slug', cleanupCompanySlugs)
-    cleanupCompanySlugs.length = 0
-  }
+  // Submissions before companies: submissions.target_company_id has a foreign
+  // key to companies(id), so deleting the company first would violate the
+  // constraint and silently leave the company orphaned (found during Task 9).
   if (cleanupSubmissionIds.length) {
     await supabaseAdmin.from('submissions').delete().in('id', cleanupSubmissionIds)
     cleanupSubmissionIds.length = 0
+  }
+  if (cleanupCompanySlugs.length) {
+    await supabaseAdmin.from('companies').delete().in('slug', cleanupCompanySlugs)
+    cleanupCompanySlugs.length = 0
   }
 })
 
@@ -894,6 +947,35 @@ describe('createSubmission + approveSubmission (edit existing buyer)', () => {
     expect(updated?.phone).toBe('5559990099')
     expect(updated?.states).toEqual(['NY', 'NJ'])
   })
+
+  it('the FK constraint prevents deleting a company a pending submission still targets', async () => {
+    // Correction from an earlier version of this plan: it asked for a test where
+    // a target company is deleted before approval, expecting approveSubmission to
+    // throw on the resulting zero-row update. Verified during implementation that
+    // this scenario is actually unreachable — submissions.target_company_id -> companies.id
+    // has no ON DELETE clause (default NO ACTION), so Postgres itself refuses the
+    // delete with a foreign-key-violation (23503) while the submission still exists.
+    // This test documents that protection directly, and the .select('id').single()
+    // added to approveSubmission's update branch remains as defense-in-depth for
+    // any other path that could produce a zero-row update (e.g. a bad id).
+    const { data: existing } = await supabaseAdmin
+      .from('companies')
+      .insert({ name: 'Test FK Target Co', slug: 'test-fk-target-co', states: ['NY'], active: true, phone: '5559990098' })
+      .select('id, slug')
+      .single()
+    cleanupCompanySlugs.push(existing!.slug)
+
+    const submission = await createSubmission({
+      targetCompanyId: existing!.id,
+      submittedPhone: '5559990098',
+      payload: { name: 'Test FK Target Co', states: ['NY'], phone: '5559990098' },
+    })
+    cleanupSubmissionIds.push(submission.id)
+
+    const { error } = await supabaseAdmin.from('companies').delete().eq('id', existing!.id)
+    expect(error).not.toBeNull()
+    expect(error?.code).toBe('23503')
+  })
 })
 
 describe('rejectSubmission', () => {
@@ -981,18 +1063,30 @@ export async function createSubmission(input: CreateSubmissionInput): Promise<Su
     throw new Error(`Invalid submission: ${validation.errors.join(', ')}`)
   }
 
-  const { data, error } = await supabase
-    .from('submissions')
-    .insert({
-      target_company_id: input.targetCompanyId,
-      payload: input.payload,
-      submitted_phone: input.submittedPhone,
-    })
-    .select('id, target_company_id, payload, submitted_phone, status, created_at, reviewed_at')
-    .single()
+  // Generate the id client-side and insert it explicitly rather than relying on
+  // `.select()`/RETURNING: Postgres RLS governs RETURNING through SELECT policies,
+  // and anon intentionally has no SELECT policy on submissions (write-only, by design).
+  // `.insert().select()` would fail outright even though the bare insert succeeds.
+  const id = crypto.randomUUID()
+  const createdAt = new Date().toISOString()
+  const { error } = await supabase.from('submissions').insert({
+    id,
+    target_company_id: input.targetCompanyId,
+    payload: input.payload,
+    submitted_phone: input.submittedPhone,
+  })
 
   if (error) throw new Error(`Failed to create submission: ${error.message}`)
-  return data as Submission
+
+  return {
+    id,
+    target_company_id: input.targetCompanyId,
+    payload: input.payload,
+    submitted_phone: input.submittedPhone,
+    status: 'pending',
+    created_at: createdAt,
+    reviewed_at: null,
+  }
 }
 
 function slugify(name: string): string {
@@ -1028,10 +1122,17 @@ export async function approveSubmission(submissionId: string): Promise<void> {
   }
 
   if (submission.target_company_id) {
+    // .select().single() is safe here (supabaseAdmin bypasses RLS) and catches
+    // the case where the target company was deleted between submission and
+    // approval — Supabase-js doesn't error on a zero-row update by default,
+    // so without this the submission would silently mark itself approved
+    // even though nothing was actually updated.
     const { error } = await supabaseAdmin
       .from('companies')
       .update(companyData)
       .eq('id', submission.target_company_id)
+      .select('id')
+      .single()
     if (error) throw new Error(`Failed to update company: ${error.message}`)
   } else {
     const { error } = await supabaseAdmin
@@ -1143,19 +1244,30 @@ export type Lead = {
 }
 
 export async function createLead(input: CreateLeadInput): Promise<Lead> {
-  const { data, error } = await supabase
-    .from('leads')
-    .insert({
-      items: input.items,
-      matched_company_id: input.matchedCompanyId,
-      channel: input.channel,
-      source_page: input.sourcePage,
-    })
-    .select('id, items, matched_company_id, channel, source_page, created_at')
-    .single()
+  // Generate the id client-side and insert it explicitly rather than relying on
+  // `.select()`/RETURNING: anon has no SELECT policy on leads (write-only, by
+  // design), so `.insert().select()` fails outright even though the bare insert
+  // succeeds — Postgres RLS governs RETURNING through SELECT policies.
+  const id = crypto.randomUUID()
+  const createdAt = new Date().toISOString()
+  const { error } = await supabase.from('leads').insert({
+    id,
+    items: input.items,
+    matched_company_id: input.matchedCompanyId,
+    channel: input.channel,
+    source_page: input.sourcePage,
+  })
 
   if (error) throw new Error(`Failed to create lead: ${error.message}`)
-  return data as Lead
+
+  return {
+    id,
+    items: input.items,
+    matched_company_id: input.matchedCompanyId,
+    channel: input.channel,
+    source_page: input.sourcePage,
+    created_at: createdAt,
+  }
 }
 ```
 
@@ -1226,15 +1338,20 @@ import { NextResponse } from 'next/server'
 import { lookupCompaniesByPhone } from '@/lib/buyer-lookup'
 
 export async function POST(request: Request) {
-  const body = await request.json()
-  const phone = body?.phone
+  try {
+    const body = await request.json()
+    const phone = body?.phone
 
-  if (!phone || typeof phone !== 'string') {
-    return NextResponse.json({ error: 'phone is required' }, { status: 400 })
+    if (!phone || typeof phone !== 'string') {
+      return NextResponse.json({ error: 'phone is required' }, { status: 400 })
+    }
+
+    const companies = await lookupCompaniesByPhone(phone)
+    return NextResponse.json({ companies })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unexpected error'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
-
-  const companies = await lookupCompaniesByPhone(phone)
-  return NextResponse.json({ companies })
 }
 ```
 
@@ -1324,25 +1441,30 @@ import { NextResponse } from 'next/server'
 import { createSubmission, validateSubmissionPayload } from '@/lib/submissions'
 
 export async function POST(request: Request) {
-  const body = await request.json()
-  const { targetCompanyId, submittedPhone, payload } = body ?? {}
+  try {
+    const body = await request.json()
+    const { targetCompanyId, submittedPhone, payload } = body ?? {}
 
-  if (!submittedPhone || !payload) {
-    return NextResponse.json({ error: 'submittedPhone and payload are required' }, { status: 400 })
+    if (!submittedPhone || !payload) {
+      return NextResponse.json({ error: 'submittedPhone and payload are required' }, { status: 400 })
+    }
+
+    const validation = validateSubmissionPayload(payload)
+    if (!validation.valid) {
+      return NextResponse.json({ error: validation.errors.join(', ') }, { status: 400 })
+    }
+
+    const submission = await createSubmission({
+      targetCompanyId: targetCompanyId ?? null,
+      submittedPhone,
+      payload,
+    })
+
+    return NextResponse.json({ submissionId: submission.id })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unexpected error'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
-
-  const validation = validateSubmissionPayload(payload)
-  if (!validation.valid) {
-    return NextResponse.json({ error: validation.errors.join(', ') }, { status: 400 })
-  }
-
-  const submission = await createSubmission({
-    targetCompanyId: targetCompanyId ?? null,
-    submittedPhone,
-    payload,
-  })
-
-  return NextResponse.json({ submissionId: submission.id })
 }
 ```
 
@@ -1445,25 +1567,30 @@ import { buildQuoteMessage } from '@/lib/message-template'
 import type { OrderItem } from '@/lib/types'
 
 export async function POST(request: Request) {
-  const body = await request.json()
-  const { items, matchedCompanyId, channel, sourcePage } = body ?? {}
+  try {
+    const body = await request.json()
+    const { items, matchedCompanyId, channel, sourcePage } = body ?? {}
 
-  if (!Array.isArray(items) || items.length === 0) {
-    return NextResponse.json({ error: 'At least one item is required' }, { status: 400 })
+    if (!Array.isArray(items) || items.length === 0) {
+      return NextResponse.json({ error: 'At least one item is required' }, { status: 400 })
+    }
+    if (channel !== 'sms' && channel !== 'email') {
+      return NextResponse.json({ error: 'channel must be sms or email' }, { status: 400 })
+    }
+
+    const lead = await createLead({
+      items: items as OrderItem[],
+      matchedCompanyId: matchedCompanyId ?? null,
+      channel,
+      sourcePage: sourcePage ?? null,
+    })
+    const message = buildQuoteMessage(items as OrderItem[])
+
+    return NextResponse.json({ leadId: lead.id, message })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unexpected error'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
-  if (channel !== 'sms' && channel !== 'email') {
-    return NextResponse.json({ error: 'channel must be sms or email' }, { status: 400 })
-  }
-
-  const lead = await createLead({
-    items: items as OrderItem[],
-    matchedCompanyId: matchedCompanyId ?? null,
-    channel,
-    sourcePage: sourcePage ?? null,
-  })
-  const message = buildQuoteMessage(items as OrderItem[])
-
-  return NextResponse.json({ leadId: lead.id, message })
 }
 ```
 
@@ -1568,22 +1695,27 @@ import { NextResponse } from 'next/server'
 import { checkPassword, signSession, ADMIN_SESSION_COOKIE_NAME } from '@/lib/admin-auth'
 
 export async function POST(request: Request) {
-  const body = await request.json()
-  const password = body?.password
+  try {
+    const body = await request.json()
+    const password = body?.password
 
-  if (typeof password !== 'string' || !checkPassword(password)) {
-    return NextResponse.json({ error: 'Invalid password' }, { status: 401 })
+    if (typeof password !== 'string' || !checkPassword(password)) {
+      return NextResponse.json({ error: 'Invalid password' }, { status: 401 })
+    }
+
+    const response = NextResponse.json({ ok: true })
+    response.cookies.set(ADMIN_SESSION_COOKIE_NAME, signSession(), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 60 * 24 * 7,
+    })
+    return response
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unexpected error'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
-
-  const response = NextResponse.json({ ok: true })
-  response.cookies.set(ADMIN_SESSION_COOKIE_NAME, signSession(), {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    path: '/',
-    maxAge: 60 * 60 * 24 * 7,
-  })
-  return response
 }
 ```
 
@@ -1602,25 +1734,30 @@ function getCookie(request: Request, name: string): string | undefined {
 }
 
 export async function POST(request: Request) {
-  const session = getCookie(request, ADMIN_SESSION_COOKIE_NAME)
-  if (!isValidSession(session)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  try {
+    const session = getCookie(request, ADMIN_SESSION_COOKIE_NAME)
+    if (!isValidSession(session)) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const body = await request.json()
+    const { submissionId, action } = body ?? {}
+
+    if (!submissionId || (action !== 'approve' && action !== 'reject')) {
+      return NextResponse.json({ error: 'submissionId and a valid action are required' }, { status: 400 })
+    }
+
+    if (action === 'approve') {
+      await approveSubmission(submissionId)
+    } else {
+      await rejectSubmission(submissionId)
+    }
+
+    return NextResponse.json({ ok: true })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unexpected error'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
-
-  const body = await request.json()
-  const { submissionId, action } = body ?? {}
-
-  if (!submissionId || (action !== 'approve' && action !== 'reject')) {
-    return NextResponse.json({ error: 'submissionId and a valid action are required' }, { status: 400 })
-  }
-
-  if (action === 'approve') {
-    await approveSubmission(submissionId)
-  } else {
-    await rejectSubmission(submissionId)
-  }
-
-  return NextResponse.json({ ok: true })
 }
 ```
 
@@ -1927,20 +2064,25 @@ import { NextResponse } from 'next/server'
 import { matchBuyersForState, getMailInFallback } from '@/lib/order-matching'
 
 export async function POST(request: Request) {
-  const body = await request.json()
-  const state = body?.state
+  try {
+    const body = await request.json()
+    const state = body?.state
 
-  if (!state || typeof state !== 'string') {
-    return NextResponse.json({ error: 'state is required' }, { status: 400 })
+    if (!state || typeof state !== 'string') {
+      return NextResponse.json({ error: 'state is required' }, { status: 400 })
+    }
+
+    const buyers = await matchBuyersForState(state)
+    if (buyers.length > 0) {
+      return NextResponse.json({ buyers, mailIn: null })
+    }
+
+    const mailIn = await getMailInFallback()
+    return NextResponse.json({ buyers: [], mailIn })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unexpected error'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
-
-  const buyers = await matchBuyersForState(state)
-  if (buyers.length > 0) {
-    return NextResponse.json({ buyers, mailIn: null })
-  }
-
-  const mailIn = await getMailInFallback()
-  return NextResponse.json({ buyers: [], mailIn })
 }
 ```
 
@@ -1991,6 +2133,7 @@ export function SellFlowClient() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [sending, setSending] = useState(false);
 
   function updateItem(index: number, patch: Partial<OrderItem>) {
     setItems((prev) => prev.map((item, i) => (i === index ? { ...item, ...patch } : item)));
@@ -2012,40 +2155,53 @@ export function SellFlowClient() {
       return;
     }
     setLoading(true);
-    const res = await fetch("/api/sell/match", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ state }),
-    });
-    const body = await res.json();
-    setLoading(false);
-    if (!res.ok) {
-      setError(body.error ?? "Something went wrong");
-      return;
+    try {
+      const res = await fetch("/api/sell/match", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ state }),
+      });
+      const body = await res.json();
+      if (!res.ok) {
+        setError(body.error ?? "Something went wrong");
+        return;
+      }
+      setBuyers(body.buyers ?? []);
+      setMailIn(body.mailIn ?? null);
+      setStage("results");
+    } catch {
+      setError("Couldn't reach the server. Check your connection and try again.");
+    } finally {
+      setLoading(false);
     }
-    setBuyers(body.buyers ?? []);
-    setMailIn(body.mailIn ?? null);
-    setStage("results");
   }
 
   async function handleSend(buyer: Company, channel: "sms" | "email") {
     setSelectedBuyer(buyer);
-    const res = await fetch("/api/leads", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ items, matchedCompanyId: buyer.id, channel, sourcePage: "/sell" }),
-    });
-    const body = await res.json();
-    if (!res.ok) {
-      setError(body.error ?? "Something went wrong");
-      return;
-    }
-    setMessage(body.message);
-    setStage("sent");
-    if (channel === "sms" && buyer.phone) {
-      window.open(`sms:${buyer.phone}?body=${encodeURIComponent(body.message)}`, "_blank");
-    } else if (channel === "email" && buyer.email) {
-      window.open(`mailto:${buyer.email}?subject=${encodeURIComponent("Quote request from cash4teststripsusa.com")}&body=${encodeURIComponent(body.message)}`, "_blank");
+    setError(null);
+    setSending(true);
+    try {
+      const res = await fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items, matchedCompanyId: buyer.id, channel, sourcePage: "/sell" }),
+      });
+      const body = await res.json();
+      if (!res.ok) {
+        setError(body.error ?? "Something went wrong");
+        return;
+      }
+      setMessage(body.message);
+      setStage("sent");
+      if (channel === "sms" && buyer.phone) {
+        window.open(`sms:${buyer.phone}?body=${encodeURIComponent(body.message)}`, "_blank");
+      } else if (channel === "email" && buyer.email) {
+        window.open(`mailto:${buyer.email}?subject=${encodeURIComponent("Quote request from cash4teststripsusa.com")}&body=${encodeURIComponent(body.message)}`, "_blank");
+      }
+    } catch {
+      setError("Couldn't reach the server. Check your connection and try again.");
+    } finally {
+      setSending(false);
     }
   }
 
@@ -2085,17 +2241,19 @@ export function SellFlowClient() {
               {c.phone && (
                 <button
                   onClick={() => handleSend(c, "sms")}
-                  className="text-xs font-medium bg-emerald-600 text-white px-3 py-2 rounded-lg"
+                  disabled={sending}
+                  className="text-xs font-medium bg-emerald-600 text-white px-3 py-2 rounded-lg disabled:opacity-50"
                 >
-                  Text
+                  {sending && selectedBuyer?.id === c.id ? "Sending..." : "Text"}
                 </button>
               )}
               {c.email && (
                 <button
                   onClick={() => handleSend(c, "email")}
-                  className="text-xs font-medium border border-emerald-600 text-emerald-700 px-3 py-2 rounded-lg"
+                  disabled={sending}
+                  className="text-xs font-medium border border-emerald-600 text-emerald-700 px-3 py-2 rounded-lg disabled:opacity-50"
                 >
-                  Email
+                  {sending && selectedBuyer?.id === c.id ? "Sending..." : "Email"}
                 </button>
               )}
             </div>
@@ -2199,25 +2357,35 @@ import { isValidSession, ADMIN_SESSION_COOKIE_NAME } from '@/lib/admin-auth'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 
 export async function GET() {
-  const cookieStore = await cookies()
-  const session = cookieStore.get(ADMIN_SESSION_COOKIE_NAME)?.value
-  if (!isValidSession(session)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  try {
+    const cookieStore = await cookies()
+    const session = cookieStore.get(ADMIN_SESSION_COOKIE_NAME)?.value
+    if (!isValidSession(session)) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const [submissions, leads, clicks, missingPhones] = await Promise.all([
+      supabaseAdmin.from('submissions').select('*').eq('status', 'pending').order('created_at', { ascending: false }),
+      supabaseAdmin.from('leads').select('*').order('created_at', { ascending: false }).limit(50),
+      supabaseAdmin.from('clicks').select('*').order('created_at', { ascending: false }).limit(50),
+      supabaseAdmin.from('companies').select('id, name, city, states').or('phone.is.null,phone.eq.'),
+    ])
+
+    const firstError = [submissions, leads, clicks, missingPhones].find((r) => r.error)?.error
+    if (firstError) {
+      return NextResponse.json({ error: firstError.message }, { status: 500 })
+    }
+
+    return NextResponse.json({
+      submissions: submissions.data ?? [],
+      leads: leads.data ?? [],
+      clicks: clicks.data ?? [],
+      missingPhones: missingPhones.data ?? [],
+    })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unexpected error'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
-
-  const [submissions, leads, clicks, missingPhones] = await Promise.all([
-    supabaseAdmin.from('submissions').select('*').eq('status', 'pending').order('created_at', { ascending: false }),
-    supabaseAdmin.from('leads').select('*').order('created_at', { ascending: false }).limit(50),
-    supabaseAdmin.from('clicks').select('*').order('created_at', { ascending: false }).limit(50),
-    supabaseAdmin.from('companies').select('id, name, city, states').or('phone.is.null,phone.eq.'),
-  ])
-
-  return NextResponse.json({
-    submissions: submissions.data ?? [],
-    leads: leads.data ?? [],
-    clicks: clicks.data ?? [],
-    missingPhones: missingPhones.data ?? [],
-  })
 }
 ```
 
@@ -2312,10 +2480,21 @@ type DashboardData = {
 export function AdminDashboardClient() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [tab, setTab] = useState<"submissions" | "leads" | "clicks" | "missingPhones">("submissions");
+  const [error, setError] = useState<string | null>(null);
 
   async function load() {
-    const res = await fetch("/api/admin/data");
-    if (res.ok) setData(await res.json());
+    try {
+      const res = await fetch("/api/admin/data");
+      const body = await res.json();
+      if (!res.ok) {
+        setError(body.error ?? "Failed to load dashboard data");
+        return;
+      }
+      setError(null);
+      setData(body);
+    } catch {
+      setError("Couldn't reach the server. Check your connection and try again.");
+    }
   }
 
   useEffect(() => {
@@ -2323,12 +2502,32 @@ export function AdminDashboardClient() {
   }, []);
 
   async function review(submissionId: string, action: "approve" | "reject") {
-    await fetch("/api/admin/review", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ submissionId, action }),
-    });
-    load();
+    try {
+      const res = await fetch("/api/admin/review", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ submissionId, action }),
+      });
+      const body = await res.json();
+      if (!res.ok) {
+        setError(body.error ?? "Failed to review submission");
+        return;
+      }
+      await load();
+    } catch {
+      setError("Couldn't reach the server. Check your connection and try again.");
+    }
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-red-600 text-sm mb-3">{error}</p>
+        <button onClick={() => { setError(null); load(); }} className="text-xs text-emerald-600 hover:underline">
+          Try again
+        </button>
+      </div>
+    );
   }
 
   if (!data) return <p>Loading...</p>;

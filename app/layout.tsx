@@ -38,7 +38,7 @@ export default function RootLayout({
                 How It Works
               </Link>
               <Link
-                href="/directory"
+                href="/sell"
                 className="bg-emerald-600 text-white px-4 py-2 rounded-full hover:bg-emerald-700 transition-colors"
               >
                 Get Cash Now
@@ -55,6 +55,9 @@ export default function RootLayout({
             <div className="flex gap-6">
               <Link href="/directory" className="hover:text-emerald-700 transition-colors">
                 Directory
+              </Link>
+              <Link href="/buyer" className="hover:text-emerald-700 transition-colors">
+                Manage Your Listing
               </Link>
               <a href="mailto:feldon.richards@gmail.com" className="hover:text-emerald-700 transition-colors">
                 Contact

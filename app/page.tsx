@@ -64,10 +64,10 @@ export default async function HomePage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link
-              href="/directory"
+              href="/sell"
               className="bg-emerald-600 text-white px-8 py-4 rounded-full text-base font-semibold hover:bg-emerald-700 transition-colors"
             >
-              Find a Buyer Near Me →
+              Sell Your Test Strips →
             </Link>
             <a
               href="#how-it-works"
