@@ -1,4 +1,3 @@
-import { supabase } from './supabase'
 import { supabaseAdmin } from './supabase-admin'
 import { VALID_STATE_CODES } from './states'
 import type { SubmissionPayload } from './types'
@@ -88,9 +87,17 @@ export async function createSubmission(input: CreateSubmissionInput): Promise<Su
   // `.select()`/RETURNING: Postgres RLS governs RETURNING through SELECT policies,
   // and anon intentionally has no SELECT policy on submissions (write-only, by design).
   // `.insert().select()` would fail outright even though the bare insert succeeds.
+  //
+  // Uses supabaseAdmin (service role) rather than the anon client: anon has no
+  // INSERT policy on submissions at all now (see the migration dropping
+  // submissions_insert_anon), since the anon key is public and an anon
+  // insert-only policy let anyone bypass the phone-ownership check above by
+  // POSTing directly to Supabase's REST API. createSubmission is only ever
+  // called from the server-only /api/submissions route handler, so writing
+  // through the service-role client here is safe.
   const id = crypto.randomUUID()
   const createdAt = new Date().toISOString()
-  const { error } = await supabase.from('submissions').insert({
+  const { error } = await supabaseAdmin.from('submissions').insert({
     id,
     target_company_id: input.targetCompanyId,
     payload: input.payload,
