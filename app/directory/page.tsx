@@ -2,40 +2,13 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import type { Metadata } from "next";
 import { DirectoryFilters } from "./filters";
+import { STATE_LABELS } from "@/lib/states";
+import type { Company } from "@/lib/types";
 
 export const metadata: Metadata = {
   title: "Directory — Find Test Strip Buyers Near You",
   description:
     "Browse our full directory of cash buyers for diabetic test strips. Filter by state, payment method, and brand accepted.",
-};
-
-export type Company = {
-  id: string;
-  name: string;
-  slug: string;
-  url: string | null;
-  city: string | null;
-  owner_name: string | null;
-  states: string[];
-  payment_methods: string[];
-  accepted_brands: string[];
-  rating: number | null;
-  description: string | null;
-  featured: boolean;
-};
-
-export const STATE_LABELS: Record<string, string> = {
-  AL: "Alabama", AK: "Alaska", AZ: "Arizona", AR: "Arkansas", CA: "California",
-  CO: "Colorado", CT: "Connecticut", DE: "Delaware", FL: "Florida", GA: "Georgia",
-  HI: "Hawaii", ID: "Idaho", IL: "Illinois", IN: "Indiana", IA: "Iowa",
-  KS: "Kansas", KY: "Kentucky", LA: "Louisiana", ME: "Maine", MD: "Maryland",
-  MA: "Massachusetts", MI: "Michigan", MN: "Minnesota", MS: "Mississippi", MO: "Missouri",
-  MT: "Montana", NE: "Nebraska", NV: "Nevada", NH: "New Hampshire", NJ: "New Jersey",
-  NM: "New Mexico", NY: "New York", NC: "North Carolina", ND: "North Dakota", OH: "Ohio",
-  OK: "Oklahoma", OR: "Oregon", PA: "Pennsylvania", RI: "Rhode Island", SC: "South Carolina",
-  SD: "South Dakota", TN: "Tennessee", TX: "Texas", UT: "Utah", VT: "Vermont",
-  VA: "Virginia", WA: "Washington", WV: "West Virginia", WI: "Wisconsin", WY: "Wyoming",
-  CANADA: "Canada",
 };
 
 export default async function DirectoryPage({
