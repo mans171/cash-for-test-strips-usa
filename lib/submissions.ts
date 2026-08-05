@@ -110,6 +110,8 @@ export async function approveSubmission(submissionId: string): Promise<void> {
       .from('companies')
       .update(companyData)
       .eq('id', submission.target_company_id)
+      .select('id')
+      .single()
     if (error) throw new Error(`Failed to update company: ${error.message}`)
   } else {
     const { error } = await supabaseAdmin

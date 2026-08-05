@@ -113,6 +113,15 @@ describe('createSubmission + approveSubmission (edit existing buyer)', () => {
     expect(updated?.phone).toBe('5559990099')
     expect(updated?.states).toEqual(['NY', 'NJ'])
   })
+
+  // Note: an integration test that physically deletes the target company while a
+  // pending submission still references it is not constructible against this schema.
+  // `submissions.target_company_id references companies(id)` has default NO ACTION
+  // (no cascade), so Postgres refuses the delete outright (23503 foreign key
+  // violation) as long as any submission row points at that company — confirmed
+  // empirically. See task-9-report.md for the reproduction and the direct
+  // (non-integration) verification that `.select('id').single()` does correctly
+  // throw on a zero-row update.
 })
 
 describe('rejectSubmission', () => {
