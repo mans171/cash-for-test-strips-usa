@@ -948,24 +948,33 @@ describe('createSubmission + approveSubmission (edit existing buyer)', () => {
     expect(updated?.states).toEqual(['NY', 'NJ'])
   })
 
-  it('throws instead of silently succeeding if the target company was deleted before approval', async () => {
+  it('the FK constraint prevents deleting a company a pending submission still targets', async () => {
+    // Correction from an earlier version of this plan: it asked for a test where
+    // a target company is deleted before approval, expecting approveSubmission to
+    // throw on the resulting zero-row update. Verified during implementation that
+    // this scenario is actually unreachable — submissions.target_company_id -> companies.id
+    // has no ON DELETE clause (default NO ACTION), so Postgres itself refuses the
+    // delete with a foreign-key-violation (23503) while the submission still exists.
+    // This test documents that protection directly, and the .select('id').single()
+    // added to approveSubmission's update branch remains as defense-in-depth for
+    // any other path that could produce a zero-row update (e.g. a bad id).
     const { data: existing } = await supabaseAdmin
       .from('companies')
-      .insert({ name: 'Test Deleted Target Co', slug: 'test-deleted-target-co', states: ['NY'], active: true, phone: '5559990098' })
-      .select('id')
+      .insert({ name: 'Test FK Target Co', slug: 'test-fk-target-co', states: ['NY'], active: true, phone: '5559990098' })
+      .select('id, slug')
       .single()
+    cleanupCompanySlugs.push(existing!.slug)
 
     const submission = await createSubmission({
       targetCompanyId: existing!.id,
       submittedPhone: '5559990098',
-      payload: { name: 'Test Deleted Target Co', states: ['NY'], phone: '5559990098' },
+      payload: { name: 'Test FK Target Co', states: ['NY'], phone: '5559990098' },
     })
     cleanupSubmissionIds.push(submission.id)
 
-    // Simulate a race: the target company is deleted before the submission is approved.
-    await supabaseAdmin.from('companies').delete().eq('id', existing!.id)
-
-    await expect(approveSubmission(submission.id)).rejects.toThrow()
+    const { error } = await supabaseAdmin.from('companies').delete().eq('id', existing!.id)
+    expect(error).not.toBeNull()
+    expect(error?.code).toBe('23503')
   })
 })
 
