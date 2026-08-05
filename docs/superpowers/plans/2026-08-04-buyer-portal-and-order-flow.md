@@ -273,10 +273,47 @@ describe('buyer portal schema', () => {
 Run: `npm test`
 Expected: 3 passed
 
+- [ ] **Step 4b: Tighten the insert policy (follow-up, found during review)**
+
+Task review flagged that `submissions_insert_anon`'s `with check (true)` lets any anon caller (not just this app) insert a row with `status: 'approved'` and a fake `reviewed_at` already set, bypassing the intended pending→admin-review flow. The app's own `createSubmission` (Task 9) never sets those fields on insert, so this tightening has no effect on legitimate behavior.
+
+Create `supabase/migrations/20260805000000_tighten_submissions_insert_policy.sql`:
+
+```sql
+-- supabase/migrations/20260805000000_tighten_submissions_insert_policy.sql
+
+alter policy submissions_insert_anon on submissions
+  with check (status = 'pending' and reviewed_at is null);
+```
+
+Apply via `apply_migration` against project `whgwneuarnrsktolmqdj` (name: `tighten_submissions_insert_policy`).
+
+Add one more test to `lib/__tests__/schema.test.ts`, inside the `describe('buyer portal schema')` block:
+
+```typescript
+  it('rejects an anon insert that tries to pre-set status to approved', async () => {
+    const spoofedId = crypto.randomUUID()
+    const { error } = await supabase.from('submissions').insert({
+      id: spoofedId,
+      target_company_id: null,
+      payload: { name: 'Spoof Test Co', states: ['NY'] },
+      submitted_phone: '5555550099',
+      status: 'approved',
+      reviewed_at: new Date().toISOString(),
+    })
+    expect(error).not.toBeNull()
+
+    // cleanup in case the insert somehow succeeded
+    await supabaseAdmin.from('submissions').delete().eq('id', spoofedId)
+  })
+```
+
+Run `npm test` again — 4 tests in this file should now pass, output pristine.
+
 - [ ] **Step 5: Commit**
 
 ```bash
-git add supabase/migrations/20260804000000_buyer_portal_and_orders.sql lib/__tests__/schema.test.ts
+git add supabase/migrations/20260804000000_buyer_portal_and_orders.sql supabase/migrations/20260805000000_tighten_submissions_insert_policy.sql lib/__tests__/schema.test.ts
 git commit -m "feat: migrate schema for buyer portal and order flow"
 ```
 
