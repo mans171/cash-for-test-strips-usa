@@ -114,14 +114,25 @@ describe('createSubmission + approveSubmission (edit existing buyer)', () => {
     expect(updated?.states).toEqual(['NY', 'NJ'])
   })
 
-  // Note: an integration test that physically deletes the target company while a
-  // pending submission still references it is not constructible against this schema.
-  // `submissions.target_company_id references companies(id)` has default NO ACTION
-  // (no cascade), so Postgres refuses the delete outright (23503 foreign key
-  // violation) as long as any submission row points at that company — confirmed
-  // empirically. See task-9-report.md for the reproduction and the direct
-  // (non-integration) verification that `.select('id').single()` does correctly
-  // throw on a zero-row update.
+  it('the FK constraint prevents deleting a company a pending submission still targets', async () => {
+    const { data: existing } = await supabaseAdmin
+      .from('companies')
+      .insert({ name: 'Test FK Target Co', slug: 'test-fk-target-co', states: ['NY'], active: true, phone: '5559990098' })
+      .select('id, slug')
+      .single()
+    cleanupCompanySlugs.push(existing!.slug)
+
+    const submission = await createSubmission({
+      targetCompanyId: existing!.id,
+      submittedPhone: '5559990098',
+      payload: { name: 'Test FK Target Co', states: ['NY'], phone: '5559990098' },
+    })
+    cleanupSubmissionIds.push(submission.id)
+
+    const { error } = await supabaseAdmin.from('companies').delete().eq('id', existing!.id)
+    expect(error).not.toBeNull()
+    expect(error?.code).toBe('23503')
+  })
 })
 
 describe('rejectSubmission', () => {
