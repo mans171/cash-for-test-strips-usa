@@ -116,6 +116,22 @@ describe('reset token lifecycle', () => {
     await expect(consumeResetToken(token, 'second-use-password-Task4')).rejects.toThrow()
   })
 
+  it('two concurrent consume attempts with the same token: exactly one succeeds', async () => {
+    const before = new Date().toISOString()
+    createdAfter.push(before)
+    const token = await createResetToken()
+
+    const results = await Promise.allSettled([
+      consumeResetToken(token, 'concurrent-a-Task4'),
+      consumeResetToken(token, 'concurrent-b-Task4'),
+    ])
+
+    const fulfilled = results.filter((r) => r.status === 'fulfilled')
+    const rejected = results.filter((r) => r.status === 'rejected')
+    expect(fulfilled).toHaveLength(1)
+    expect(rejected).toHaveLength(1)
+  })
+
   it('an expired token cannot be consumed', async () => {
     const token = await createResetToken()
     const tokenHash = crypto.createHash('sha256').update(token).digest('hex')

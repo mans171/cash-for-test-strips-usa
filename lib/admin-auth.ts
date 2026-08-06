@@ -95,24 +95,28 @@ export async function verifyResetToken(rawToken: string): Promise<boolean> {
 
 export async function consumeResetToken(rawToken: string, newPassword: string): Promise<void> {
   const tokenHash = hashToken(rawToken)
-  const { data } = await supabaseAdmin
+  const nowIso = new Date().toISOString()
+
+  // Atomic conditional update: mark used_at only if the token still exists,
+  // is unused, and unexpired — in ONE operation, not a separate select-then-
+  // update. This collapses the validity check and the mark-used step so two
+  // concurrent requests carrying the same token (or a partial failure
+  // between a separate check and a separate write) can't both pass
+  // validation and consume the same token twice. Only one caller can ever
+  // get a matching row back from this update.
+  const { data, error } = await supabaseAdmin
     .from('admin_reset_tokens')
-    .select('id, expires_at, used_at')
+    .update({ used_at: nowIso })
     .eq('token_hash', tokenHash)
+    .is('used_at', null)
+    .gt('expires_at', nowIso)
+    .select('id')
     .maybeSingle()
 
-  if (!data) throw new Error('Invalid or expired reset link')
-  if (data.used_at) throw new Error('This reset link has already been used')
-  if (new Date(data.expires_at).getTime() < Date.now()) throw new Error('This reset link has expired')
+  if (error || !data) throw new Error('Invalid or expired reset link')
 
   const { error: insertError } = await supabaseAdmin
     .from('admin_credentials')
     .insert({ password_hash: hashPassword(newPassword) })
   if (insertError) throw new Error(`Failed to update password: ${insertError.message}`)
-
-  const { error: updateError } = await supabaseAdmin
-    .from('admin_reset_tokens')
-    .update({ used_at: new Date().toISOString() })
-    .eq('id', data.id)
-  if (updateError) throw new Error(`Failed to mark reset token used: ${updateError.message}`)
 }
