@@ -840,10 +840,21 @@ export default function ForgotPasswordPage() {
 // app/admin/reset/page.tsx
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
+// useSearchParams() requires a Suspense boundary — without one, `next build`
+// fails outright on this page ("should be wrapped in a suspense boundary"),
+// it's not just a lint warning. Found during Task 8's build verification.
 export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={null}>
+      <ResetPasswordForm />
+    </Suspense>
+  );
+}
+
+function ResetPasswordForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const token = searchParams.get("token") ?? "";
