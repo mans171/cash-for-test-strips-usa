@@ -486,6 +486,22 @@ describe('reset token lifecycle', () => {
     await expect(consumeResetToken(token, 'second-use-password-Task4')).rejects.toThrow()
   })
 
+  it('two concurrent consume attempts with the same token: exactly one succeeds', async () => {
+    const before = new Date().toISOString()
+    createdAfter.push(before)
+    const token = await createResetToken()
+
+    const results = await Promise.allSettled([
+      consumeResetToken(token, 'concurrent-a-Task4'),
+      consumeResetToken(token, 'concurrent-b-Task4'),
+    ])
+
+    const fulfilled = results.filter((r) => r.status === 'fulfilled')
+    const rejected = results.filter((r) => r.status === 'rejected')
+    expect(fulfilled).toHaveLength(1)
+    expect(rejected).toHaveLength(1)
+  })
+
   it('an expired token cannot be consumed', async () => {
     const token = await createResetToken()
     const tokenHash = crypto.createHash('sha256').update(token).digest('hex')
@@ -546,35 +562,39 @@ export async function verifyResetToken(rawToken: string): Promise<boolean> {
 
 export async function consumeResetToken(rawToken: string, newPassword: string): Promise<void> {
   const tokenHash = hashToken(rawToken)
-  const { data } = await supabaseAdmin
+  const nowIso = new Date().toISOString()
+
+  // Atomic conditional update: mark used_at only if the token still exists,
+  // is unused, and unexpired — in ONE operation, not a separate select-then-
+  // update. This collapses the validity check and the mark-used step so two
+  // concurrent requests carrying the same token (or a partial failure
+  // between a separate check and a separate write) can't both pass
+  // validation and consume the same token twice. Only one caller can ever
+  // get a matching row back from this update.
+  const { data, error } = await supabaseAdmin
     .from('admin_reset_tokens')
-    .select('id, expires_at, used_at')
+    .update({ used_at: nowIso })
     .eq('token_hash', tokenHash)
+    .is('used_at', null)
+    .gt('expires_at', nowIso)
+    .select('id')
     .maybeSingle()
 
-  if (!data) throw new Error('Invalid or expired reset link')
-  if (data.used_at) throw new Error('This reset link has already been used')
-  if (new Date(data.expires_at).getTime() < Date.now()) throw new Error('This reset link has expired')
+  if (error || !data) throw new Error('Invalid or expired reset link')
 
   const { error: insertError } = await supabaseAdmin
     .from('admin_credentials')
     .insert({ password_hash: hashPassword(newPassword) })
   if (insertError) throw new Error(`Failed to update password: ${insertError.message}`)
-
-  const { error: updateError } = await supabaseAdmin
-    .from('admin_reset_tokens')
-    .update({ used_at: new Date().toISOString() })
-    .eq('id', data.id)
-  if (updateError) throw new Error(`Failed to mark reset token used: ${updateError.message}`)
 }
 ```
 
-Note: `checkPassword` already orders by `updated_at desc limit 1`, so inserting a new `admin_credentials` row (rather than updating the existing one) naturally makes the new password the active one — old rows are just left as history, harmless.
+Note: `checkPassword` already orders by `updated_at desc limit 1`, so inserting a new `admin_credentials` row (rather than updating the existing one) naturally makes the new password the active one — old rows are just left as history, harmless. If the password insert fails after the token is already marked used, the token is burned (fail-closed) rather than replayable — the user just needs to request a new reset link, which is the correct tradeoff over risking a replay.
 
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `npm test -- admin-auth.test.ts`
-Expected: 12 passed
+Expected: 13 passed
 
 - [ ] **Step 5: Commit**
 
