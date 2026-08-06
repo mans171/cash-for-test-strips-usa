@@ -37,6 +37,9 @@ export default function AdminLoginPage() {
         {error && <p className="text-red-600 text-sm">{error}</p>}
         <button type="submit" className="bg-emerald-600 text-white font-semibold px-4 py-2 rounded-lg">Log in</button>
       </form>
+      <a href="/admin/forgot-password" className="block text-center text-xs text-gray-400 hover:text-emerald-600 mt-4">
+        Forgot password?
+      </a>
     </div>
   );
 }
