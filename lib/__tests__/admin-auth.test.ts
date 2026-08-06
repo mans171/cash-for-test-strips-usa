@@ -1,5 +1,15 @@
 import { describe, it, expect, afterEach } from 'vitest'
-import { checkPassword, hashPassword, verifyPassword, signSession, isValidSession } from '@/lib/admin-auth'
+import crypto from 'crypto'
+import {
+  checkPassword,
+  hashPassword,
+  verifyPassword,
+  signSession,
+  isValidSession,
+  createResetToken,
+  verifyResetToken,
+  consumeResetToken,
+} from '@/lib/admin-auth'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 
 describe('hashPassword / verifyPassword', () => {
@@ -62,5 +72,57 @@ describe('sessions (unchanged behavior)', () => {
   it('a session with no dot or extra dots is invalid', () => {
     expect(isValidSession('admin-authenticated')).toBe(false)
     expect(isValidSession('admin-authenticated.sig.extra')).toBe(false)
+  })
+})
+
+describe('reset token lifecycle', () => {
+  // consumeResetToken inserts a new admin_credentials row as a side effect
+  // (single-row table shared with real production login — see Task 3's note
+  // in the checkPassword tests above). Any test here that calls it records a
+  // "before" timestamp and deletes rows inserted after it in cleanup, so the
+  // real seeded row is once again the most-recently-updated one once the
+  // test ends, instead of permanently overwriting the real admin password.
+  const createdAfter: string[] = []
+
+  afterEach(async () => {
+    for (const ts of createdAfter) {
+      await supabaseAdmin.from('admin_credentials').delete().gt('updated_at', ts)
+    }
+    createdAfter.length = 0
+  })
+
+  it('a freshly created token verifies as valid', async () => {
+    const token = await createResetToken()
+    expect(await verifyResetToken(token)).toBe(true)
+  })
+
+  it('an unknown token does not verify', async () => {
+    expect(await verifyResetToken('not-a-real-token')).toBe(false)
+  })
+
+  it('consumeResetToken updates the password and checkPassword reflects it', async () => {
+    const before = new Date().toISOString()
+    createdAfter.push(before)
+    const token = await createResetToken()
+    await consumeResetToken(token, 'brand-new-password-Task4')
+    expect(await checkPassword('brand-new-password-Task4')).toBe(true)
+  })
+
+  it('a token cannot be consumed twice', async () => {
+    const before = new Date().toISOString()
+    createdAfter.push(before)
+    const token = await createResetToken()
+    await consumeResetToken(token, 'first-use-password-Task4')
+    await expect(consumeResetToken(token, 'second-use-password-Task4')).rejects.toThrow()
+  })
+
+  it('an expired token cannot be consumed', async () => {
+    const token = await createResetToken()
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex')
+    await supabaseAdmin
+      .from('admin_reset_tokens')
+      .update({ expires_at: new Date(Date.now() - 1000).toISOString() })
+      .eq('token_hash', tokenHash)
+    await expect(consumeResetToken(token, 'should-not-work')).rejects.toThrow()
   })
 })

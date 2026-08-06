@@ -58,3 +58,61 @@ export function isValidSession(cookieValue: string | undefined): boolean {
   if (sigBuffer.length !== expectedBuffer.length) return false
   return crypto.timingSafeEqual(sigBuffer, expectedBuffer)
 }
+
+const RESET_TOKEN_TTL_MS = 30 * 60 * 1000
+
+function hashToken(rawToken: string): string {
+  return crypto.createHash('sha256').update(rawToken).digest('hex')
+}
+
+export async function createResetToken(): Promise<string> {
+  const rawToken = crypto.randomBytes(32).toString('hex')
+  const tokenHash = hashToken(rawToken)
+  const expiresAt = new Date(Date.now() + RESET_TOKEN_TTL_MS).toISOString()
+
+  const { error } = await supabaseAdmin.from('admin_reset_tokens').insert({
+    token_hash: tokenHash,
+    expires_at: expiresAt,
+  })
+  if (error) throw new Error(`Failed to create reset token: ${error.message}`)
+
+  return rawToken
+}
+
+export async function verifyResetToken(rawToken: string): Promise<boolean> {
+  const tokenHash = hashToken(rawToken)
+  const { data } = await supabaseAdmin
+    .from('admin_reset_tokens')
+    .select('id, expires_at, used_at')
+    .eq('token_hash', tokenHash)
+    .maybeSingle()
+
+  if (!data) return false
+  if (data.used_at) return false
+  if (new Date(data.expires_at).getTime() < Date.now()) return false
+  return true
+}
+
+export async function consumeResetToken(rawToken: string, newPassword: string): Promise<void> {
+  const tokenHash = hashToken(rawToken)
+  const { data } = await supabaseAdmin
+    .from('admin_reset_tokens')
+    .select('id, expires_at, used_at')
+    .eq('token_hash', tokenHash)
+    .maybeSingle()
+
+  if (!data) throw new Error('Invalid or expired reset link')
+  if (data.used_at) throw new Error('This reset link has already been used')
+  if (new Date(data.expires_at).getTime() < Date.now()) throw new Error('This reset link has expired')
+
+  const { error: insertError } = await supabaseAdmin
+    .from('admin_credentials')
+    .insert({ password_hash: hashPassword(newPassword) })
+  if (insertError) throw new Error(`Failed to update password: ${insertError.message}`)
+
+  const { error: updateError } = await supabaseAdmin
+    .from('admin_reset_tokens')
+    .update({ used_at: new Date().toISOString() })
+    .eq('id', data.id)
+  if (updateError) throw new Error(`Failed to mark reset token used: ${updateError.message}`)
+}
