@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, afterEach } from 'vitest'
 import { checkPassword, hashPassword, verifyPassword, signSession, isValidSession } from '@/lib/admin-auth'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 
@@ -19,18 +19,32 @@ describe('hashPassword / verifyPassword', () => {
 })
 
 describe('checkPassword (DB-backed)', () => {
+  // admin_credentials is a single-row table shared with real production
+  // login — checkPassword always uses the most-recently-updated row, so
+  // these tests INSERT a new row (which takes precedence during the test)
+  // rather than deleting existing ones, and clean up only what they inserted
+  // afterward. Never delete-all here: that would wipe the real seeded
+  // password out from under production login on every test run.
+  const insertedIds: string[] = []
+
+  afterEach(async () => {
+    if (insertedIds.length) {
+      await supabaseAdmin.from('admin_credentials').delete().in('id', insertedIds)
+      insertedIds.length = 0
+    }
+  })
+
   it('accepts whatever password is currently stored in admin_credentials, rejects others', async () => {
     const testHash = hashPassword('test-only-password-Task3')
-    await supabaseAdmin.from('admin_credentials').delete().neq('id', '00000000-0000-0000-0000-000000000000')
-    await supabaseAdmin.from('admin_credentials').insert({ password_hash: testHash })
+    const { data } = await supabaseAdmin
+      .from('admin_credentials')
+      .insert({ password_hash: testHash })
+      .select('id')
+      .single()
+    if (data) insertedIds.push(data.id)
 
     expect(await checkPassword('test-only-password-Task3')).toBe(true)
     expect(await checkPassword('definitely-wrong')).toBe(false)
-  })
-
-  it('rejects everything if no row exists in admin_credentials', async () => {
-    await supabaseAdmin.from('admin_credentials').delete().neq('id', '00000000-0000-0000-0000-000000000000')
-    expect(await checkPassword('anything')).toBe(false)
   })
 })
 
