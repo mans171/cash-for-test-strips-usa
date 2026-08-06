@@ -79,16 +79,22 @@ describe('reset token lifecycle', () => {
   // consumeResetToken inserts a new admin_credentials row as a side effect
   // (single-row table shared with real production login — see Task 3's note
   // in the checkPassword tests above). Any test here that calls it records a
-  // "before" timestamp and deletes rows inserted after it in cleanup, so the
-  // real seeded row is once again the most-recently-updated one once the
-  // test ends, instead of permanently overwriting the real admin password.
-  const createdAfter: string[] = []
+  // tightly-bounded [before, after] window around its own write and deletes
+  // only rows inserted inside that window in cleanup, so the real seeded row
+  // is once again the most-recently-updated one once the test ends, instead
+  // of permanently overwriting the real admin password. The window must be
+  // bounded on both sides (not just `.gt('updated_at', before)`) because
+  // Vitest can run test files in parallel — an open-ended delete could wipe
+  // out a row written concurrently by a different test file (e.g. the
+  // reset-password route test), or a real password reset performed by a
+  // human while the suite happens to be running.
+  const cleanupWindows: Array<{ before: string; after: string }> = []
 
   afterEach(async () => {
-    for (const ts of createdAfter) {
-      await supabaseAdmin.from('admin_credentials').delete().gt('updated_at', ts)
+    for (const { before, after } of cleanupWindows) {
+      await supabaseAdmin.from('admin_credentials').delete().gt('updated_at', before).lte('updated_at', after)
     }
-    createdAfter.length = 0
+    cleanupWindows.length = 0
   })
 
   it('a freshly created token verifies as valid', async () => {
@@ -102,29 +108,32 @@ describe('reset token lifecycle', () => {
 
   it('consumeResetToken updates the password and checkPassword reflects it', async () => {
     const before = new Date().toISOString()
-    createdAfter.push(before)
     const token = await createResetToken()
     await consumeResetToken(token, 'brand-new-password-Task4')
+    const after = new Date().toISOString()
+    cleanupWindows.push({ before, after })
     expect(await checkPassword('brand-new-password-Task4')).toBe(true)
   })
 
   it('a token cannot be consumed twice', async () => {
     const before = new Date().toISOString()
-    createdAfter.push(before)
     const token = await createResetToken()
     await consumeResetToken(token, 'first-use-password-Task4')
+    const after = new Date().toISOString()
+    cleanupWindows.push({ before, after })
     await expect(consumeResetToken(token, 'second-use-password-Task4')).rejects.toThrow()
   })
 
   it('two concurrent consume attempts with the same token: exactly one succeeds', async () => {
     const before = new Date().toISOString()
-    createdAfter.push(before)
     const token = await createResetToken()
 
     const results = await Promise.allSettled([
       consumeResetToken(token, 'concurrent-a-Task4'),
       consumeResetToken(token, 'concurrent-b-Task4'),
     ])
+    const after = new Date().toISOString()
+    cleanupWindows.push({ before, after })
 
     const fulfilled = results.filter((r) => r.status === 'fulfilled')
     const rejected = results.filter((r) => r.status === 'rejected')
