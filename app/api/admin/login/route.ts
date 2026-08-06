@@ -39,7 +39,7 @@ export async function POST(request: Request) {
     const body = await request.json()
     const password = body?.password
 
-    if (typeof password !== 'string' || !checkPassword(password)) {
+    if (typeof password !== 'string' || !(await checkPassword(password))) {
       return NextResponse.json({ error: 'Invalid password' }, { status: 401 })
     }
 
