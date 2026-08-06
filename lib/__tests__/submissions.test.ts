@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach } from 'vitest'
+import { describe, it, expect, afterEach, beforeAll, afterAll, vi } from 'vitest'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import {
   validateSubmissionPayload,
@@ -6,6 +6,19 @@ import {
   approveSubmission,
   rejectSubmission,
 } from '@/lib/submissions'
+
+// createSubmission/approveSubmission/rejectSubmission now send fire-and-forget
+// notification emails (Task 7). ADMIN_NOTIFY_EMAIL is set to a real inbox in
+// .env.local (which vitest.config.mts loads into process.env), so without this
+// stub every createSubmission call in this suite would attempt to send a real
+// admin-notification email. Test fixtures never set payload.email, so the
+// buyer-facing sends in approveSubmission/rejectSubmission are already inert.
+beforeAll(() => {
+  vi.stubEnv('ADMIN_NOTIFY_EMAIL', '')
+})
+afterAll(() => {
+  vi.unstubAllEnvs()
+})
 
 const cleanupCompanySlugs: string[] = []
 const cleanupSubmissionIds: string[] = []

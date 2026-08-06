@@ -1,6 +1,7 @@
 import { supabaseAdmin } from './supabase-admin'
 import { VALID_STATE_CODES } from './states'
 import type { SubmissionPayload } from './types'
+import { sendEmail } from './email'
 
 export function validateSubmissionPayload(payload: SubmissionPayload): { valid: boolean; errors: string[] } {
   const errors: string[] = []
@@ -106,6 +107,15 @@ export async function createSubmission(input: CreateSubmissionInput): Promise<Su
 
   if (error) throw new Error(`Failed to create submission: ${error.message}`)
 
+  const notifyEmail = process.env.ADMIN_NOTIFY_EMAIL
+  if (notifyEmail) {
+    void sendEmail({
+      to: notifyEmail,
+      subject: `New ${input.targetCompanyId ? 'edit' : 'buyer'} submission: ${input.payload.name}`,
+      html: `<p>${input.payload.name} (${input.submittedPhone}) submitted ${input.targetCompanyId ? 'an edit to their listing' : 'a new buyer profile'}.</p><p><a href="https://cash4teststripsusa.com/admin">Review it in the admin dashboard</a>.</p>`,
+    })
+  }
+
   return {
     id,
     target_company_id: input.targetCompanyId,
@@ -192,12 +202,35 @@ export async function approveSubmission(submissionId: string): Promise<void> {
     .update({ status: 'approved', reviewed_at: new Date().toISOString() })
     .eq('id', submissionId)
   if (statusError) throw new Error(`Failed to update submission status: ${statusError.message}`)
+
+  if (payload.email) {
+    void sendEmail({
+      to: payload.email,
+      subject: 'Your listing is live on Cash4TestStripsUSA',
+      html: `<p>Hi ${payload.owner_name ?? payload.name},</p><p>Your listing "${payload.name}" is now live on Cash4TestStripsUSA. Customers in your area can find and contact you.</p>`,
+    })
+  }
 }
 
 export async function rejectSubmission(submissionId: string): Promise<void> {
+  const { data: submission } = await supabaseAdmin
+    .from('submissions')
+    .select('payload')
+    .eq('id', submissionId)
+    .single()
+
   const { error } = await supabaseAdmin
     .from('submissions')
     .update({ status: 'rejected', reviewed_at: new Date().toISOString() })
     .eq('id', submissionId)
   if (error) throw new Error(`Failed to reject submission: ${error.message}`)
+
+  const payload = submission?.payload as SubmissionPayload | undefined
+  if (payload?.email) {
+    void sendEmail({
+      to: payload.email,
+      subject: 'Update on your Cash4TestStripsUSA submission',
+      html: `<p>Hi ${payload.owner_name ?? payload.name},</p><p>Your recent submission to Cash4TestStripsUSA was not approved. If you think this is a mistake, reply to this email or contact us directly.</p>`,
+    })
+  }
 }
