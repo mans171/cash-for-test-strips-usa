@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import Link from "next/link";
+import SiteNav from "./SiteNav";
 import "./globals.css";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-geist-sans" });
@@ -26,25 +27,7 @@ export default function RootLayout({
     <html lang="en" className={`${geist.variable} h-full`}>
       <body className="min-h-full flex flex-col font-sans antialiased bg-white text-gray-900">
         <header className="border-b border-gray-100 bg-white sticky top-0 z-50">
-          <nav className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-            <Link href="/" className="font-bold text-lg text-emerald-700 tracking-tight">
-              CashForTestStrips<span className="text-gray-900">USA</span>
-            </Link>
-            <div className="flex items-center gap-6 text-sm font-medium text-gray-600">
-              <Link href="/directory" className="hover:text-emerald-700 transition-colors">
-                Find a Buyer
-              </Link>
-              <Link href="/" className="hover:text-emerald-700 transition-colors">
-                How It Works
-              </Link>
-              <Link
-                href="/sell"
-                className="bg-emerald-600 text-white px-4 py-2 rounded-full hover:bg-emerald-700 transition-colors"
-              >
-                Get Cash Now
-              </Link>
-            </div>
-          </nav>
+          <SiteNav />
         </header>
 
         <main className="flex-1">{children}</main>
