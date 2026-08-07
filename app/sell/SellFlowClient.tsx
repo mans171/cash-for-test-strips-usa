@@ -63,6 +63,12 @@ export function SellFlowClient() {
     updateItem(index, { brand: chosenLine ? composeBrandString(brand, chosenLine) : "" });
   }
 
+  function clearProduct(index: number) {
+    setSelectedBrandIdentities((prev) => prev.map((id, i) => (i === index ? null : id)));
+    setSelectedLines((prev) => prev.map((l, i) => (i === index ? "" : l)));
+    updateItem(index, { brand: "" });
+  }
+
   function selectMonths(index: number, months: number) {
     setSelectedMonths((prev) => prev.map((m, i) => (i === index ? months : m)));
     const isBoundaryValue = months === 0 || months === EXPIRATION_MONTH_OPTIONS[EXPIRATION_MONTH_OPTIONS.length - 1].value;
@@ -212,101 +218,120 @@ export function SellFlowClient() {
 
       {items.map((item, i) => (
         <div key={i} className="grid grid-cols-2 gap-2 border border-gray-100 rounded-lg p-3">
-          <div className="col-span-2 flex flex-col gap-2">
-            <label className="text-xs font-medium text-gray-500">What are you selling?</label>
-            {(["Test Strips", "CGM", "Infusion Sets", "Lancets"] as const).map((category) => (
-              <div key={category}>
-                <p className="text-xs text-gray-400 mb-1">{category}</p>
-                <div className="grid grid-cols-4 gap-2">
-                  {PRODUCT_BRANDS.filter((b) => b.category === category).map((brand) => (
-                    <button
-                      type="button"
-                      key={brandIdentity(brand)}
-                      onClick={() => selectBrand(i, brand)}
-                      className={`flex flex-col items-center gap-1 border rounded-lg p-2 text-center transition-colors ${
-                        selectedBrandIdentities[i] === brandIdentity(brand)
-                          ? "border-emerald-500 bg-emerald-50"
-                          : "border-gray-200 hover:border-emerald-300"
-                      }`}
-                    >
-                      <Image src={brand.image} alt={brand.label} width={64} height={64} className="object-contain h-16 w-16" />
-                      <span className="text-[11px] leading-tight text-gray-700">{brand.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ))}
-            {selectedBrandIdentities[i] && (() => {
-              const brand = PRODUCT_BRANDS.find((b) => brandIdentity(b) === selectedBrandIdentities[i]);
-              if (!brand || brand.lines.length <= 1) return null;
-              return (
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-medium text-gray-500">Which specific product?</label>
-                  <div className="grid grid-cols-3 gap-2">
-                    {brand.lines.map((productLine) => (
+          {item.brand ? (
+            <div className="col-span-2 flex items-center justify-between gap-2 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2">
+              <span className="text-sm text-emerald-800">
+                Selected: <span className="font-medium">{item.brand}</span>
+              </span>
+              <button
+                type="button"
+                onClick={() => clearProduct(i)}
+                className="text-xs font-medium text-emerald-700 hover:underline shrink-0"
+              >
+                Change
+              </button>
+            </div>
+          ) : (
+            <div className="col-span-2 flex flex-col gap-2">
+              <label className="text-xs font-medium text-gray-500">What are you selling?</label>
+              {(["Test Strips", "CGM", "Infusion Sets", "Lancets"] as const).map((category) => (
+                <div key={category}>
+                  <p className="text-xs text-gray-400 mb-1">{category}</p>
+                  <div className="grid grid-cols-4 gap-2">
+                    {PRODUCT_BRANDS.filter((b) => b.category === category).map((brand) => (
                       <button
                         type="button"
-                        key={productLine.label}
-                        onClick={() => selectLine(i, brand, productLine.label)}
+                        key={brandIdentity(brand)}
+                        onClick={() => selectBrand(i, brand)}
                         className={`flex flex-col items-center gap-1 border rounded-lg p-2 text-center transition-colors ${
-                          selectedLines[i] === productLine.label
+                          selectedBrandIdentities[i] === brandIdentity(brand)
                             ? "border-emerald-500 bg-emerald-50"
                             : "border-gray-200 hover:border-emerald-300"
                         }`}
                       >
-                        <Image src={productLine.image} alt={`${brand.label} ${productLine.label}`} width={40} height={40} className="object-contain h-10 w-10" />
-                        <span className="text-[11px] leading-tight text-gray-700">{productLine.label}</span>
-                        {productLine.code && (
-                          <span className="text-[9px] leading-tight text-gray-400">{productLine.code}</span>
-                        )}
+                        <Image src={brand.image} alt={brand.label} width={64} height={64} className="object-contain h-16 w-16" />
+                        <span className="text-[11px] leading-tight text-gray-700">{brand.label}</span>
                       </button>
                     ))}
                   </div>
                 </div>
-              );
-            })()}
-          </div>
-          <input
-            type="number"
-            min={1}
-            placeholder="Box count"
-            value={item.count}
-            onChange={(e) => updateItem(i, { count: Number(e.target.value) })}
-            className="border border-gray-200 rounded-lg px-2 py-1"
-          />
-          <div className="flex flex-col gap-1">
-            <select
-              value={selectedMonths[i] ?? ""}
-              onChange={(e) => {
-                if (e.target.value === "") {
-                  clearMonths(i);
-                } else {
-                  selectMonths(i, Number(e.target.value));
-                }
-              }}
-              className="border border-gray-200 rounded-lg px-2 py-1"
-            >
-              <option value="">Months until expiration</option>
-              {EXPIRATION_MONTH_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
               ))}
-            </select>
-            {selectedMonths[i] !== null && isEffectivelyExpired(selectedMonths[i]!, new Date()) && (
-              <p className="text-xs text-amber-600">
-                This may already be considered expired by most buyers — you can still submit, but let the buyer know when you message them.
-              </p>
-            )}
-          </div>
-          <select
-            value={item.condition}
-            onChange={(e) => updateItem(i, { condition: e.target.value as OrderItem["condition"] })}
-            className="border border-gray-200 rounded-lg px-2 py-1 col-span-2"
-          >
-            <option value="sealed">Sealed</option>
-            <option value="unsealed">Unsealed</option>
-          </select>
+              {selectedBrandIdentities[i] && (() => {
+                const brand = PRODUCT_BRANDS.find((b) => brandIdentity(b) === selectedBrandIdentities[i]);
+                if (!brand || brand.lines.length <= 1) return null;
+                return (
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-medium text-gray-500">Which specific product?</label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {brand.lines.map((productLine) => (
+                        <button
+                          type="button"
+                          key={productLine.label}
+                          onClick={() => selectLine(i, brand, productLine.label)}
+                          className={`flex flex-col items-center gap-1 border rounded-lg p-2 text-center transition-colors ${
+                            selectedLines[i] === productLine.label
+                              ? "border-emerald-500 bg-emerald-50"
+                              : "border-gray-200 hover:border-emerald-300"
+                          }`}
+                        >
+                          <Image src={productLine.image} alt={`${brand.label} ${productLine.label}`} width={40} height={40} className="object-contain h-10 w-10" />
+                          <span className="text-[11px] leading-tight text-gray-700">{productLine.label}</span>
+                          {productLine.code && (
+                            <span className="text-[9px] leading-tight text-gray-400">{productLine.code}</span>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          )}
+          {item.brand && (
+            <>
+              <input
+                type="number"
+                min={1}
+                placeholder="Box count"
+                value={item.count}
+                onChange={(e) => updateItem(i, { count: Number(e.target.value) })}
+                className="border border-gray-200 rounded-lg px-2 py-1"
+              />
+              <div className="flex flex-col gap-1">
+                <select
+                  value={selectedMonths[i] ?? ""}
+                  onChange={(e) => {
+                    if (e.target.value === "") {
+                      clearMonths(i);
+                    } else {
+                      selectMonths(i, Number(e.target.value));
+                    }
+                  }}
+                  className="border border-gray-200 rounded-lg px-2 py-1"
+                >
+                  <option value="">Months until expiration</option>
+                  {EXPIRATION_MONTH_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+                {selectedMonths[i] !== null && isEffectivelyExpired(selectedMonths[i]!, new Date()) && (
+                  <p className="text-xs text-amber-600">
+                    This may already be considered expired by most buyers — you can still submit, but let the buyer know when you message them.
+                  </p>
+                )}
+              </div>
+              <select
+                value={item.condition}
+                onChange={(e) => updateItem(i, { condition: e.target.value as OrderItem["condition"] })}
+                className="border border-gray-200 rounded-lg px-2 py-1 col-span-2"
+              >
+                <option value="sealed">Sealed</option>
+                <option value="unsealed">Unsealed</option>
+              </select>
+            </>
+          )}
         </div>
       ))}
       <button type="button" onClick={addItem} className="text-sm text-emerald-600 self-start">+ Add another item</button>
