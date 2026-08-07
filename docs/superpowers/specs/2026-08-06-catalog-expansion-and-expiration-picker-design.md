@@ -141,7 +141,7 @@ function monthsFromNowToYYYYMM(months: number): string {
 
 ## Testing
 
-- Unit tests for `lib/product-catalog.ts`: existing "every brand has non-empty lines/image" test still passes with the expanded data (26 brand-tile rows total now — 9 old + FreeStyle Test Strips + Medtronic Guardian + 4 Lancets tiles + note some `key`s repeat across categories, so the "unique keys" test must change to "unique key+category pairs").
+- Unit tests for `lib/product-catalog.ts`: existing "every brand has non-empty lines/image" test still passes with the expanded data (15 brand-tile rows total now — 9 old + FreeStyle Test Strips + Medtronic Guardian + 4 Lancets tiles + note some `key`s repeat across categories, so the "unique keys" test must change to "unique key+category pairs").
 - Unit tests for the new expiration-math helper (`monthsFromNowToYYYYMM` and the cutoff-adjust warning logic) — pure functions, easy to test without mocking dates by injecting a reference date rather than reading `new Date()` directly inside the testable function.
 - Manual browser verification: walk the new Lancets category end to end, confirm a Contour NEXT 50ct selection lands correctly in a `leads` row, confirm the expiration dropdown produces the correct warning at the boundary (test on a day > 25 and a day ≤ 25, or by injecting a fixed date into the helper's test).
 
