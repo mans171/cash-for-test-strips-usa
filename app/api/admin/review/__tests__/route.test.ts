@@ -46,12 +46,17 @@ describe('POST /api/admin/review', () => {
     const response = await POST(makeRequest({ submissionId: submission.id, action: 'approve' }, signSession()))
     expect(response.status).toBe(200)
 
-    const { data: company } = await supabaseAdmin
+    // Never use .single() here: if a prior run's cleanup ever failed, this
+    // query would find 2+ rows, .single() would error, `data` would be
+    // null, and cleanup would silently no-op — leaving orphaned companies
+    // in the live database on every subsequent run, forever. Match on
+    // exactly this row's slug (derived from the submission payload) so
+    // cleanup is correct even when unrelated stale rows exist.
+    const { data: companies } = await supabaseAdmin
       .from('companies')
       .select('slug')
       .eq('phone', '5551110000')
-      .single()
-    if (company) cleanupCompanySlugs.push(company.slug)
-    expect(company).toBeDefined()
+    for (const c of companies ?? []) cleanupCompanySlugs.push(c.slug)
+    expect(companies?.length).toBeGreaterThan(0)
   })
 })
