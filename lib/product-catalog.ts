@@ -177,8 +177,8 @@ export const PRODUCT_BRANDS: ProductBrand[] = [
     key: 'freestyle',
     label: 'FreeStyle',
     category: 'Lancets',
-    image: '/products/freestyle.jpg',
-    lines: [line('Lancets', '/products/freestyle.jpg')],
+    image: '/products/lines/freestyle-lancets.jpg',
+    lines: [line('Lancets', '/products/lines/freestyle-lancets.jpg')],
   },
   {
     key: 'microlet',
