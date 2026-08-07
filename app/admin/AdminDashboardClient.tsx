@@ -29,7 +29,7 @@ type DashboardData = {
     currentCompany: CurrentCompany | null;
     created_at: string;
   }>;
-  leads: Array<{ id: string; items: unknown; channel: string; created_at: string }>;
+  leads: Array<{ id: string; items: unknown; channel: string; created_at: string; name: string | null; email: string | null; phone: string | null }>;
   clicks: Array<{ id: string; company_id: string; created_at: string }>;
   missingPhones: Array<{ id: string; name: string; city: string | null }>;
 };
@@ -140,7 +140,11 @@ export function AdminDashboardClient() {
         <div className="flex flex-col gap-2">
           {data.leads.map((l) => (
             <div key={l.id} className="border border-gray-100 rounded-lg p-3 text-sm">
-              <p>{l.channel} · {new Date(l.created_at).toLocaleString()}</p>
+              <p>
+                {l.name ?? "(no name)"} · {l.channel} · {new Date(l.created_at).toLocaleString()}
+                {l.phone && ` · ${l.phone}`}
+                {l.email && ` · ${l.email}`}
+              </p>
               <pre className="text-xs text-gray-500 mt-1">{JSON.stringify(l.items)}</pre>
             </div>
           ))}
