@@ -258,7 +258,7 @@ export function SellFlowClient() {
             </div>
           </div>
         ) : (
-        <div key={i} className="grid grid-cols-2 gap-2 border border-gray-100 rounded-lg p-3">
+        <div key={i} className="grid grid-cols-1 sm:grid-cols-2 gap-2 border border-gray-100 rounded-lg p-3">
           {item.brand ? (
             <div className="col-span-2 flex items-center justify-between gap-2 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2">
               <span className="text-sm text-emerald-800">
@@ -295,7 +295,7 @@ export function SellFlowClient() {
                   ← Back
                 </button>
                 <label className="text-xs font-medium text-gray-500">Which specific product?</label>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {brand.lines.map((productLine) => (
                     <button
                       type="button"
@@ -323,7 +323,7 @@ export function SellFlowClient() {
               {(["Test Strips", "CGM", "Infusion Sets", "Lancets"] as const).map((category) => (
                 <div key={category}>
                   <p className="text-xs text-gray-400 mb-1">{category}</p>
-                  <div className="grid grid-cols-4 gap-2">
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                     {PRODUCT_BRANDS.filter((b) => b.category === category).map((brand) => (
                       <button
                         type="button"
