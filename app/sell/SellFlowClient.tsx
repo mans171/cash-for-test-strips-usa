@@ -22,6 +22,7 @@ export function SellFlowClient() {
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [selectedBrandKeys, setSelectedBrandKeys] = useState<(string | null)[]>([null]);
+  const [selectedLines, setSelectedLines] = useState<string[]>([""]);
 
   function updateItem(index: number, patch: Partial<OrderItem>) {
     setItems((prev) => prev.map((item, i) => (i === index ? { ...item, ...patch } : item)));
@@ -30,15 +31,18 @@ export function SellFlowClient() {
   function addItem() {
     setItems((prev) => [...prev, { ...emptyItem }]);
     setSelectedBrandKeys((prev) => [...prev, null]);
+    setSelectedLines((prev) => [...prev, ""]);
   }
 
   function selectBrand(index: number, brandKey: string) {
     setSelectedBrandKeys((prev) => prev.map((k, i) => (i === index ? brandKey : k)));
+    setSelectedLines((prev) => prev.map((l, i) => (i === index ? "" : l)));
     updateItem(index, { brand: "" });
   }
 
   function selectLine(index: number, brand: (typeof PRODUCT_BRANDS)[number], line: string) {
-    updateItem(index, { brand: `${brand.label} — ${line}` });
+    setSelectedLines((prev) => prev.map((l, i) => (i === index ? line : l)));
+    updateItem(index, { brand: line ? `${brand.label} — ${line}` : "" });
   }
 
   async function handleFindBuyers(e: React.FormEvent) {
@@ -202,7 +206,7 @@ export function SellFlowClient() {
             ))}
             {selectedBrandKeys[i] && (
               <select
-                value={item.brand}
+                value={selectedLines[i]}
                 onChange={(e) => {
                   const brand = PRODUCT_BRANDS.find((b) => b.key === selectedBrandKeys[i]);
                   if (brand) selectLine(i, brand, e.target.value);
@@ -210,15 +214,11 @@ export function SellFlowClient() {
                 className="border border-gray-200 rounded-lg px-2 py-1"
               >
                 <option value="">Select the specific product</option>
-                {PRODUCT_BRANDS.find((b) => b.key === selectedBrandKeys[i])?.lines.map((line) => {
-                  const brand = PRODUCT_BRANDS.find((b) => b.key === selectedBrandKeys[i])!;
-                  const value = `${brand.label} — ${line}`;
-                  return (
-                    <option key={line} value={value}>
-                      {line}
-                    </option>
-                  );
-                })}
+                {PRODUCT_BRANDS.find((b) => b.key === selectedBrandKeys[i])?.lines.map((line) => (
+                  <option key={line} value={line}>
+                    {line}
+                  </option>
+                ))}
               </select>
             )}
           </div>
