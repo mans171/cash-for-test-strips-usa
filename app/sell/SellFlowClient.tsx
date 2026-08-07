@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { STATE_LABELS } from "@/lib/states";
 import type { Company, OrderItem } from "@/lib/types";
+import { PRODUCT_BRANDS } from "@/lib/product-catalog";
 
 type Stage = "build" | "results" | "sent";
 
@@ -19,6 +21,7 @@ export function SellFlowClient() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
+  const [selectedBrandKeys, setSelectedBrandKeys] = useState<(string | null)[]>([null]);
 
   function updateItem(index: number, patch: Partial<OrderItem>) {
     setItems((prev) => prev.map((item, i) => (i === index ? { ...item, ...patch } : item)));
@@ -26,6 +29,16 @@ export function SellFlowClient() {
 
   function addItem() {
     setItems((prev) => [...prev, { ...emptyItem }]);
+    setSelectedBrandKeys((prev) => [...prev, null]);
+  }
+
+  function selectBrand(index: number, brandKey: string) {
+    setSelectedBrandKeys((prev) => prev.map((k, i) => (i === index ? brandKey : k)));
+    updateItem(index, { brand: "" });
+  }
+
+  function selectLine(index: number, brand: (typeof PRODUCT_BRANDS)[number], line: string) {
+    updateItem(index, { brand: `${brand.label} — ${line}` });
   }
 
   async function handleFindBuyers(e: React.FormEvent) {
@@ -163,12 +176,52 @@ export function SellFlowClient() {
 
       {items.map((item, i) => (
         <div key={i} className="grid grid-cols-2 gap-2 border border-gray-100 rounded-lg p-3">
-          <input
-            placeholder="Brand (e.g. OneTouch Verio)"
-            value={item.brand}
-            onChange={(e) => updateItem(i, { brand: e.target.value })}
-            className="border border-gray-200 rounded-lg px-2 py-1 col-span-2"
-          />
+          <div className="col-span-2 flex flex-col gap-2">
+            <label className="text-xs font-medium text-gray-500">What are you selling?</label>
+            {(["Test Strips", "CGM", "Infusion Sets"] as const).map((category) => (
+              <div key={category}>
+                <p className="text-xs text-gray-400 mb-1">{category}</p>
+                <div className="grid grid-cols-4 gap-2">
+                  {PRODUCT_BRANDS.filter((b) => b.category === category).map((brand) => (
+                    <button
+                      type="button"
+                      key={brand.key}
+                      onClick={() => selectBrand(i, brand.key)}
+                      className={`flex flex-col items-center gap-1 border rounded-lg p-2 text-center transition-colors ${
+                        selectedBrandKeys[i] === brand.key
+                          ? "border-emerald-500 bg-emerald-50"
+                          : "border-gray-200 hover:border-emerald-300"
+                      }`}
+                    >
+                      <Image src={brand.image} alt={brand.label} width={64} height={64} className="object-contain h-16 w-16" />
+                      <span className="text-[11px] leading-tight text-gray-700">{brand.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+            {selectedBrandKeys[i] && (
+              <select
+                value={item.brand}
+                onChange={(e) => {
+                  const brand = PRODUCT_BRANDS.find((b) => b.key === selectedBrandKeys[i]);
+                  if (brand) selectLine(i, brand, e.target.value);
+                }}
+                className="border border-gray-200 rounded-lg px-2 py-1"
+              >
+                <option value="">Select the specific product</option>
+                {PRODUCT_BRANDS.find((b) => b.key === selectedBrandKeys[i])?.lines.map((line) => {
+                  const brand = PRODUCT_BRANDS.find((b) => b.key === selectedBrandKeys[i])!;
+                  const value = `${brand.label} — ${line}`;
+                  return (
+                    <option key={line} value={value}>
+                      {line}
+                    </option>
+                  );
+                })}
+              </select>
+            )}
+          </div>
           <input
             type="number"
             min={1}
