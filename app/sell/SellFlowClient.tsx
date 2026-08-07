@@ -54,7 +54,16 @@ export function SellFlowClient() {
 
   function selectMonths(index: number, months: number) {
     setSelectedMonths((prev) => prev.map((m, i) => (i === index ? months : m)));
-    updateItem(index, { expiration: monthsFromNowToYYYYMM(months, new Date()) });
+    const isBoundaryValue = months === 0 || months === EXPIRATION_MONTH_OPTIONS[EXPIRATION_MONTH_OPTIONS.length - 1].value;
+    const expirationValue = isBoundaryValue
+      ? EXPIRATION_MONTH_OPTIONS.find((opt) => opt.value === months)!.label
+      : monthsFromNowToYYYYMM(months, new Date());
+    updateItem(index, { expiration: expirationValue });
+  }
+
+  function clearMonths(index: number) {
+    setSelectedMonths((prev) => prev.map((m, i) => (i === index ? null : m)));
+    updateItem(index, { expiration: "" });
   }
 
   async function handleFindBuyers(e: React.FormEvent) {
@@ -245,7 +254,13 @@ export function SellFlowClient() {
           <div className="flex flex-col gap-1">
             <select
               value={selectedMonths[i] ?? ""}
-              onChange={(e) => selectMonths(i, Number(e.target.value))}
+              onChange={(e) => {
+                if (e.target.value === "") {
+                  clearMonths(i);
+                } else {
+                  selectMonths(i, Number(e.target.value));
+                }
+              }}
               className="border border-gray-200 rounded-lg px-2 py-1"
             >
               <option value="">Months until expiration</option>
