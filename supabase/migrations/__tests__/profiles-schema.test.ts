@@ -41,8 +41,17 @@ describe('profiles table', () => {
       .maybeSingle()
     expect(row?.role).toBe('customer')
 
+    const { data: secondUserData, error: secondUserError } = await supabaseAdmin.auth.admin.createUser({
+      email: `profiles-schema-test-badrole-${Date.now()}@example.com`,
+      password: 'test-password-123',
+      email_confirm: true,
+    })
+    expect(secondUserError).toBeNull()
+    const secondUserId = secondUserData!.user!.id
+    cleanupUserIds.push(secondUserId)
+
     const { error: badRoleError } = await supabaseAdmin.from('profiles').insert({
-      id: userId,
+      id: secondUserId,
       role: 'not-a-real-role',
       name: 'x',
       phone: 'x',
