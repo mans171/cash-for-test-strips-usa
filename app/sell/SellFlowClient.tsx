@@ -25,6 +25,7 @@ export function SellFlowClient() {
   const [selectedBrandIdentities, setSelectedBrandIdentities] = useState<(string | null)[]>([null]);
   const [selectedLines, setSelectedLines] = useState<string[]>([""]);
   const [selectedMonths, setSelectedMonths] = useState<(number | null)[]>([null]);
+  const [activeIndex, setActiveIndex] = useState(0);
 
   function brandIdentity(brand: (typeof PRODUCT_BRANDS)[number]) {
     return `${brand.category}:${brand.key}`;
@@ -39,6 +40,25 @@ export function SellFlowClient() {
     setSelectedBrandIdentities((prev) => [...prev, null]);
     setSelectedLines((prev) => [...prev, ""]);
     setSelectedMonths((prev) => [...prev, null]);
+    setActiveIndex(items.length);
+  }
+
+  function removeItem(index: number) {
+    if (items.length <= 1) return;
+    setItems((prev) => prev.filter((_, i) => i !== index));
+    setSelectedBrandIdentities((prev) => prev.filter((_, i) => i !== index));
+    setSelectedLines((prev) => prev.filter((_, i) => i !== index));
+    setSelectedMonths((prev) => prev.filter((_, i) => i !== index));
+    setActiveIndex((prev) => {
+      if (index < prev) return prev - 1;
+      if (index === prev) return Math.min(prev, items.length - 2);
+      return prev;
+    });
+  }
+
+  function goBackToBrands(index: number) {
+    setSelectedBrandIdentities((prev) => prev.map((id, i) => (i === index ? null : id)));
+    setSelectedLines((prev) => prev.map((l, i) => (i === index ? "" : l)));
   }
 
   function composeBrandString(brand: (typeof PRODUCT_BRANDS)[number], line: (typeof PRODUCT_BRANDS)[number]["lines"][number]) {
@@ -216,22 +236,88 @@ export function SellFlowClient() {
         </select>
       </div>
 
-      {items.map((item, i) => (
+      {items.map((item, i) =>
+        i !== activeIndex ? (
+          <div
+            key={i}
+            className="flex items-center justify-between gap-2 border border-gray-200 rounded-lg px-3 py-2 text-sm"
+          >
+            <span className="text-gray-700">
+              {item.brand || "Incomplete item"} × {item.count} box{item.count === 1 ? "" : "es"}
+              {item.expiration ? ` (exp: ${item.expiration})` : ""}
+            </span>
+            <div className="flex items-center gap-3 shrink-0">
+              <button type="button" onClick={() => setActiveIndex(i)} className="text-xs font-medium text-emerald-700 hover:underline">
+                Edit
+              </button>
+              {items.length > 1 && (
+                <button type="button" onClick={() => removeItem(i)} className="text-xs font-medium text-red-600 hover:underline">
+                  Remove
+                </button>
+              )}
+            </div>
+          </div>
+        ) : (
         <div key={i} className="grid grid-cols-2 gap-2 border border-gray-100 rounded-lg p-3">
           {item.brand ? (
             <div className="col-span-2 flex items-center justify-between gap-2 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2">
               <span className="text-sm text-emerald-800">
                 Selected: <span className="font-medium">{item.brand}</span>
               </span>
-              <button
-                type="button"
-                onClick={() => clearProduct(i)}
-                className="text-xs font-medium text-emerald-700 hover:underline shrink-0"
-              >
-                Change
-              </button>
+              <div className="flex items-center gap-3 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => clearProduct(i)}
+                  className="text-xs font-medium text-emerald-700 hover:underline"
+                >
+                  Change
+                </button>
+                {items.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => removeItem(i)}
+                    className="text-xs font-medium text-red-600 hover:underline"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
             </div>
-          ) : (
+          ) : selectedBrandIdentities[i] ? (() => {
+            const brand = PRODUCT_BRANDS.find((b) => brandIdentity(b) === selectedBrandIdentities[i])!;
+            return (
+              <div className="col-span-2 flex flex-col gap-2">
+                <button
+                  type="button"
+                  onClick={() => goBackToBrands(i)}
+                  className="text-xs font-medium text-gray-500 hover:text-emerald-700 self-start"
+                >
+                  ← Back
+                </button>
+                <label className="text-xs font-medium text-gray-500">Which specific product?</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {brand.lines.map((productLine) => (
+                    <button
+                      type="button"
+                      key={productLine.label}
+                      onClick={() => selectLine(i, brand, productLine.label)}
+                      className={`flex flex-col items-center gap-1 border rounded-lg p-2 text-center transition-colors ${
+                        selectedLines[i] === productLine.label
+                          ? "border-emerald-500 bg-emerald-50"
+                          : "border-gray-200 hover:border-emerald-300"
+                      }`}
+                    >
+                      <Image src={productLine.image} alt={`${brand.label} ${productLine.label}`} width={40} height={40} className="object-contain h-10 w-10" />
+                      <span className="text-[11px] leading-tight text-gray-700">{productLine.label}</span>
+                      {productLine.code && (
+                        <span className="text-[9px] leading-tight text-gray-400">{productLine.code}</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            );
+          })() : (
             <div className="col-span-2 flex flex-col gap-2">
               <label className="text-xs font-medium text-gray-500">What are you selling?</label>
               {(["Test Strips", "CGM", "Infusion Sets", "Lancets"] as const).map((category) => (
@@ -243,11 +329,7 @@ export function SellFlowClient() {
                         type="button"
                         key={brandIdentity(brand)}
                         onClick={() => selectBrand(i, brand)}
-                        className={`flex flex-col items-center gap-1 border rounded-lg p-2 text-center transition-colors ${
-                          selectedBrandIdentities[i] === brandIdentity(brand)
-                            ? "border-emerald-500 bg-emerald-50"
-                            : "border-gray-200 hover:border-emerald-300"
-                        }`}
+                        className="flex flex-col items-center gap-1 border border-gray-200 rounded-lg p-2 text-center transition-colors hover:border-emerald-300"
                       >
                         <Image src={brand.image} alt={brand.label} width={64} height={64} className="object-contain h-16 w-16" />
                         <span className="text-[11px] leading-tight text-gray-700">{brand.label}</span>
@@ -256,35 +338,6 @@ export function SellFlowClient() {
                   </div>
                 </div>
               ))}
-              {selectedBrandIdentities[i] && (() => {
-                const brand = PRODUCT_BRANDS.find((b) => brandIdentity(b) === selectedBrandIdentities[i]);
-                if (!brand || brand.lines.length <= 1) return null;
-                return (
-                  <div className="flex flex-col gap-1">
-                    <label className="text-xs font-medium text-gray-500">Which specific product?</label>
-                    <div className="grid grid-cols-3 gap-2">
-                      {brand.lines.map((productLine) => (
-                        <button
-                          type="button"
-                          key={productLine.label}
-                          onClick={() => selectLine(i, brand, productLine.label)}
-                          className={`flex flex-col items-center gap-1 border rounded-lg p-2 text-center transition-colors ${
-                            selectedLines[i] === productLine.label
-                              ? "border-emerald-500 bg-emerald-50"
-                              : "border-gray-200 hover:border-emerald-300"
-                          }`}
-                        >
-                          <Image src={productLine.image} alt={`${brand.label} ${productLine.label}`} width={40} height={40} className="object-contain h-10 w-10" />
-                          <span className="text-[11px] leading-tight text-gray-700">{productLine.label}</span>
-                          {productLine.code && (
-                            <span className="text-[9px] leading-tight text-gray-400">{productLine.code}</span>
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })()}
             </div>
           )}
           {item.brand && (
@@ -334,7 +387,14 @@ export function SellFlowClient() {
           )}
         </div>
       ))}
-      <button type="button" onClick={addItem} className="text-sm text-emerald-600 self-start">+ Add another item</button>
+      <button
+        type="button"
+        onClick={addItem}
+        disabled={!items[activeIndex]?.brand}
+        className="text-sm text-emerald-600 self-start disabled:text-gray-300 disabled:cursor-not-allowed"
+      >
+        + Add another item
+      </button>
 
       {error && <p className="text-red-600 text-sm">{error}</p>}
       <button type="submit" disabled={loading} className="bg-emerald-600 text-white font-semibold px-4 py-2 rounded-lg">

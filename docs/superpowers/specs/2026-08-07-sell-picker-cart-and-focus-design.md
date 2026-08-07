@@ -41,8 +41,11 @@ When the active item has a brand selected but is showing the line card grid (mul
 
 Manual browser verification: add 3 items across different brands, confirm only the currently-active one shows its full picker while the other two show compact rows; confirm "+ Add another item" is disabled until the active item has a product picked; remove a compact row and confirm the list updates correctly and no item drops the array out of sync; remove down to 1 item and confirm the Remove control disappears/is disabled on the last one; click "← Back" mid-line-picking and confirm it returns to the brand grid without needing to complete a selection first.
 
+### Editing a compact row
+
+Each compact row also gets an "Edit" link: clicking it sets `activeIndex` to that row's index, which re-expands its full picker (and, since it's no longer `activeIndex`, whatever item was previously active automatically renders as a compact row instead — the swap is implicit, no extra bookkeeping needed since exactly one item is active at a time by construction).
+
 ## Out of Scope
 
-- Editing/re-opening an already-completed compact row's fields inline (use the existing pattern: there is no "resume editing a compact row" in this pass — if you need to change a completed item, remove it and re-add)
 - Any change to `/buyer`, `/admin`, expiration logic, or per-line photos
 - Any backend/API/database change
