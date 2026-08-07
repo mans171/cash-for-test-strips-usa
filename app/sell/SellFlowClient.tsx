@@ -254,7 +254,7 @@ export function SellFlowClient() {
                             : "border-gray-200 hover:border-emerald-300"
                         }`}
                       >
-                        <Image src={brand.image} alt={brand.label} width={40} height={40} className="object-contain h-10 w-10" />
+                        <Image src={productLine.image} alt={`${brand.label} ${productLine.label}`} width={40} height={40} className="object-contain h-10 w-10" />
                         <span className="text-[11px] leading-tight text-gray-700">{productLine.label}</span>
                         {productLine.code && (
                           <span className="text-[9px] leading-tight text-gray-400">{productLine.code}</span>

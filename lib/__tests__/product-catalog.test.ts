@@ -1,4 +1,6 @@
 import { describe, it, expect } from 'vitest'
+import { existsSync } from 'fs'
+import { join } from 'path'
 import { PRODUCT_BRANDS } from '@/lib/product-catalog'
 
 describe('PRODUCT_BRANDS', () => {
@@ -12,9 +14,19 @@ describe('PRODUCT_BRANDS', () => {
       expect(['Test Strips', 'CGM', 'Infusion Sets', 'Lancets']).toContain(brand.category)
       for (const line of brand.lines) {
         expect(line.label.length).toBeGreaterThan(0)
+        expect(line.image.length).toBeGreaterThan(0)
         if (line.code !== undefined) {
           expect(line.code.length).toBeGreaterThan(0)
         }
+      }
+    }
+  })
+
+  it('every line image file exists in public/', () => {
+    for (const brand of PRODUCT_BRANDS) {
+      for (const line of brand.lines) {
+        const filePath = join(process.cwd(), 'public', line.image)
+        expect(existsSync(filePath), `missing file for ${brand.label} — ${line.label}: ${line.image}`).toBe(true)
       }
     }
   })
