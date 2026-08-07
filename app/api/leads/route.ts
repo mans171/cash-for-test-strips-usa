@@ -21,7 +21,7 @@ function isValidItem(item: unknown): item is OrderItem {
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { items, matchedCompanyId, channel, sourcePage } = body ?? {}
+    const { items, matchedCompanyId, channel, sourcePage, name, email, phone } = body ?? {}
 
     if (!Array.isArray(items) || items.length === 0) {
       return NextResponse.json({ error: 'At least one item is required' }, { status: 400 })
@@ -35,14 +35,20 @@ export async function POST(request: Request) {
     if (channel !== 'sms' && channel !== 'email') {
       return NextResponse.json({ error: 'channel must be sms or email' }, { status: 400 })
     }
+    if (typeof name !== 'string' || name.trim().length === 0) {
+      return NextResponse.json({ error: 'Your name is required' }, { status: 400 })
+    }
 
     const lead = await createLead({
       items: items as OrderItem[],
       matchedCompanyId: matchedCompanyId ?? null,
       channel,
       sourcePage: sourcePage ?? null,
+      name: name.trim(),
+      email: typeof email === 'string' && email.trim() ? email.trim() : undefined,
+      phone: typeof phone === 'string' && phone.trim() ? phone.trim() : undefined,
     })
-    const message = buildQuoteMessage(items as OrderItem[])
+    const message = buildQuoteMessage(items as OrderItem[], name.trim())
 
     return NextResponse.json({ leadId: lead.id, message })
   } catch (error) {

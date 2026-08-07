@@ -6,6 +6,9 @@ export type CreateLeadInput = {
   matchedCompanyId: string | null
   channel: 'sms' | 'email'
   sourcePage: string | null
+  name: string
+  email?: string
+  phone?: string
 }
 
 export type Lead = {
@@ -14,6 +17,9 @@ export type Lead = {
   matched_company_id: string | null
   channel: string
   source_page: string | null
+  name: string | null
+  email: string | null
+  phone: string | null
   created_at: string
 }
 
@@ -30,6 +36,9 @@ export async function createLead(input: CreateLeadInput): Promise<Lead> {
     matched_company_id: input.matchedCompanyId,
     channel: input.channel,
     source_page: input.sourcePage,
+    name: input.name,
+    email: input.email ?? null,
+    phone: input.phone ?? null,
   })
 
   if (error) throw new Error(`Failed to create lead: ${error.message}`)
@@ -40,6 +49,9 @@ export async function createLead(input: CreateLeadInput): Promise<Lead> {
     matched_company_id: input.matchedCompanyId,
     channel: input.channel,
     source_page: input.sourcePage,
+    name: input.name,
+    email: input.email ?? null,
+    phone: input.phone ?? null,
     created_at: createdAt,
   }
 }

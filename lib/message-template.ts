@@ -1,6 +1,6 @@
 import type { OrderItem } from './types'
 
-export function buildQuoteMessage(items: OrderItem[]): string {
+export function buildQuoteMessage(items: OrderItem[], customerName: string): string {
   const itemLines = items
     .map(
       (item) =>
@@ -8,5 +8,5 @@ export function buildQuoteMessage(items: OrderItem[]): string {
     )
     .join('\n')
 
-  return `I got your information from cash4teststripsusa.com. You are my local buyer. Can you give me a quote for the items in my cart?\n\n${itemLines}`
+  return `Hi, this is ${customerName}. I got your information from cash4teststripsusa.com. You are my local buyer. Can you give me a quote for the items in my cart?\n\n${itemLines}`
 }

@@ -21,7 +21,7 @@ function makeRequest(body: unknown) {
 
 describe('POST /api/leads', () => {
   it('returns 400 when items is empty', async () => {
-    const response = await POST(makeRequest({ items: [], matchedCompanyId: null, channel: 'sms' }))
+    const response = await POST(makeRequest({ items: [], matchedCompanyId: null, channel: 'sms', name: 'Jane Doe' }))
     expect(response.status).toBe(400)
   })
 
@@ -31,6 +31,30 @@ describe('POST /api/leads', () => {
         items: [{ brand: 'OneTouch Verio', count: 1, expiration: '2027-01', condition: 'sealed' }],
         matchedCompanyId: null,
         channel: 'carrier-pigeon',
+        name: 'Jane Doe',
+      })
+    )
+    expect(response.status).toBe(400)
+  })
+
+  it('returns 400 when name is missing', async () => {
+    const response = await POST(
+      makeRequest({
+        items: [{ brand: 'OneTouch Verio', count: 1, expiration: '2027-01', condition: 'sealed' }],
+        matchedCompanyId: null,
+        channel: 'sms',
+      })
+    )
+    expect(response.status).toBe(400)
+  })
+
+  it('returns 400 when name is blank', async () => {
+    const response = await POST(
+      makeRequest({
+        items: [{ brand: 'OneTouch Verio', count: 1, expiration: '2027-01', condition: 'sealed' }],
+        matchedCompanyId: null,
+        channel: 'sms',
+        name: '   ',
       })
     )
     expect(response.status).toBe(400)
@@ -43,12 +67,14 @@ describe('POST /api/leads', () => {
         matchedCompanyId: null,
         channel: 'sms',
         sourcePage: '/sell',
+        name: 'Jane Doe',
       })
     )
     const body = await response.json()
     expect(response.status).toBe(200)
     expect(body.leadId).toBeDefined()
     expect(body.message).toContain('OneTouch Verio')
+    expect(body.message).toContain('Jane Doe')
     cleanupIds.push(body.leadId)
   })
 })
