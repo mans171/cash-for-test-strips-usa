@@ -41,15 +41,26 @@ export function SellFlowClient() {
     setSelectedMonths((prev) => [...prev, null]);
   }
 
-  function selectBrand(index: number, brand: (typeof PRODUCT_BRANDS)[number]) {
-    setSelectedBrandIdentities((prev) => prev.map((id, i) => (i === index ? brandIdentity(brand) : id)));
-    setSelectedLines((prev) => prev.map((l, i) => (i === index ? "" : l)));
-    updateItem(index, { brand: "" });
+  function composeBrandString(brand: (typeof PRODUCT_BRANDS)[number], line: (typeof PRODUCT_BRANDS)[number]["lines"][number]) {
+    return line.code ? `${brand.label} — ${line.label} (${line.code})` : `${brand.label} — ${line.label}`;
   }
 
-  function selectLine(index: number, brand: (typeof PRODUCT_BRANDS)[number], line: string) {
-    setSelectedLines((prev) => prev.map((l, i) => (i === index ? line : l)));
-    updateItem(index, { brand: line ? `${brand.label} — ${line}` : "" });
+  function selectBrand(index: number, brand: (typeof PRODUCT_BRANDS)[number]) {
+    setSelectedBrandIdentities((prev) => prev.map((id, i) => (i === index ? brandIdentity(brand) : id)));
+    if (brand.lines.length === 1) {
+      const onlyLine = brand.lines[0];
+      setSelectedLines((prev) => prev.map((l, i) => (i === index ? onlyLine.label : l)));
+      updateItem(index, { brand: composeBrandString(brand, onlyLine) });
+    } else {
+      setSelectedLines((prev) => prev.map((l, i) => (i === index ? "" : l)));
+      updateItem(index, { brand: "" });
+    }
+  }
+
+  function selectLine(index: number, brand: (typeof PRODUCT_BRANDS)[number], lineLabel: string) {
+    const chosenLine = brand.lines.find((l) => l.label === lineLabel);
+    setSelectedLines((prev) => prev.map((l, i) => (i === index ? lineLabel : l)));
+    updateItem(index, { brand: chosenLine ? composeBrandString(brand, chosenLine) : "" });
   }
 
   function selectMonths(index: number, months: number) {
@@ -225,23 +236,35 @@ export function SellFlowClient() {
                 </div>
               </div>
             ))}
-            {selectedBrandIdentities[i] && (
-              <select
-                value={selectedLines[i]}
-                onChange={(e) => {
-                  const brand = PRODUCT_BRANDS.find((b) => brandIdentity(b) === selectedBrandIdentities[i]);
-                  if (brand) selectLine(i, brand, e.target.value);
-                }}
-                className="border border-gray-200 rounded-lg px-2 py-1"
-              >
-                <option value="">Select the specific product</option>
-                {PRODUCT_BRANDS.find((b) => brandIdentity(b) === selectedBrandIdentities[i])?.lines.map((line) => (
-                  <option key={line} value={line}>
-                    {line}
-                  </option>
-                ))}
-              </select>
-            )}
+            {selectedBrandIdentities[i] && (() => {
+              const brand = PRODUCT_BRANDS.find((b) => brandIdentity(b) === selectedBrandIdentities[i]);
+              if (!brand || brand.lines.length <= 1) return null;
+              return (
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-medium text-gray-500">Which specific product?</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {brand.lines.map((productLine) => (
+                      <button
+                        type="button"
+                        key={productLine.label}
+                        onClick={() => selectLine(i, brand, productLine.label)}
+                        className={`flex flex-col items-center gap-1 border rounded-lg p-2 text-center transition-colors ${
+                          selectedLines[i] === productLine.label
+                            ? "border-emerald-500 bg-emerald-50"
+                            : "border-gray-200 hover:border-emerald-300"
+                        }`}
+                      >
+                        <Image src={brand.image} alt={brand.label} width={40} height={40} className="object-contain h-10 w-10" />
+                        <span className="text-[11px] leading-tight text-gray-700">{productLine.label}</span>
+                        {productLine.code && (
+                          <span className="text-[9px] leading-tight text-gray-400">{productLine.code}</span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
           </div>
           <input
             type="number"
