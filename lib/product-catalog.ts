@@ -40,7 +40,14 @@ export const PRODUCT_BRANDS: ProductBrand[] = [
     label: 'Dexcom',
     category: 'CGM',
     image: '/products/dexcom.jpg',
-    lines: ['G6 Sensors', 'G6 Transmitters', 'G7 Sensors', 'G7 Receivers'],
+    lines: [
+      'G6 Receivers',
+      'G6 Sensors (STS-OE-001 / STS-OR-001)',
+      'G6 Transmitters',
+      'G7 10 Day Sensors (STP-AT-011 / -012 / -018)',
+      'G7 15 Day Sensors (STP-FT-010 / -012)',
+      'G7 Receivers',
+    ],
   },
   {
     key: 'freestyle-libre',

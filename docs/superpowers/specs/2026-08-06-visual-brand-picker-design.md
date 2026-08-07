@@ -21,7 +21,7 @@ Sourced from the verified Albany TSB accepted-products catalog (memory: `project
 | Accu-Chek | Test Strips | Guide, Aviva, SmartView | **New — generate** |
 | True Metrix | Test Strips | True Metrix | Existing: `True Metrix.jpg` |
 | OneTouch | Test Strips | Verio, Ultra, Other OneTouch | **New — generate** |
-| Dexcom | CGM | G6 Sensors, G6 Transmitters, G7 Sensors, G7 Receivers | Existing: `dexcom-g7.jpg` |
+| Dexcom | CGM | G6 Receivers, G6 Sensors (STS-OE-001 / STS-OR-001), G6 Transmitters, G7 10 Day Sensors (STP-AT-011/-012/-018), G7 15 Day Sensors (STP-FT-010/-012), G7 Receivers — verified against twomomsbuyteststrips.com's live Dexcom SKU listing | Existing: `dexcom-g7.jpg` |
 | FreeStyle Libre | CGM | Libre 1, Libre 2, Libre 3 | Existing: `Libre 3+.jpg` |
 | Omnipod | CGM/Pump | 5 Pods (5-box), DASH Pods (5-box), Classic Pods (10-box) | Existing: `omnipod-5-box-clean.jpg` |
 | Medtronic / MiniMed | Infusion Sets | AutoSoft 90, AutoSoft XC, Quick-set, Guardian Sensor (non-B), MiniMed Pumps & Sets | **New — generate** |
