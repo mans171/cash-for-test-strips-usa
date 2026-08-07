@@ -5,6 +5,7 @@ import Image from "next/image";
 import { STATE_LABELS } from "@/lib/states";
 import type { Company, OrderItem } from "@/lib/types";
 import { PRODUCT_BRANDS } from "@/lib/product-catalog";
+import { EXPIRATION_MONTH_OPTIONS, isEffectivelyExpired, monthsFromNowToYYYYMM } from "@/lib/expiration";
 
 type Stage = "build" | "results" | "sent";
 
@@ -21,8 +22,13 @@ export function SellFlowClient() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
-  const [selectedBrandKeys, setSelectedBrandKeys] = useState<(string | null)[]>([null]);
+  const [selectedBrandIdentities, setSelectedBrandIdentities] = useState<(string | null)[]>([null]);
   const [selectedLines, setSelectedLines] = useState<string[]>([""]);
+  const [selectedMonths, setSelectedMonths] = useState<(number | null)[]>([null]);
+
+  function brandIdentity(brand: (typeof PRODUCT_BRANDS)[number]) {
+    return `${brand.category}:${brand.key}`;
+  }
 
   function updateItem(index: number, patch: Partial<OrderItem>) {
     setItems((prev) => prev.map((item, i) => (i === index ? { ...item, ...patch } : item)));
@@ -30,12 +36,13 @@ export function SellFlowClient() {
 
   function addItem() {
     setItems((prev) => [...prev, { ...emptyItem }]);
-    setSelectedBrandKeys((prev) => [...prev, null]);
+    setSelectedBrandIdentities((prev) => [...prev, null]);
     setSelectedLines((prev) => [...prev, ""]);
+    setSelectedMonths((prev) => [...prev, null]);
   }
 
-  function selectBrand(index: number, brandKey: string) {
-    setSelectedBrandKeys((prev) => prev.map((k, i) => (i === index ? brandKey : k)));
+  function selectBrand(index: number, brand: (typeof PRODUCT_BRANDS)[number]) {
+    setSelectedBrandIdentities((prev) => prev.map((id, i) => (i === index ? brandIdentity(brand) : id)));
     setSelectedLines((prev) => prev.map((l, i) => (i === index ? "" : l)));
     updateItem(index, { brand: "" });
   }
@@ -43,6 +50,11 @@ export function SellFlowClient() {
   function selectLine(index: number, brand: (typeof PRODUCT_BRANDS)[number], line: string) {
     setSelectedLines((prev) => prev.map((l, i) => (i === index ? line : l)));
     updateItem(index, { brand: line ? `${brand.label} — ${line}` : "" });
+  }
+
+  function selectMonths(index: number, months: number) {
+    setSelectedMonths((prev) => prev.map((m, i) => (i === index ? months : m)));
+    updateItem(index, { expiration: monthsFromNowToYYYYMM(months, new Date()) });
   }
 
   async function handleFindBuyers(e: React.FormEvent) {
@@ -182,17 +194,17 @@ export function SellFlowClient() {
         <div key={i} className="grid grid-cols-2 gap-2 border border-gray-100 rounded-lg p-3">
           <div className="col-span-2 flex flex-col gap-2">
             <label className="text-xs font-medium text-gray-500">What are you selling?</label>
-            {(["Test Strips", "CGM", "Infusion Sets"] as const).map((category) => (
+            {(["Test Strips", "CGM", "Infusion Sets", "Lancets"] as const).map((category) => (
               <div key={category}>
                 <p className="text-xs text-gray-400 mb-1">{category}</p>
                 <div className="grid grid-cols-4 gap-2">
                   {PRODUCT_BRANDS.filter((b) => b.category === category).map((brand) => (
                     <button
                       type="button"
-                      key={brand.key}
-                      onClick={() => selectBrand(i, brand.key)}
+                      key={brandIdentity(brand)}
+                      onClick={() => selectBrand(i, brand)}
                       className={`flex flex-col items-center gap-1 border rounded-lg p-2 text-center transition-colors ${
-                        selectedBrandKeys[i] === brand.key
+                        selectedBrandIdentities[i] === brandIdentity(brand)
                           ? "border-emerald-500 bg-emerald-50"
                           : "border-gray-200 hover:border-emerald-300"
                       }`}
@@ -204,17 +216,17 @@ export function SellFlowClient() {
                 </div>
               </div>
             ))}
-            {selectedBrandKeys[i] && (
+            {selectedBrandIdentities[i] && (
               <select
                 value={selectedLines[i]}
                 onChange={(e) => {
-                  const brand = PRODUCT_BRANDS.find((b) => b.key === selectedBrandKeys[i]);
+                  const brand = PRODUCT_BRANDS.find((b) => brandIdentity(b) === selectedBrandIdentities[i]);
                   if (brand) selectLine(i, brand, e.target.value);
                 }}
                 className="border border-gray-200 rounded-lg px-2 py-1"
               >
                 <option value="">Select the specific product</option>
-                {PRODUCT_BRANDS.find((b) => b.key === selectedBrandKeys[i])?.lines.map((line) => (
+                {PRODUCT_BRANDS.find((b) => brandIdentity(b) === selectedBrandIdentities[i])?.lines.map((line) => (
                   <option key={line} value={line}>
                     {line}
                   </option>
@@ -230,12 +242,25 @@ export function SellFlowClient() {
             onChange={(e) => updateItem(i, { count: Number(e.target.value) })}
             className="border border-gray-200 rounded-lg px-2 py-1"
           />
-          <input
-            placeholder="Expiration (e.g. 2027-01)"
-            value={item.expiration}
-            onChange={(e) => updateItem(i, { expiration: e.target.value })}
-            className="border border-gray-200 rounded-lg px-2 py-1"
-          />
+          <div className="flex flex-col gap-1">
+            <select
+              value={selectedMonths[i] ?? ""}
+              onChange={(e) => selectMonths(i, Number(e.target.value))}
+              className="border border-gray-200 rounded-lg px-2 py-1"
+            >
+              <option value="">Months until expiration</option>
+              {EXPIRATION_MONTH_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+            {selectedMonths[i] !== null && isEffectivelyExpired(selectedMonths[i]!, new Date()) && (
+              <p className="text-xs text-amber-600">
+                This may already be considered expired by most buyers — you can still submit, but let the buyer know when you message them.
+              </p>
+            )}
+          </div>
           <select
             value={item.condition}
             onChange={(e) => updateItem(i, { condition: e.target.value as OrderItem["condition"] })}
