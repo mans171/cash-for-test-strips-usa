@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Cash For Test Strips USA — Sell Diabetic Test Strips Near You",
   description:
-    "Find local cash buyers for your unused diabetic test strips. Get paid fast via PayPal, Zelle, or check. Free to use. No account needed.",
+    "Find local cash buyers for your unused diabetic test strips. Get paid fast via PayPal, Zelle, or check. Free to use. Free account required.",
 };
 
 type Company = {
@@ -53,7 +53,7 @@ export default async function HomePage() {
       <section className="bg-gradient-to-br from-emerald-50 to-white border-b border-emerald-100 py-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <span className="inline-block bg-emerald-100 text-emerald-800 text-xs font-semibold px-3 py-1 rounded-full mb-4 uppercase tracking-wide">
-            Free to use · No account needed
+            Free to use · Free account required
           </span>
           <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-900 leading-tight mb-4">
             Sell Your Unused Test Strips{" "}
