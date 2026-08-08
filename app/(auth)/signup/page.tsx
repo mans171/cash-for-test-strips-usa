@@ -1,8 +1,9 @@
 "use client"
 
-import { Suspense, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { createBrowserSupabaseClient } from "@/lib/supabase/client"
+import { useUser } from "@/lib/auth-client"
 
 export default function SignupPage() {
   return (
@@ -16,6 +17,7 @@ function SignupForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const role = searchParams.get("role") === "buyer" ? "buyer" : "customer"
+  const { user, loading } = useUser()
 
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -27,6 +29,36 @@ function SignupForm() {
   const [addressZip, setAddressZip] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [pendingUserId, setPendingUserId] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!loading && user) {
+      router.push("/")
+    }
+  }, [loading, user, router])
+
+  async function insertProfile(userId: string) {
+    const supabase = createBrowserSupabaseClient()
+    const { error: profileError } = await supabase.from("profiles").insert({
+      id: userId,
+      role,
+      name,
+      phone,
+      address_street: addressStreet,
+      address_city: addressCity,
+      address_state: addressState,
+      address_zip: addressZip,
+    })
+
+    if (profileError) {
+      setError(`Account created but profile setup failed: ${profileError.message}`)
+      setPendingUserId(userId)
+      setSubmitting(false)
+      return
+    }
+
+    router.push("/")
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -53,24 +85,18 @@ function SignupForm() {
       return
     }
 
-    const { error: profileError } = await supabase.from("profiles").insert({
-      id: userId,
-      role,
-      name,
-      phone,
-      address_street: addressStreet,
-      address_city: addressCity,
-      address_state: addressState,
-      address_zip: addressZip,
-    })
+    await insertProfile(userId)
+  }
 
-    if (profileError) {
-      setError(`Account created but profile setup failed: ${profileError.message}`)
-      setSubmitting(false)
-      return
-    }
+  async function handleRetryProfile() {
+    if (!pendingUserId) return
+    setError(null)
+    setSubmitting(true)
+    await insertProfile(pendingUserId)
+  }
 
-    router.push("/")
+  if (loading || user) {
+    return null
   }
 
   return (
@@ -144,7 +170,21 @@ function SignupForm() {
             className="border border-gray-300 rounded-lg px-3 py-2 w-24"
           />
         </div>
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && (
+          <div className="flex flex-col gap-2">
+            <p className="text-sm text-red-600">{error}</p>
+            {pendingUserId && (
+              <button
+                type="button"
+                onClick={handleRetryProfile}
+                disabled={submitting}
+                className="self-start text-sm font-medium text-emerald-700 underline disabled:opacity-50"
+              >
+                {submitting ? "Retrying..." : "Try again"}
+              </button>
+            )}
+          </div>
+        )}
         <button
           type="submit"
           disabled={submitting}

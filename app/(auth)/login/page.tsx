@@ -1,15 +1,23 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { createBrowserSupabaseClient } from "@/lib/supabase/client"
+import { useUser } from "@/lib/auth-client"
 
 export default function LoginPage() {
   const router = useRouter()
+  const { user, loading } = useUser()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+
+  useEffect(() => {
+    if (!loading && user) {
+      router.push("/")
+    }
+  }, [loading, user, router])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -26,6 +34,10 @@ export default function LoginPage() {
     }
 
     router.push("/")
+  }
+
+  if (loading || user) {
+    return null
   }
 
   return (
