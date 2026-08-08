@@ -8,19 +8,21 @@ import { useUser } from "@/lib/auth-client"
 export function RequiresAccount({
   children,
   onRequestAccount,
+  className,
 }: {
   children: ReactNode
   onRequestAccount?: () => void
+  className?: string
 }) {
   const { user, loading } = useUser()
 
   if (loading) {
-    return <div className="opacity-50 pointer-events-none">{children}</div>
+    return <div className={`opacity-50 pointer-events-none ${className ?? ""}`}>{children}</div>
   }
 
   if (!user) {
     return (
-      <div className="flex flex-col gap-1">
+      <div className={`flex flex-col gap-1 ${className ?? ""}`}>
         <div className="opacity-40 pointer-events-none">{children}</div>
         <p className="text-xs text-red-600">
           {onRequestAccount ? (
