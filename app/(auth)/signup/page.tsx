@@ -32,10 +32,10 @@ function SignupForm() {
   const [pendingUserId, setPendingUserId] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!loading && user) {
+    if (!loading && user && !pendingUserId && !submitting) {
       router.push("/")
     }
-  }, [loading, user, router])
+  }, [loading, user, pendingUserId, submitting, router])
 
   async function insertProfile(userId: string) {
     const supabase = createBrowserSupabaseClient()
@@ -67,6 +67,11 @@ function SignupForm() {
 
     const supabase = createBrowserSupabaseClient()
 
+    // NOTE: this flow assumes "Confirm email" is OFF in Supabase Auth
+    // settings (Authentication > Providers > Email), so signUp() returns a
+    // live session immediately. If it's ever turned back on, signUp()
+    // returns session: null and we can't insert the profile yet (no
+    // authenticated session for RLS) — handled below.
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
@@ -85,6 +90,12 @@ function SignupForm() {
       return
     }
 
+    if (!signUpData.session) {
+      setError("Check your email to confirm your account before continuing.")
+      setSubmitting(false)
+      return
+    }
+
     await insertProfile(userId)
   }
 
@@ -95,7 +106,7 @@ function SignupForm() {
     await insertProfile(pendingUserId)
   }
 
-  if (loading || user) {
+  if (loading || (user && !pendingUserId && !submitting)) {
     return null
   }
 

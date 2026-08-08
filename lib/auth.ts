@@ -13,9 +13,15 @@ export type Profile = {
 export type CurrentUser = {
   id: string
   email: string
-  profile: Profile
+  profile: Profile | null
 }
 
+// Returns null only when there's no active session. A returned user may
+// still have profile: null if the session exists but the profiles row
+// hasn't been created yet (e.g. a partial/failed signup) — callers that
+// need a complete profile must check for that explicitly rather than
+// treating a truthy return as "fully onboarded". This mirrors useUser()
+// (client-side), which reports logged-in based on session alone.
 export async function getCurrentUser(): Promise<CurrentUser | null> {
   const supabase = await createServerSupabaseClient()
   const {
@@ -30,7 +36,5 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     .eq('id', user.id)
     .maybeSingle()
 
-  if (!profile) return null
-
-  return { id: user.id, email: user.email, profile: profile as Profile }
+  return { id: user.id, email: user.email, profile: profile as Profile | null }
 }

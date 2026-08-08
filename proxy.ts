@@ -27,7 +27,14 @@ export async function proxy(request: NextRequest) {
   // Refreshes the session token if expired — required so Server Components
   // never see a stale session. This is the only thing this proxy does;
   // no route is gated behind login here (that belongs to sub-project B/C).
-  await supabase.auth.getUser()
+  try {
+    await supabase.auth.getUser()
+  } catch {
+    // Session refresh failed (Supabase outage, network issue, misconfigured
+    // env) — pass the request through unrefreshed rather than failing the
+    // whole site. A stale/missing session cookie is safe to fall through;
+    // getCurrentUser()/useUser() will just see no session.
+  }
 
   return supabaseResponse
 }
