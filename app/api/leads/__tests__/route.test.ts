@@ -88,7 +88,7 @@ afterEach(async () => {
   expect(staleCompaniesError).toBeNull()
 })
 
-async function createTestCompany(overrides: { email?: string | null; active?: boolean } = {}) {
+async function createTestCompany(overrides: { email?: string | null; phone?: string | null; active?: boolean } = {}) {
   const suffix = Date.now()
   const { data, error } = await supabaseAdmin
     .from('companies')
@@ -96,6 +96,7 @@ async function createTestCompany(overrides: { email?: string | null; active?: bo
       name: `Leads Route Test Co ${suffix}`,
       slug: `${TEST_COMPANY_SLUG_PREFIX}${suffix}`,
       email: overrides.email === undefined ? `buyer-test-${suffix}@example.com` : overrides.email,
+      phone: overrides.phone === undefined ? '5185550100' : overrides.phone,
       // Default to inactive so a test buyer is never live/discoverable even
       // if cleanup is skipped (interrupted run) — it must not appear on
       // /directory or in real /api/sell/match results, both of which filter
@@ -126,6 +127,7 @@ describe('POST /api/leads', () => {
       makeRequest({
         items: [{ brand: 'OneTouch Verio', count: 1, expiration: '2027-01', condition: 'sealed' }],
         matchedCompanyId: 'irrelevant',
+        channel: 'email',
         name: 'Jane Doe',
       })
     )
@@ -133,7 +135,9 @@ describe('POST /api/leads', () => {
   })
 
   it('returns 400 when items is empty', async () => {
-    const response = await POST(makeRequest({ items: [], matchedCompanyId: 'irrelevant', name: 'Jane Doe' }))
+    const response = await POST(
+      makeRequest({ items: [], matchedCompanyId: 'irrelevant', channel: 'email', name: 'Jane Doe' })
+    )
     expect(response.status).toBe(400)
   })
 
@@ -141,6 +145,30 @@ describe('POST /api/leads', () => {
     const response = await POST(
       makeRequest({
         items: [{ brand: 'OneTouch Verio', count: 1, expiration: '2027-01', condition: 'sealed' }],
+        channel: 'email',
+        name: 'Jane Doe',
+      })
+    )
+    expect(response.status).toBe(400)
+  })
+
+  it('returns 400 when channel is missing', async () => {
+    const response = await POST(
+      makeRequest({
+        items: [{ brand: 'OneTouch Verio', count: 1, expiration: '2027-01', condition: 'sealed' }],
+        matchedCompanyId: 'irrelevant',
+        name: 'Jane Doe',
+      })
+    )
+    expect(response.status).toBe(400)
+  })
+
+  it('returns 400 for an invalid channel', async () => {
+    const response = await POST(
+      makeRequest({
+        items: [{ brand: 'OneTouch Verio', count: 1, expiration: '2027-01', condition: 'sealed' }],
+        matchedCompanyId: 'irrelevant',
+        channel: 'carrier-pigeon',
         name: 'Jane Doe',
       })
     )
@@ -152,6 +180,7 @@ describe('POST /api/leads', () => {
       makeRequest({
         items: [{ brand: 'OneTouch Verio', count: 1, expiration: '2027-01', condition: 'sealed' }],
         matchedCompanyId: 'irrelevant',
+        channel: 'email',
       })
     )
     expect(response.status).toBe(400)
@@ -162,18 +191,20 @@ describe('POST /api/leads', () => {
       makeRequest({
         items: [{ brand: 'OneTouch Verio', count: 1, expiration: '2027-01', condition: 'sealed' }],
         matchedCompanyId: 'irrelevant',
+        channel: 'email',
         name: '   ',
       })
     )
     expect(response.status).toBe(400)
   })
 
-  it('returns 400 when the matched buyer has no email on file', async () => {
+  it('returns 400 when channel is email and the matched buyer has no email on file', async () => {
     const companyId = await createTestCompany({ email: null, active: true })
     const response = await POST(
       makeRequest({
         items: [{ brand: 'OneTouch Verio', count: 1, expiration: '2027-01', condition: 'sealed' }],
         matchedCompanyId: companyId,
+        channel: 'email',
         name: 'Jane Doe',
       })
     )
@@ -181,23 +212,38 @@ describe('POST /api/leads', () => {
     expect(mockSendEmailOrThrow).not.toHaveBeenCalled()
   })
 
-  it('returns 400 when the matched buyer does not exist', async () => {
+  it('returns 400 when channel is sms and the matched buyer has no phone on file', async () => {
+    const companyId = await createTestCompany({ phone: null, active: true })
     const response = await POST(
       makeRequest({
         items: [{ brand: 'OneTouch Verio', count: 1, expiration: '2027-01', condition: 'sealed' }],
-        matchedCompanyId: '00000000-0000-0000-0000-000000000000',
+        matchedCompanyId: companyId,
+        channel: 'sms',
         name: 'Jane Doe',
       })
     )
     expect(response.status).toBe(400)
   })
 
-  it('creates a lead and emails the buyer, CC-ing the owner', async () => {
+  it('returns 400 when the matched buyer does not exist', async () => {
+    const response = await POST(
+      makeRequest({
+        items: [{ brand: 'OneTouch Verio', count: 1, expiration: '2027-01', condition: 'sealed' }],
+        matchedCompanyId: '00000000-0000-0000-0000-000000000000',
+        channel: 'email',
+        name: 'Jane Doe',
+      })
+    )
+    expect(response.status).toBe(400)
+  })
+
+  it('creates a lead and emails the buyer, CC-ing the owner, for channel email', async () => {
     const companyId = await createTestCompany({ email: 'buyer-real@example.com', active: true })
     const response = await POST(
       makeRequest({
         items: [{ brand: 'OneTouch Verio', count: 1, expiration: '2027-01', condition: 'sealed' }],
         matchedCompanyId: companyId,
+        channel: 'email',
         sourcePage: '/sell',
         name: 'Jane Doe',
         phone: '5551234567',
@@ -206,6 +252,7 @@ describe('POST /api/leads', () => {
     const body = await response.json()
     expect(response.status).toBe(200)
     expect(body.leadId).toBeDefined()
+    expect(body.message).toBeUndefined()
     cleanupLeadIds.push(body.leadId)
 
     expect(mockSendEmailOrThrow).toHaveBeenCalledTimes(1)
@@ -216,6 +263,27 @@ describe('POST /api/leads', () => {
     expect(callArgs.html).toContain('OneTouch Verio')
   })
 
+  it('creates a lead and returns a message for channel sms without sending an email', async () => {
+    const companyId = await createTestCompany({ phone: '5185550199', active: true })
+    const response = await POST(
+      makeRequest({
+        items: [{ brand: 'OneTouch Verio', count: 1, expiration: '2027-01', condition: 'sealed' }],
+        matchedCompanyId: companyId,
+        channel: 'sms',
+        sourcePage: '/sell',
+        name: 'Jane Doe',
+      })
+    )
+    const body = await response.json()
+    expect(response.status).toBe(200)
+    expect(body.leadId).toBeDefined()
+    cleanupLeadIds.push(body.leadId)
+
+    expect(body.message).toContain('Jane Doe')
+    expect(body.message).toContain('OneTouch Verio')
+    expect(mockSendEmailOrThrow).not.toHaveBeenCalled()
+  })
+
   it('returns 500 and does not lose the lead when the email send fails', async () => {
     mockSendEmailOrThrow.mockRejectedValueOnce(new Error('SMTP down'))
     const companyId = await createTestCompany({ email: 'buyer-real@example.com', active: true })
@@ -223,6 +291,7 @@ describe('POST /api/leads', () => {
       makeRequest({
         items: [{ brand: 'OneTouch Verio', count: 1, expiration: '2027-01', condition: 'sealed' }],
         matchedCompanyId: companyId,
+        channel: 'email',
         name: 'Jane Doe',
       })
     )
