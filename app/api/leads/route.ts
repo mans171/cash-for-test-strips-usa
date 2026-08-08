@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createLead } from '@/lib/leads'
 import { buildQuoteMessage } from '@/lib/message-template'
+import { createServerSupabaseClient } from '@/lib/supabase/server'
 import type { OrderItem } from '@/lib/types'
 
 const VALID_CONDITIONS = new Set(['sealed', 'unsealed'])
@@ -20,6 +21,12 @@ function isValidItem(item: unknown): item is OrderItem {
 
 export async function POST(request: Request) {
   try {
+    const supabase = await createServerSupabaseClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      return NextResponse.json({ error: 'You must be signed in to contact a buyer' }, { status: 401 })
+    }
+
     const body = await request.json()
     const { items, matchedCompanyId, channel, sourcePage, name, email, phone } = body ?? {}
 
