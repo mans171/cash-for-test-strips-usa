@@ -45,6 +45,10 @@ const { POST } = await import('../route')
 const cleanupLeadIds: string[] = []
 const cleanupCompanyIds: string[] = []
 
+// Naming pattern shared with createTestCompany below — used both to build
+// each row's slug and as the LIKE prefix for the safety-net cleanup.
+const TEST_COMPANY_SLUG_PREFIX = 'leads-route-test-co-'
+
 afterEach(async () => {
   if (cleanupLeadIds.length) {
     await supabaseAdmin.from('leads').delete().in('id', cleanupLeadIds)
@@ -54,16 +58,28 @@ afterEach(async () => {
     await supabaseAdmin.from('companies').delete().in('id', cleanupCompanyIds)
     cleanupCompanyIds.length = 0
   }
+  // Safety net: an interrupted prior run may have left a stray row behind
+  // (created but never reaching the cleanup above, e.g. process killed
+  // mid-test). Sweep anything matching this test file's naming pattern so
+  // it never sits around live — createTestCompany defaults new rows to
+  // active: false unless a test opts in, but this catches any leftover.
+  await supabaseAdmin.from('companies').delete().like('slug', `${TEST_COMPANY_SLUG_PREFIX}%`)
 })
 
-async function createTestCompany(overrides: { email?: string | null } = {}) {
+async function createTestCompany(overrides: { email?: string | null; active?: boolean } = {}) {
   const suffix = Date.now()
   const { data, error } = await supabaseAdmin
     .from('companies')
     .insert({
       name: `Leads Route Test Co ${suffix}`,
-      slug: `leads-route-test-co-${suffix}`,
+      slug: `${TEST_COMPANY_SLUG_PREFIX}${suffix}`,
       email: overrides.email === undefined ? `buyer-test-${suffix}@example.com` : overrides.email,
+      // Default to inactive so a test buyer is never live/discoverable even
+      // if cleanup is skipped (interrupted run) — it must not appear on
+      // /directory or in real /api/sell/match results, both of which filter
+      // active=true. Tests that need the route to find the buyer (i.e. that
+      // exercise the "buyer found" path) must explicitly pass active: true.
+      active: overrides.active ?? false,
     })
     .select('id')
     .single()
@@ -131,7 +147,7 @@ describe('POST /api/leads', () => {
   })
 
   it('returns 400 when the matched buyer has no email on file', async () => {
-    const companyId = await createTestCompany({ email: null })
+    const companyId = await createTestCompany({ email: null, active: true })
     const response = await POST(
       makeRequest({
         items: [{ brand: 'OneTouch Verio', count: 1, expiration: '2027-01', condition: 'sealed' }],
@@ -155,7 +171,7 @@ describe('POST /api/leads', () => {
   })
 
   it('creates a lead and emails the buyer, CC-ing the owner', async () => {
-    const companyId = await createTestCompany({ email: 'buyer-real@example.com' })
+    const companyId = await createTestCompany({ email: 'buyer-real@example.com', active: true })
     const response = await POST(
       makeRequest({
         items: [{ brand: 'OneTouch Verio', count: 1, expiration: '2027-01', condition: 'sealed' }],
@@ -180,7 +196,7 @@ describe('POST /api/leads', () => {
 
   it('returns 500 and does not lose the lead when the email send fails', async () => {
     mockSendEmailOrThrow.mockRejectedValueOnce(new Error('SMTP down'))
-    const companyId = await createTestCompany({ email: 'buyer-real@example.com' })
+    const companyId = await createTestCompany({ email: 'buyer-real@example.com', active: true })
     const response = await POST(
       makeRequest({
         items: [{ brand: 'OneTouch Verio', count: 1, expiration: '2027-01', condition: 'sealed' }],

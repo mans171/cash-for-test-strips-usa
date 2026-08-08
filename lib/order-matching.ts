@@ -36,6 +36,7 @@ export async function getCompanyContact(companyId: string): Promise<{ name: stri
     .from('companies')
     .select('name, email')
     .eq('id', companyId)
+    .eq('active', true)
     .maybeSingle()
 
   if (error) throw new Error(`Company lookup failed: ${error.message}`)

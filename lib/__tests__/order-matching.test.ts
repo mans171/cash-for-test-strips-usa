@@ -68,4 +68,28 @@ describe('getCompanyContact', () => {
     const result = await getCompanyContact('00000000-0000-0000-0000-000000000000')
     expect(result).toBeNull()
   })
+
+  it('returns null for a deactivated company', async () => {
+    const TEST_SLUG_INACTIVE = 'test-order-matching-contact-lookup-inactive'
+    const { data, error } = await supabaseAdmin
+      .from('companies')
+      .insert({
+        name: 'Test Inactive Contact Lookup Co',
+        slug: TEST_SLUG_INACTIVE,
+        email: 'inactive-contact-lookup-test@example.com',
+        states: ['VT'],
+        active: false,
+      })
+      .select('id')
+      .single()
+    expect(error).toBeNull()
+    const inactiveCompanyId = data!.id
+
+    try {
+      const result = await getCompanyContact(inactiveCompanyId)
+      expect(result).toBeNull()
+    } finally {
+      await supabaseAdmin.from('companies').delete().eq('slug', TEST_SLUG_INACTIVE)
+    }
+  })
 })
