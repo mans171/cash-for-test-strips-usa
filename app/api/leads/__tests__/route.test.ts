@@ -1,15 +1,22 @@
-import { describe, it, expect, afterEach, vi } from 'vitest'
+import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 
 // createServerSupabaseClient calls next/headers `cookies()`, which requires
 // a real Next.js request scope that doesn't exist when a route handler is
 // invoked directly in a unit test. Mock it so the existing validation-focused
 // tests below still exercise the route's body-parsing logic rather than the
-// auth gate; getUser defaults to an authenticated session and individual
-// tests can override it via mockGetUser.mockResolvedValueOnce(...).
-const mockGetUser = vi.fn(async () => ({
-  data: { user: { id: 'test-user-id', email: 'jane@example.com' } as { id: string; email: string } | null },
-}))
+// auth gate; getUser defaults to an authenticated session (reset every test
+// in beforeEach below, so test order never matters) and individual tests can
+// override it via mockGetUser.mockResolvedValueOnce(...) for a single call.
+const mockGetUser = vi.fn<
+  () => Promise<{ data: { user: { id: string; email: string } | null } }>
+>()
+
+beforeEach(() => {
+  mockGetUser.mockReset()
+  mockGetUser.mockResolvedValue({ data: { user: { id: 'test-user-id', email: 'jane@example.com' } } })
+})
+
 vi.mock('@/lib/supabase/server', () => ({
   createServerSupabaseClient: async () => ({
     auth: { getUser: mockGetUser },
