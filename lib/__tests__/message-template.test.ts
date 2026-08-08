@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { buildQuoteMessage } from '@/lib/message-template'
+import { buildQuoteMessage, buildBuyerEmail } from '@/lib/message-template'
+import type { OrderItem } from '@/lib/types'
 
 describe('buildQuoteMessage', () => {
   it('includes the fixed intro line with the customer name', () => {
@@ -31,5 +32,40 @@ describe('buildQuoteMessage', () => {
     )
     expect(message).toContain('Jane Doe')
     expect(message.indexOf('Jane Doe')).toBeLessThan(message.indexOf('OneTouch Verio'))
+  })
+})
+
+describe('buildBuyerEmail', () => {
+  const items: OrderItem[] = [
+    { brand: 'OneTouch Verio', count: 2, expiration: '2027-01', condition: 'sealed' },
+  ]
+
+  it('includes the customer name in the subject', () => {
+    const { subject } = buildBuyerEmail(items, 'Jane Doe', undefined, undefined)
+    expect(subject).toContain('Jane Doe')
+  })
+
+  it('includes item details in the html body', () => {
+    const { html } = buildBuyerEmail(items, 'Jane Doe', undefined, undefined)
+    expect(html).toContain('OneTouch Verio')
+    expect(html).toContain('2027-01')
+    expect(html).toContain('sealed')
+  })
+
+  it('includes phone and email when provided', () => {
+    const { html } = buildBuyerEmail(items, 'Jane Doe', '5551234567', 'jane@example.com')
+    expect(html).toContain('5551234567')
+    expect(html).toContain('jane@example.com')
+  })
+
+  it('omits phone/email lines when not provided', () => {
+    const { html } = buildBuyerEmail(items, 'Jane Doe', undefined, undefined)
+    expect(html).not.toContain('Phone:')
+    expect(html).not.toContain('Email:')
+  })
+
+  it('escapes html-unsafe characters in the customer name', () => {
+    const { html } = buildBuyerEmail(items, '<script>alert(1)</script>', undefined, undefined)
+    expect(html).not.toContain('<script>')
   })
 })
