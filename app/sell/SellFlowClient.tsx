@@ -23,6 +23,8 @@ export function SellFlowClient() {
   const [buyers, setBuyers] = useState<Company[]>([]);
   const [mailIn, setMailIn] = useState<Company | null>(null);
   const [selectedBuyer, setSelectedBuyer] = useState<Company | null>(null);
+  const [sentChannel, setSentChannel] = useState<"sms" | "email" | null>(null);
+  const [sentMessage, setSentMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
@@ -211,6 +213,8 @@ export function SellFlowClient() {
         return;
       }
       setStage("sent");
+      setSentChannel(channel);
+      setSentMessage(typeof body.message === "string" ? body.message : null);
       if (channel === "sms" && buyer.phone && body.message) {
         const digitsOnlyPhone = buyer.phone.replace(/\D/g, "");
         window.open(`sms:${digitsOnlyPhone}?body=${encodeURIComponent(body.message)}`, "_blank");
@@ -223,10 +227,35 @@ export function SellFlowClient() {
   }
 
   if (stage === "sent" && selectedBuyer) {
+    const digitsOnlyPhone = selectedBuyer.phone ? selectedBuyer.phone.replace(/\D/g, "") : "";
     return (
       <div className="flex flex-col gap-3">
-        <p className="text-emerald-700 font-medium">Request sent to {selectedBuyer.name}.</p>
-        <p className="text-sm text-gray-500">They&apos;ll reach out to you directly to arrange your sale.</p>
+        {sentChannel === "sms" ? (
+          <>
+            <p className="text-emerald-700 font-medium">
+              Almost done — send the text we opened in your messages app to {selectedBuyer.name}.
+            </p>
+            <p className="text-sm text-gray-500">
+              Nothing has been sent yet. If your messages app didn&apos;t open automatically, use the link below.
+            </p>
+            {sentMessage && digitsOnlyPhone && (
+              <div className="border border-gray-200 rounded-lg p-4 flex flex-col gap-2">
+                <p className="text-sm text-gray-600 whitespace-pre-wrap">{sentMessage}</p>
+                <a
+                  href={`sms:${digitsOnlyPhone}?body=${encodeURIComponent(sentMessage)}`}
+                  className="text-sm font-medium text-emerald-600 hover:underline self-start"
+                >
+                  Open my messages app
+                </a>
+              </div>
+            )}
+          </>
+        ) : (
+          <>
+            <p className="text-emerald-700 font-medium">Request sent to {selectedBuyer.name}.</p>
+            <p className="text-sm text-gray-500">They&apos;ll reach out to you directly to arrange your sale.</p>
+          </>
+        )}
         <div className="border border-gray-200 rounded-lg p-4">
           <h2 className="font-semibold text-gray-900 mb-2">Your Order</h2>
           <div className="flex flex-col gap-1">
