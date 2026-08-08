@@ -31,10 +31,12 @@ export async function getMailInFallback(): Promise<Company | null> {
   return data as Company | null
 }
 
-export async function getCompanyContact(companyId: string): Promise<{ name: string; email: string | null } | null> {
+export async function getCompanyContact(
+  companyId: string
+): Promise<{ name: string; email: string | null; phone: string | null } | null> {
   const { data, error } = await supabase
     .from('companies')
-    .select('name, email')
+    .select('name, email, phone')
     .eq('id', companyId)
     .eq('active', true)
     .maybeSingle()

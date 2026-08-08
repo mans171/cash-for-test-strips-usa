@@ -47,6 +47,7 @@ describe('getCompanyContact', () => {
         name: 'Test Contact Lookup Co',
         slug: TEST_SLUG_CONTACT,
         email: 'contact-lookup-test@example.com',
+        phone: '5185550100',
         states: ['VT'],
       })
       .select('id')
@@ -59,9 +60,13 @@ describe('getCompanyContact', () => {
     await supabaseAdmin.from('companies').delete().eq('slug', TEST_SLUG_CONTACT)
   })
 
-  it('returns the name and email for an existing company', async () => {
+  it('returns the name, email, and phone for an existing company', async () => {
     const result = await getCompanyContact(testCompanyId)
-    expect(result).toEqual({ name: 'Test Contact Lookup Co', email: 'contact-lookup-test@example.com' })
+    expect(result).toEqual({
+      name: 'Test Contact Lookup Co',
+      email: 'contact-lookup-test@example.com',
+      phone: '5185550100',
+    })
   })
 
   it('returns null for a company id that does not exist', async () => {
