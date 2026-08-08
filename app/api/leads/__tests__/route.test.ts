@@ -1,6 +1,22 @@
-import { describe, it, expect, afterEach } from 'vitest'
+import { describe, it, expect, afterEach, vi } from 'vitest'
 import { supabaseAdmin } from '@/lib/supabase-admin'
-import { POST } from '../route'
+
+// createServerSupabaseClient calls next/headers `cookies()`, which requires
+// a real Next.js request scope that doesn't exist when a route handler is
+// invoked directly in a unit test. Mock it so the existing validation-focused
+// tests below still exercise the route's body-parsing logic rather than the
+// auth gate; getUser defaults to an authenticated session and individual
+// tests can override it via mockGetUser.mockResolvedValueOnce(...).
+const mockGetUser = vi.fn(async () => ({
+  data: { user: { id: 'test-user-id', email: 'jane@example.com' } as { id: string; email: string } | null },
+}))
+vi.mock('@/lib/supabase/server', () => ({
+  createServerSupabaseClient: async () => ({
+    auth: { getUser: mockGetUser },
+  }),
+}))
+
+const { POST } = await import('../route')
 
 const cleanupIds: string[] = []
 
@@ -20,6 +36,19 @@ function makeRequest(body: unknown) {
 }
 
 describe('POST /api/leads', () => {
+  it('returns 401 when there is no session', async () => {
+    mockGetUser.mockResolvedValueOnce({ data: { user: null } })
+    const response = await POST(
+      makeRequest({
+        items: [{ brand: 'OneTouch Verio', count: 1, expiration: '2027-01', condition: 'sealed' }],
+        matchedCompanyId: null,
+        channel: 'sms',
+        name: 'Jane Doe',
+      })
+    )
+    expect(response.status).toBe(401)
+  })
+
   it('returns 400 when items is empty', async () => {
     const response = await POST(makeRequest({ items: [], matchedCompanyId: null, channel: 'sms', name: 'Jane Doe' }))
     expect(response.status).toBe(400)
