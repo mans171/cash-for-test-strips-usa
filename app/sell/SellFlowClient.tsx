@@ -36,6 +36,7 @@ export function SellFlowClient() {
   const [customerEmail, setCustomerEmail] = useState("");
   const [accountModalOpen, setAccountModalOpen] = useState(false);
   const [refillTrigger, setRefillTrigger] = useState(0);
+  const [refreshingMatch, setRefreshingMatch] = useState(false);
   const { user } = useUser();
   const hasAutoFilledRef = useRef<string | null>(null);
 
@@ -129,6 +130,23 @@ export function SellFlowClient() {
     updateItem(index, { expiration: "" });
   }
 
+  // Shared by the initial search and the post-login/signup re-fetch below.
+  // Throws on network failure or a non-ok response so callers can decide how
+  // to handle it (blocking error vs. silent keep-what's-there).
+  async function runMatch(stateCode: string) {
+    const res = await fetch("/api/sell/match", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ state: stateCode }),
+    });
+    const body = await res.json();
+    if (!res.ok) {
+      throw new Error(body.error ?? "Something went wrong");
+    }
+    setBuyers(body.buyers ?? []);
+    setMailIn(body.mailIn ?? null);
+  }
+
   async function handleFindBuyers(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -142,23 +160,31 @@ export function SellFlowClient() {
     }
     setLoading(true);
     try {
-      const res = await fetch("/api/sell/match", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ state }),
-      });
-      const body = await res.json();
-      if (!res.ok) {
-        setError(body.error ?? "Something went wrong");
-        return;
-      }
-      setBuyers(body.buyers ?? []);
-      setMailIn(body.mailIn ?? null);
+      await runMatch(state);
       setStage("results");
-    } catch {
-      setError("Couldn't reach the server. Check your connection and try again.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Couldn't reach the server. Check your connection and try again.");
     } finally {
       setLoading(false);
+    }
+  }
+
+  // After a customer logs in or signs up via the modal, the buyer cards on
+  // screen still hold the pre-login (contact-stripped) response. Re-run the
+  // search so the now-authenticated request returns real email/phone. Keep
+  // this quiet on failure — don't blank out results the customer can already
+  // see just because a background refresh didn't succeed.
+  async function refreshMatchAfterAuth() {
+    if (!state) return;
+    setRefreshingMatch(true);
+    try {
+      await runMatch(state);
+    } catch {
+      // Swallow — keep showing the existing (possibly still-gated) results
+      // rather than clearing the list or surfacing an error for a refresh
+      // the customer didn't explicitly trigger.
+    } finally {
+      setRefreshingMatch(false);
     }
   }
 
@@ -267,6 +293,9 @@ export function SellFlowClient() {
           </div>
         </div>
 
+        {refreshingMatch && (
+          <p className="text-xs text-gray-400">Unlocking buyer contact info...</p>
+        )}
         {cards.length === 0 ? (
           <p className="text-sm text-gray-500">
             We couldn&apos;t find a buyer for your area right now. Email{" "}
@@ -320,6 +349,7 @@ export function SellFlowClient() {
           onSuccess={() => {
             setAccountModalOpen(false);
             setRefillTrigger((n) => n + 1);
+            refreshMatchAfterAuth();
           }}
         />
       )}
