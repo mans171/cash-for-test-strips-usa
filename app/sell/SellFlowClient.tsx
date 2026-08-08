@@ -211,8 +211,9 @@ export function SellFlowClient() {
         return;
       }
       setStage("sent");
-      if (channel === "sms" && buyer.phone) {
-        window.open(`sms:${buyer.phone}?body=${encodeURIComponent(body.message)}`, "_blank");
+      if (channel === "sms" && buyer.phone && body.message) {
+        const digitsOnlyPhone = buyer.phone.replace(/\D/g, "");
+        window.open(`sms:${digitsOnlyPhone}?body=${encodeURIComponent(body.message)}`, "_blank");
       }
     } catch {
       setError("Couldn't reach the server. Check your connection and try again.");
