@@ -37,16 +37,16 @@ export function SellFlowClient() {
   const [accountModalOpen, setAccountModalOpen] = useState(false);
   const [refillTrigger, setRefillTrigger] = useState(0);
   const { user } = useUser();
-  const hasAutoFilledRef = useRef(false);
+  const hasAutoFilledRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!user || hasAutoFilledRef.current) return;
+    if (!user || hasAutoFilledRef.current === user.id) return;
     setCustomerEmail((prev) => prev || user.email);
     const supabase = createBrowserSupabaseClient();
     fetchOwnProfileContact(supabase, user.id)
       .then((contact) => {
+        hasAutoFilledRef.current = user.id;
         if (!contact) return;
-        hasAutoFilledRef.current = true;
         setCustomerName((prev) => prev || contact.name);
         setCustomerPhone((prev) => prev || contact.phone);
       })
