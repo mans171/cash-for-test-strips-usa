@@ -23,7 +23,6 @@ export function SellFlowClient() {
   const [buyers, setBuyers] = useState<Company[]>([]);
   const [mailIn, setMailIn] = useState<Company | null>(null);
   const [selectedBuyer, setSelectedBuyer] = useState<Company | null>(null);
-  const [message, setMessage] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
@@ -188,7 +187,7 @@ export function SellFlowClient() {
     }
   }
 
-  async function handleSend(buyer: Company, channel: "sms" | "email") {
+  async function handleSend(buyer: Company) {
     setSelectedBuyer(buyer);
     setError(null);
     setSending(true);
@@ -199,7 +198,6 @@ export function SellFlowClient() {
         body: JSON.stringify({
           items,
           matchedCompanyId: buyer.id,
-          channel,
           sourcePage: "/sell",
           name: customerName,
           email: customerEmail || undefined,
@@ -211,13 +209,7 @@ export function SellFlowClient() {
         setError(body.error ?? "Something went wrong");
         return;
       }
-      setMessage(body.message);
       setStage("sent");
-      if (channel === "sms" && buyer.phone) {
-        window.open(`sms:${buyer.phone}?body=${encodeURIComponent(body.message)}`, "_blank");
-      } else if (channel === "email" && buyer.email) {
-        window.open(`mailto:${buyer.email}?subject=${encodeURIComponent("Quote request from cash4teststripsusa.com")}&body=${encodeURIComponent(body.message)}`, "_blank");
-      }
     } catch {
       setError("Couldn't reach the server. Check your connection and try again.");
     } finally {
@@ -228,9 +220,8 @@ export function SellFlowClient() {
   if (stage === "sent" && selectedBuyer) {
     return (
       <div className="flex flex-col gap-3">
-        <p className="text-emerald-700 font-medium">Message ready for {selectedBuyer.name}.</p>
-        <p className="text-sm text-gray-500">If your phone/email app didn&apos;t open, copy this and send it yourself:</p>
-        <textarea readOnly value={message} className="border border-gray-200 rounded-lg p-3 text-sm h-40" />
+        <p className="text-emerald-700 font-medium">Request sent to {selectedBuyer.name}.</p>
+        <p className="text-sm text-gray-500">They&apos;ll reach out to you directly to arrange your sale.</p>
       </div>
     );
   }
@@ -313,30 +304,20 @@ export function SellFlowClient() {
                   <p className="font-medium text-gray-900">{c.name}</p>
                   {c.city && <p className="text-xs text-gray-400">{c.city}</p>}
                 </div>
-                <RequiresAccount onRequestAccount={() => setAccountModalOpen(true)}>
-                  <div className="flex gap-2">
-                    {c.phone && (
+                {c.email && (
+                  <RequiresAccount onRequestAccount={() => setAccountModalOpen(true)}>
+                    <div className="flex gap-2">
                       <button
-                        onClick={() => handleSend(c, "sms")}
+                        onClick={() => handleSend(c)}
                         disabled={sending || nameMissing}
                         title={nameMissing ? "Enter your name first" : undefined}
                         className="text-xs font-medium bg-emerald-600 text-white px-3 py-2 rounded-lg disabled:opacity-50"
                       >
-                        {sending && selectedBuyer?.id === c.id ? "Sending..." : "Text"}
+                        {sending && selectedBuyer?.id === c.id ? "Sending..." : "Request Quote"}
                       </button>
-                    )}
-                    {c.email && (
-                      <button
-                        onClick={() => handleSend(c, "email")}
-                        disabled={sending || nameMissing}
-                        title={nameMissing ? "Enter your name first" : undefined}
-                        className="text-xs font-medium border border-emerald-600 text-emerald-700 px-3 py-2 rounded-lg disabled:opacity-50"
-                      >
-                        {sending && selectedBuyer?.id === c.id ? "Sending..." : "Email"}
-                      </button>
-                    )}
-                  </div>
-                </RequiresAccount>
+                    </div>
+                  </RequiresAccount>
+                )}
               </div>
             ))}
           </div>
