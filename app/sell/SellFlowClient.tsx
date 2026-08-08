@@ -187,7 +187,7 @@ export function SellFlowClient() {
     }
   }
 
-  async function handleSend(buyer: Company) {
+  async function handleSend(buyer: Company, channel: "sms" | "email") {
     setSelectedBuyer(buyer);
     setError(null);
     setSending(true);
@@ -198,6 +198,7 @@ export function SellFlowClient() {
         body: JSON.stringify({
           items,
           matchedCompanyId: buyer.id,
+          channel,
           sourcePage: "/sell",
           name: customerName,
           email: customerEmail || undefined,
@@ -210,6 +211,9 @@ export function SellFlowClient() {
         return;
       }
       setStage("sent");
+      if (channel === "sms" && buyer.phone) {
+        window.open(`sms:${buyer.phone}?body=${encodeURIComponent(body.message)}`, "_blank");
+      }
     } catch {
       setError("Couldn't reach the server. Check your connection and try again.");
     } finally {
@@ -222,6 +226,16 @@ export function SellFlowClient() {
       <div className="flex flex-col gap-3">
         <p className="text-emerald-700 font-medium">Request sent to {selectedBuyer.name}.</p>
         <p className="text-sm text-gray-500">They&apos;ll reach out to you directly to arrange your sale.</p>
+        <div className="border border-gray-200 rounded-lg p-4">
+          <h2 className="font-semibold text-gray-900 mb-2">Your Order</h2>
+          <div className="flex flex-col gap-1">
+            {items.map((item, i) => (
+              <p key={i} className="text-sm text-gray-600">
+                {item.brand} × {item.count} box{item.count === 1 ? "" : "es"} (exp: {item.expiration}, {item.condition})
+              </p>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
@@ -304,17 +318,29 @@ export function SellFlowClient() {
                   <p className="font-medium text-gray-900">{c.name}</p>
                   {c.city && <p className="text-xs text-gray-400">{c.city}</p>}
                 </div>
-                {c.email && (
+                {(c.email || c.phone) && (
                   <RequiresAccount onRequestAccount={() => setAccountModalOpen(true)}>
                     <div className="flex gap-2">
-                      <button
-                        onClick={() => handleSend(c)}
-                        disabled={sending || nameMissing}
-                        title={nameMissing ? "Enter your name first" : undefined}
-                        className="text-xs font-medium bg-emerald-600 text-white px-3 py-2 rounded-lg disabled:opacity-50"
-                      >
-                        {sending && selectedBuyer?.id === c.id ? "Sending..." : "Request Quote"}
-                      </button>
+                      {c.email && (
+                        <button
+                          onClick={() => handleSend(c, "email")}
+                          disabled={sending || nameMissing}
+                          title={nameMissing ? "Enter your name first" : undefined}
+                          className="text-xs font-medium bg-emerald-600 text-white px-3 py-2 rounded-lg disabled:opacity-50"
+                        >
+                          {sending && selectedBuyer?.id === c.id ? "Sending..." : "Request Quote"}
+                        </button>
+                      )}
+                      {c.phone && (
+                        <button
+                          onClick={() => handleSend(c, "sms")}
+                          disabled={sending || nameMissing}
+                          title={nameMissing ? "Enter your name first" : undefined}
+                          className="text-xs font-medium border border-emerald-600 text-emerald-700 px-3 py-2 rounded-lg disabled:opacity-50"
+                        >
+                          {sending && selectedBuyer?.id === c.id ? "Sending..." : "Text Now"}
+                        </button>
+                      )}
                     </div>
                   </RequiresAccount>
                 )}
