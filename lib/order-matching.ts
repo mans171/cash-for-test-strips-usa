@@ -30,3 +30,14 @@ export async function getMailInFallback(): Promise<Company | null> {
   if (error) throw new Error(`Mail-in lookup failed: ${error.message}`)
   return data as Company | null
 }
+
+export async function getCompanyContact(companyId: string): Promise<{ name: string; email: string | null } | null> {
+  const { data, error } = await supabase
+    .from('companies')
+    .select('name, email')
+    .eq('id', companyId)
+    .maybeSingle()
+
+  if (error) throw new Error(`Company lookup failed: ${error.message}`)
+  return data
+}

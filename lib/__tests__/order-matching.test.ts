@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { supabaseAdmin } from '@/lib/supabase-admin'
-import { matchBuyersForState, getMailInFallback } from '@/lib/order-matching'
+import { matchBuyersForState, getMailInFallback, getCompanyContact } from '@/lib/order-matching'
 
 const TEST_SLUG_FEATURED = 'test-order-matching-featured-vt'
 const TEST_SLUG_PLAIN = 'test-order-matching-plain-vt'
@@ -33,5 +33,39 @@ describe('getMailInFallback', () => {
   it('returns the CFTS Mail-In company', async () => {
     const result = await getMailInFallback()
     expect(result?.slug).toBe('cfts-mail-in')
+  })
+})
+
+describe('getCompanyContact', () => {
+  const TEST_SLUG_CONTACT = 'test-order-matching-contact-lookup'
+  let testCompanyId: string
+
+  beforeAll(async () => {
+    const { data, error } = await supabaseAdmin
+      .from('companies')
+      .insert({
+        name: 'Test Contact Lookup Co',
+        slug: TEST_SLUG_CONTACT,
+        email: 'contact-lookup-test@example.com',
+        states: ['VT'],
+      })
+      .select('id')
+      .single()
+    expect(error).toBeNull()
+    testCompanyId = data!.id
+  })
+
+  afterAll(async () => {
+    await supabaseAdmin.from('companies').delete().eq('slug', TEST_SLUG_CONTACT)
+  })
+
+  it('returns the name and email for an existing company', async () => {
+    const result = await getCompanyContact(testCompanyId)
+    expect(result).toEqual({ name: 'Test Contact Lookup Co', email: 'contact-lookup-test@example.com' })
+  })
+
+  it('returns null for a company id that does not exist', async () => {
+    const result = await getCompanyContact('00000000-0000-0000-0000-000000000000')
+    expect(result).toBeNull()
   })
 })
