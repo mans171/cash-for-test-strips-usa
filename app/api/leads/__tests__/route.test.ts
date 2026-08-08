@@ -63,7 +63,29 @@ afterEach(async () => {
   // mid-test). Sweep anything matching this test file's naming pattern so
   // it never sits around live — createTestCompany defaults new rows to
   // active: false unless a test opts in, but this catches any leftover.
-  await supabaseAdmin.from('companies').delete().like('slug', `${TEST_COMPANY_SLUG_PREFIX}%`)
+  //
+  // leads.matched_company_id -> companies(id) has no ON DELETE clause
+  // (defaults to NO ACTION), so a company with a dependent lead can't be
+  // deleted until that lead is deleted first. Look up the matching company
+  // ids, delete any leads pointing at them, then delete the companies.
+  const { data: staleCompanies, error: staleLookupError } = await supabaseAdmin
+    .from('companies')
+    .select('id')
+    .like('slug', `${TEST_COMPANY_SLUG_PREFIX}%`)
+  expect(staleLookupError).toBeNull()
+  const staleCompanyIds = (staleCompanies ?? []).map((c) => c.id)
+  if (staleCompanyIds.length) {
+    const { error: staleLeadsError } = await supabaseAdmin
+      .from('leads')
+      .delete()
+      .in('matched_company_id', staleCompanyIds)
+    expect(staleLeadsError).toBeNull()
+  }
+  const { error: staleCompaniesError } = await supabaseAdmin
+    .from('companies')
+    .delete()
+    .like('slug', `${TEST_COMPANY_SLUG_PREFIX}%`)
+  expect(staleCompaniesError).toBeNull()
 })
 
 async function createTestCompany(overrides: { email?: string | null; active?: boolean } = {}) {
