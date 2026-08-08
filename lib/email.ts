@@ -21,6 +21,7 @@ const transporter = nodemailer.createTransport({
 
 export type SendEmailInput = {
   to: string
+  cc?: string
   subject: string
   html: string
 }
@@ -30,10 +31,21 @@ export async function sendEmail(input: SendEmailInput): Promise<void> {
     await transporter.sendMail({
       from: process.env.SMTP_USER,
       to: input.to,
+      cc: input.cc,
       subject: input.subject,
       html: input.html,
     })
   } catch (error) {
     console.error('[sendEmail] failed to send', { to: input.to, subject: input.subject }, error)
   }
+}
+
+export async function sendEmailOrThrow(input: SendEmailInput): Promise<void> {
+  await transporter.sendMail({
+    from: process.env.SMTP_USER,
+    to: input.to,
+    cc: input.cc,
+    subject: input.subject,
+    html: input.html,
+  })
 }

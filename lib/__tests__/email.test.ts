@@ -7,7 +7,7 @@ vi.mock('nodemailer', () => ({
   },
 }))
 
-const { sendEmail } = await import('@/lib/email')
+const { sendEmail, sendEmailOrThrow } = await import('@/lib/email')
 
 describe('sendEmail', () => {
   beforeEach(() => {
@@ -27,5 +27,22 @@ describe('sendEmail', () => {
     await expect(
       sendEmail({ to: 'test@example.com', subject: 'Hi', html: '<p>hi</p>' })
     ).resolves.toBeUndefined()
+  })
+})
+
+describe('sendEmailOrThrow', () => {
+  it('sends with the expected fields including cc', async () => {
+    sendMailMock.mockResolvedValueOnce(undefined)
+    await sendEmailOrThrow({ to: 'test@example.com', cc: 'owner@example.com', subject: 'Hi', html: '<p>hi</p>' })
+    expect(sendMailMock).toHaveBeenCalledWith(
+      expect.objectContaining({ to: 'test@example.com', cc: 'owner@example.com', subject: 'Hi', html: '<p>hi</p>' })
+    )
+  })
+
+  it('rethrows when the send fails', async () => {
+    sendMailMock.mockRejectedValueOnce(new Error('SMTP down'))
+    await expect(
+      sendEmailOrThrow({ to: 'test@example.com', subject: 'Hi', html: '<p>hi</p>' })
+    ).rejects.toThrow('SMTP down')
   })
 })
