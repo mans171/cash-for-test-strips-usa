@@ -4,7 +4,8 @@ import { createServerSupabaseClient } from '@/lib/supabase/server'
 import type { Company } from '@/lib/types'
 
 function stripContactInfo(company: Company): Company {
-  return { ...company, email: null, phone: null }
+  const hasContact = !!(company.email || company.phone)
+  return { ...company, email: null, phone: null, hasContact }
 }
 
 export async function POST(request: Request) {

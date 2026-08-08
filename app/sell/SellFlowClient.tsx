@@ -348,7 +348,7 @@ export function SellFlowClient() {
                   <p className="font-medium text-gray-900">{c.name}</p>
                   {c.city && <p className="text-xs text-gray-400">{c.city}</p>}
                 </div>
-                {(c.email || c.phone) && (
+                {(c.email || c.phone || c.hasContact) && (
                   <RequiresAccount onRequestAccount={() => setAccountModalOpen(true)}>
                     <div className="flex gap-2">
                       {c.email && (
