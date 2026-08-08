@@ -1,11 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { STATE_LABELS } from "@/lib/states";
 import type { Company, OrderItem } from "@/lib/types";
 import { PRODUCT_BRANDS } from "@/lib/product-catalog";
 import { EXPIRATION_MONTH_OPTIONS, isEffectivelyExpired, monthsFromNowToYYYYMM } from "@/lib/expiration";
+import { useUser } from "@/lib/auth-client";
+import { createBrowserSupabaseClient } from "@/lib/supabase/client";
+import { fetchOwnProfileContact } from "@/lib/profile-lookup";
+import { RequiresAccount } from "@/app/components/RequiresAccount";
+import { AccountModal } from "@/app/components/AccountModal";
 
 type Stage = "build" | "results" | "sent";
 
@@ -29,6 +34,21 @@ export function SellFlowClient() {
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
+  const [accountModalOpen, setAccountModalOpen] = useState(false);
+  const { user } = useUser();
+  const hasAutoFilledRef = useRef(false);
+
+  useEffect(() => {
+    if (!user || hasAutoFilledRef.current) return;
+    hasAutoFilledRef.current = true;
+    setCustomerEmail((prev) => prev || user.email);
+    const supabase = createBrowserSupabaseClient();
+    fetchOwnProfileContact(supabase, user.id).then((contact) => {
+      if (!contact) return;
+      setCustomerName((prev) => prev || contact.name);
+      setCustomerPhone((prev) => prev || contact.phone);
+    });
+  }, [user]);
 
   function brandIdentity(brand: (typeof PRODUCT_BRANDS)[number]) {
     return `${brand.category}:${brand.key}`;
@@ -190,6 +210,7 @@ export function SellFlowClient() {
     const cards = buyers.length > 0 ? buyers : mailIn ? [mailIn] : [];
     const nameMissing = customerName.trim().length === 0;
     return (
+      <>
       <div className="flex flex-col gap-4">
         <button
           type="button"
@@ -260,34 +281,43 @@ export function SellFlowClient() {
                   <p className="font-medium text-gray-900">{c.name}</p>
                   {c.city && <p className="text-xs text-gray-400">{c.city}</p>}
                 </div>
-                <div className="flex gap-2">
-                  {c.phone && (
-                    <button
-                      onClick={() => handleSend(c, "sms")}
-                      disabled={sending || nameMissing}
-                      title={nameMissing ? "Enter your name first" : undefined}
-                      className="text-xs font-medium bg-emerald-600 text-white px-3 py-2 rounded-lg disabled:opacity-50"
-                    >
-                      {sending && selectedBuyer?.id === c.id ? "Sending..." : "Text"}
-                    </button>
-                  )}
-                  {c.email && (
-                    <button
-                      onClick={() => handleSend(c, "email")}
-                      disabled={sending || nameMissing}
-                      title={nameMissing ? "Enter your name first" : undefined}
-                      className="text-xs font-medium border border-emerald-600 text-emerald-700 px-3 py-2 rounded-lg disabled:opacity-50"
-                    >
-                      {sending && selectedBuyer?.id === c.id ? "Sending..." : "Email"}
-                    </button>
-                  )}
-                </div>
+                <RequiresAccount onRequestAccount={() => setAccountModalOpen(true)}>
+                  <div className="flex gap-2">
+                    {c.phone && (
+                      <button
+                        onClick={() => handleSend(c, "sms")}
+                        disabled={sending || nameMissing}
+                        title={nameMissing ? "Enter your name first" : undefined}
+                        className="text-xs font-medium bg-emerald-600 text-white px-3 py-2 rounded-lg disabled:opacity-50"
+                      >
+                        {sending && selectedBuyer?.id === c.id ? "Sending..." : "Text"}
+                      </button>
+                    )}
+                    {c.email && (
+                      <button
+                        onClick={() => handleSend(c, "email")}
+                        disabled={sending || nameMissing}
+                        title={nameMissing ? "Enter your name first" : undefined}
+                        className="text-xs font-medium border border-emerald-600 text-emerald-700 px-3 py-2 rounded-lg disabled:opacity-50"
+                      >
+                        {sending && selectedBuyer?.id === c.id ? "Sending..." : "Email"}
+                      </button>
+                    )}
+                  </div>
+                </RequiresAccount>
               </div>
             ))}
           </div>
         )}
         {error && <p className="text-red-600 text-sm">{error}</p>}
       </div>
+      {accountModalOpen && (
+        <AccountModal
+          onClose={() => setAccountModalOpen(false)}
+          onSuccess={() => setAccountModalOpen(false)}
+        />
+      )}
+      </>
     );
   }
 
