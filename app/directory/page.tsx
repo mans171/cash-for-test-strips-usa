@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { DirectoryFilters } from "./filters";
 import { STATE_LABELS } from "@/lib/states";
 import type { Company } from "@/lib/types";
+import { RequiresAccount } from "@/app/components/RequiresAccount";
 
 export const metadata: Metadata = {
   title: "Directory — Find Test Strip Buyers Near You",
@@ -122,23 +123,25 @@ function DirectoryCard({ company }: { company: Company }) {
         >
           View details
         </Link>
-        {company.url ? (
-          <a
-            href={`/api/track?company=${company.id}&url=${encodeURIComponent(company.url)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1 text-center text-xs font-medium bg-emerald-600 text-white px-3 py-2 rounded-lg hover:bg-emerald-700 transition-colors"
-          >
-            Visit site →
-          </a>
-        ) : (
-          <a
-            href={`tel:${company.phone ?? "5187799751"}`}
-            className="flex-1 text-center text-xs font-medium bg-emerald-600 text-white px-3 py-2 rounded-lg hover:bg-emerald-700 transition-colors"
-          >
-            Contact
-          </a>
-        )}
+        <RequiresAccount className="flex-1">
+          {company.url ? (
+            <a
+              href={`/api/track?company=${company.id}&url=${encodeURIComponent(company.url)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-1 text-center text-xs font-medium bg-emerald-600 text-white px-3 py-2 rounded-lg hover:bg-emerald-700 transition-colors"
+            >
+              Visit site →
+            </a>
+          ) : (
+            <a
+              href={`tel:${company.phone ?? "5187799751"}`}
+              className="flex-1 text-center text-xs font-medium bg-emerald-600 text-white px-3 py-2 rounded-lg hover:bg-emerald-700 transition-colors"
+            >
+              Contact
+            </a>
+          )}
+        </RequiresAccount>
       </div>
     </div>
   );
