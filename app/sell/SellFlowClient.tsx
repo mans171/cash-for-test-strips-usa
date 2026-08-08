@@ -35,20 +35,23 @@ export function SellFlowClient() {
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
   const [accountModalOpen, setAccountModalOpen] = useState(false);
+  const [refillTrigger, setRefillTrigger] = useState(0);
   const { user } = useUser();
   const hasAutoFilledRef = useRef(false);
 
   useEffect(() => {
     if (!user || hasAutoFilledRef.current) return;
-    hasAutoFilledRef.current = true;
     setCustomerEmail((prev) => prev || user.email);
     const supabase = createBrowserSupabaseClient();
-    fetchOwnProfileContact(supabase, user.id).then((contact) => {
-      if (!contact) return;
-      setCustomerName((prev) => prev || contact.name);
-      setCustomerPhone((prev) => prev || contact.phone);
-    });
-  }, [user]);
+    fetchOwnProfileContact(supabase, user.id)
+      .then((contact) => {
+        if (!contact) return;
+        hasAutoFilledRef.current = true;
+        setCustomerName((prev) => prev || contact.name);
+        setCustomerPhone((prev) => prev || contact.phone);
+      })
+      .catch(() => {});
+  }, [user, refillTrigger]);
 
   function brandIdentity(brand: (typeof PRODUCT_BRANDS)[number]) {
     return `${brand.category}:${brand.key}`;
@@ -314,7 +317,10 @@ export function SellFlowClient() {
       {accountModalOpen && (
         <AccountModal
           onClose={() => setAccountModalOpen(false)}
-          onSuccess={() => setAccountModalOpen(false)}
+          onSuccess={() => {
+            setAccountModalOpen(false);
+            setRefillTrigger((n) => n + 1);
+          }}
         />
       )}
       </>
