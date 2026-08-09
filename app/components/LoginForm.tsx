@@ -5,7 +5,14 @@ import { useEffect, useState } from "react"
 import { createBrowserSupabaseClient } from "@/lib/supabase/client"
 import { useUser } from "@/lib/auth-client"
 
-export function LoginForm({ onSuccess }: { onSuccess: () => void }) {
+export function LoginForm({
+  onSuccess,
+  compact = false,
+}: {
+  onSuccess: () => void
+  /** Drop the standalone-page padding/heading treatment when embedding this form inside another card (e.g. mid-flow in /sell). */
+  compact?: boolean
+}) {
   const { user, loading } = useUser()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -40,8 +47,12 @@ export function LoginForm({ onSuccess }: { onSuccess: () => void }) {
   }
 
   return (
-    <div className="max-w-md mx-auto py-12 px-4">
-      <h1 className="text-2xl font-semibold mb-6">Log in</h1>
+    <div className={compact ? "" : "max-w-md mx-auto py-12 px-4"}>
+      {compact ? (
+        <h2 className="font-semibold text-gray-900 mb-2">Log in</h2>
+      ) : (
+        <h1 className="text-2xl font-semibold mb-6">Log in</h1>
+      )}
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
         <input
           type="email"

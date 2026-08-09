@@ -3,7 +3,7 @@ import { SellFlowClient } from "./SellFlowClient";
 
 export const metadata: Metadata = {
   title: "Sell Your Test Strips — Cash4TestStripsUSA",
-  description: "Build your order and get connected to a local cash buyer — no prices, no signup.",
+  description: "Build your order and get connected to a local cash buyer.",
 };
 
 export default function SellPage() {

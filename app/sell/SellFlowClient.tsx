@@ -15,6 +15,41 @@ type Stage = "build" | "account" | "results" | "sent";
 
 const emptyItem: OrderItem = { brand: "", count: 1, expiration: "", condition: "sealed" };
 
+const SELL_STEPS = ["Your Order", "Your Info", "Buyers"] as const;
+
+function StepIndicator({ current }: { current: 1 | 2 | 3 }) {
+  return (
+    <div className="flex items-center">
+      {SELL_STEPS.map((label, i) => {
+        const step = i + 1;
+        const isDone = step < current;
+        const isActive = step === current;
+        return (
+          <div key={label} className={`flex items-center ${step < 3 ? "flex-1" : ""}`}>
+            <div className="flex items-center gap-1.5 shrink-0">
+              <span
+                className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-semibold shrink-0 ${
+                  isDone || isActive ? "bg-emerald-600 text-white" : "bg-gray-200 text-gray-500"
+                }`}
+              >
+                {isDone ? "✓" : step}
+              </span>
+              <span
+                className={`text-xs font-medium whitespace-nowrap ${
+                  isActive ? "text-emerald-700" : isDone ? "text-gray-700" : "text-gray-400"
+                }`}
+              >
+                {label}
+              </span>
+            </div>
+            {step < 3 && <div className={`h-px flex-1 mx-2 ${isDone ? "bg-emerald-300" : "bg-gray-200"}`} />}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export function SellFlowClient() {
   const [stage, setStage] = useState<Stage>("build");
   const [state, setState] = useState("");
@@ -313,7 +348,7 @@ export function SellFlowClient() {
               Nothing has been sent yet. If your messages app didn&apos;t open automatically, use the link below.
             </p>
             {sentMessage && digitsOnlyPhone && (
-              <div className="border border-gray-200 rounded-lg p-4 flex flex-col gap-2">
+              <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex flex-col gap-2">
                 <p className="text-sm text-gray-600 whitespace-pre-wrap">{sentMessage}</p>
                 <a
                   href={`sms:${digitsOnlyPhone}?body=${encodeURIComponent(sentMessage)}`}
@@ -330,7 +365,7 @@ export function SellFlowClient() {
             <p className="text-sm text-gray-500">They&apos;ll reach out to you directly to arrange your sale.</p>
           </>
         )}
-        <div className="border border-gray-200 rounded-lg p-4">
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
           <h2 className="font-semibold text-gray-900 mb-2">Your Order</h2>
           <div className="flex flex-col gap-1">
             {items.map((item, i) => (
@@ -347,6 +382,7 @@ export function SellFlowClient() {
   if (stage === "account") {
     return (
       <div className="flex flex-col gap-4">
+        <StepIndicator current={2} />
         <button
           type="button"
           onClick={() => setStage("build")}
@@ -355,7 +391,7 @@ export function SellFlowClient() {
           ← Back to your order
         </button>
 
-        <div className="border border-gray-200 rounded-lg p-4">
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
           <h2 className="font-semibold text-gray-900 mb-2">Order Summary</h2>
           <div className="flex flex-col gap-1">
             {items.map((item, i) => (
@@ -367,10 +403,12 @@ export function SellFlowClient() {
         </div>
 
         {accountMode === "signup" ? (
-          <>
-            <form onSubmit={handleCreateAccount} className="border border-gray-200 rounded-lg p-4 flex flex-col gap-3">
-              <h2 className="font-semibold text-gray-900">Your Info</h2>
-              <p className="text-xs text-gray-500 -mt-2">We use this to find your local buyer and let you reach them directly.</p>
+          <div className="flex flex-col gap-3">
+            <form onSubmit={handleCreateAccount} className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex flex-col gap-3">
+              <div className="flex flex-col gap-1">
+                <h2 className="font-semibold text-gray-900">Your Info</h2>
+                <p className="text-xs text-gray-500">We use this to find your local buyer and let you reach them directly.</p>
+              </div>
               <input
                 type="text"
                 required
@@ -458,12 +496,12 @@ export function SellFlowClient() {
               <button
                 type="submit"
                 disabled={accountSubmitting}
-                className="bg-emerald-600 text-white font-semibold px-4 py-2 rounded-lg disabled:opacity-50"
+                className="bg-emerald-600 text-white font-semibold px-6 py-3 rounded-full hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:hover:bg-emerald-600"
               >
                 {accountSubmitting ? "Creating your account..." : "Create your account"}
               </button>
             </form>
-            <p className="text-center text-sm text-gray-500 -mt-2">
+            <p className="text-center text-sm text-gray-500">
               Already have an account?{" "}
               <button
                 type="button"
@@ -476,12 +514,12 @@ export function SellFlowClient() {
                 Log in
               </button>
             </p>
-          </>
+          </div>
         ) : (
-          <div className="border border-gray-200 rounded-lg p-4 flex flex-col gap-3">
-            <LoginForm onSuccess={handleLoginSuccess} />
-            {accountError && <p className="text-sm text-red-600 text-center -mt-4">{accountError}</p>}
-            <p className="text-center text-sm text-gray-500 -mt-2">
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex flex-col gap-3">
+            <LoginForm onSuccess={handleLoginSuccess} compact />
+            {accountError && <p className="text-sm text-red-600 text-center">{accountError}</p>}
+            <p className="text-center text-sm text-gray-500">
               Need an account?{" "}
               <button
                 type="button"
@@ -505,6 +543,7 @@ export function SellFlowClient() {
     const nameMissing = customerName.trim().length === 0;
     return (
       <div className="flex flex-col gap-4">
+        <StepIndicator current={3} />
         <button
           type="button"
           onClick={() => setStage("build")}
@@ -513,7 +552,7 @@ export function SellFlowClient() {
           ← Back to your order
         </button>
 
-        <div className="border border-gray-200 rounded-lg p-4">
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
           <h2 className="font-semibold text-gray-900 mb-2">Order Summary</h2>
           <div className="flex flex-col gap-1">
             {items.map((item, i) => (
@@ -524,11 +563,11 @@ export function SellFlowClient() {
           </div>
         </div>
 
-        <div className="border border-gray-200 rounded-lg p-4">
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
           <h2 className="font-semibold text-gray-900 mb-2">Contact Information</h2>
           <div className="flex flex-col gap-2">
             <div>
-              <label className="text-xs font-medium text-gray-500 block mb-1">Your name *</label>
+              <label className="text-xs font-medium text-gray-500 block mb-1">Your name</label>
               <input
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
@@ -537,7 +576,7 @@ export function SellFlowClient() {
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-gray-500 block mb-1">Phone (optional)</label>
+              <label className="text-xs font-medium text-gray-500 block mb-1">Phone</label>
               <input
                 value={customerPhone}
                 onChange={(e) => setCustomerPhone(e.target.value)}
@@ -546,7 +585,7 @@ export function SellFlowClient() {
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-gray-500 block mb-1">Email (optional)</label>
+              <label className="text-xs font-medium text-gray-500 block mb-1">Email</label>
               <input
                 value={customerEmail}
                 onChange={(e) => setCustomerEmail(e.target.value)}
@@ -569,13 +608,13 @@ export function SellFlowClient() {
               <p className="text-sm text-gray-500">No local buyer in your state yet — here&apos;s our mail-in option.</p>
             )}
             {cards.map((c) => (
-              <div key={c.id} className="border border-gray-200 rounded-lg p-4 flex items-center justify-between gap-3">
+              <div key={c.id} className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex items-center justify-between gap-3 hover:shadow-md transition-shadow">
                 <div>
                   <p className="font-medium text-gray-900">{c.name}</p>
                   {c.city && <p className="text-xs text-gray-400">{c.city}</p>}
                 </div>
                 {(c.email || c.phone) && (
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 shrink-0">
                     {c.email && (
                       <button
                         onClick={() => handleSend(c, "email")}
@@ -609,6 +648,7 @@ export function SellFlowClient() {
 
   return (
     <form onSubmit={handleFindBuyers} className="flex flex-col gap-4">
+      <StepIndicator current={1} />
       <div>
         <label className="text-sm font-medium text-gray-700 block mb-1">Your state</label>
         <select value={state} onChange={(e) => setState(e.target.value)} className="w-full border border-gray-200 rounded-lg px-3 py-2">
@@ -690,7 +730,9 @@ export function SellFlowClient() {
                           : "border-gray-200 hover:border-emerald-300"
                       }`}
                     >
-                      <Image src={productLine.image} alt={`${brand.label} ${productLine.label}`} width={40} height={40} className="object-contain h-10 w-10" />
+                      <div className="bg-gray-50 rounded-md p-1 flex items-center justify-center">
+                        <Image src={productLine.image} alt={`${brand.label} ${productLine.label}`} width={40} height={40} className="object-contain h-10 w-10" />
+                      </div>
                       <span className="text-[11px] leading-tight text-gray-700">{productLine.label}</span>
                       {productLine.code && (
                         <span className="text-[9px] leading-tight text-gray-400">{productLine.code}</span>
@@ -714,7 +756,9 @@ export function SellFlowClient() {
                         onClick={() => selectBrand(i, brand)}
                         className="flex flex-col items-center gap-1 border border-gray-200 rounded-lg p-2 text-center transition-colors hover:border-emerald-300"
                       >
-                        <Image src={brand.image} alt={brand.label} width={64} height={64} className="object-contain h-16 w-16" />
+                        <div className="bg-gray-50 rounded-md p-1.5 flex items-center justify-center">
+                          <Image src={brand.image} alt={brand.label} width={64} height={64} className="object-contain h-16 w-16" />
+                        </div>
                         <span className="text-[11px] leading-tight text-gray-700">{brand.label}</span>
                       </button>
                     ))}
@@ -783,7 +827,7 @@ export function SellFlowClient() {
       <button
         type="submit"
         disabled={loading || authLoading}
-        className="bg-emerald-600 text-white font-semibold px-4 py-2 rounded-lg disabled:opacity-50"
+        className="bg-emerald-600 text-white font-semibold px-6 py-3 rounded-full hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:hover:bg-emerald-600"
       >
         {loading ? "Finding buyers..." : authLoading ? "Checking your account..." : "Find My Buyer"}
       </button>
