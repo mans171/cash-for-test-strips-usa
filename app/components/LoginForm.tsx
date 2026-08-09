@@ -46,6 +46,8 @@ export function LoginForm({ onSuccess }: { onSuccess: () => void }) {
         <input
           type="email"
           required
+          id="login-email"
+          name="email"
           autoComplete="email"
           placeholder="Email"
           value={email}
@@ -55,6 +57,8 @@ export function LoginForm({ onSuccess }: { onSuccess: () => void }) {
         <input
           type="password"
           required
+          id="login-password"
+          name="current-password"
           autoComplete="current-password"
           placeholder="Password"
           value={password}

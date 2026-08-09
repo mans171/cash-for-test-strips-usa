@@ -374,6 +374,8 @@ export function SellFlowClient() {
               <input
                 type="text"
                 required
+                id="sell-account-name"
+                name="name"
                 autoComplete="name"
                 placeholder="Your name"
                 value={customerName}
@@ -383,6 +385,8 @@ export function SellFlowClient() {
               <input
                 type="tel"
                 required
+                id="sell-account-phone"
+                name="tel"
                 autoComplete="tel"
                 placeholder="Phone"
                 value={customerPhone}
@@ -392,6 +396,8 @@ export function SellFlowClient() {
               <input
                 type="email"
                 required
+                id="sell-account-email"
+                name="email"
                 autoComplete="email"
                 placeholder="Email"
                 value={customerEmail}
@@ -402,6 +408,8 @@ export function SellFlowClient() {
                 type="password"
                 required
                 minLength={8}
+                id="sell-account-password"
+                name="new-password"
                 autoComplete="new-password"
                 placeholder="Password"
                 value={password}
@@ -412,6 +420,8 @@ export function SellFlowClient() {
                 <input
                   type="text"
                   required
+                  id="sell-account-city"
+                  name="address-level2"
                   autoComplete="address-level2"
                   placeholder="City"
                   value={addressCity}
@@ -421,6 +431,8 @@ export function SellFlowClient() {
                 <input
                   type="text"
                   required
+                  id="sell-account-state"
+                  name="address-level1"
                   autoComplete="address-level1"
                   placeholder="State"
                   value={addressState}
