@@ -75,6 +75,7 @@ export function SellFlowClient() {
   const [accountSubmitting, setAccountSubmitting] = useState(false);
   const [accountError, setAccountError] = useState<string | null>(null);
   const [accountPendingUserId, setAccountPendingUserId] = useState<string | null>(null);
+  const [matchFailedAfterAccountReady, setMatchFailedAfterAccountReady] = useState(false);
   const [accountMode, setAccountMode] = useState<"signup" | "login">("signup");
   const { user, loading: authLoading } = useUser();
   const hasAutoFilledRef = useRef<string | null>(null);
@@ -212,6 +213,24 @@ export function SellFlowClient() {
     setStage("account");
   }
 
+  // Shared by every path that reaches "results" from the account stage
+  // (fresh signup, profile-insert retry, and login) — retries cleanly on
+  // its own since the account itself is already fully set up by the time
+  // this runs, so a failure here only ever needs to redo this one step.
+  async function attemptMatchAfterAccountReady() {
+    setAccountSubmitting(true);
+    setMatchFailedAfterAccountReady(false);
+    try {
+      await runMatch(state);
+      setStage("results");
+    } catch (err) {
+      setAccountError(err instanceof Error ? err.message : "Couldn't reach the server. Check your connection and try again.");
+      setMatchFailedAfterAccountReady(true);
+    } finally {
+      setAccountSubmitting(false);
+    }
+  }
+
   async function insertProfile(userId: string) {
     const supabase = createBrowserSupabaseClient();
     const { error: profileError } = await supabase.from("profiles").insert({
@@ -236,14 +255,10 @@ export function SellFlowClient() {
       return;
     }
 
-    try {
-      await runMatch(state);
-      setStage("results");
-    } catch (err) {
-      setAccountError(err instanceof Error ? err.message : "Couldn't reach the server. Check your connection and try again.");
-    } finally {
-      setAccountSubmitting(false);
-    }
+    // No longer needed once the account exists — don't hold it in state
+    // any longer than necessary.
+    setPassword("");
+    await attemptMatchAfterAccountReady();
   }
 
   async function handleCreateAccount(e: React.FormEvent) {
@@ -299,16 +314,30 @@ export function SellFlowClient() {
     await insertProfile(accountPendingUserId);
   }
 
+  async function handleRetryMatch() {
+    setAccountError(null);
+    await attemptMatchAfterAccountReady();
+  }
+
+  // "← Back to your order" leaves customerName/phone/email/address alone —
+  // no reason to make the customer retype those — but clears everything
+  // tied to a specific submit attempt, so returning to this stage later
+  // doesn't show a stale error, a stray "Try again" for an account that no
+  // longer needs one, or a leftover password in state.
+  function backToBuildFromAccount() {
+    setAccountError(null);
+    setAccountPendingUserId(null);
+    setMatchFailedAfterAccountReady(false);
+    setPassword("");
+    setStage("build");
+  }
+
   // Runs after LoginForm's own signInWithPassword succeeds — same post-auth
-  // steps the signup path runs in insertProfile above.
+  // step the signup path runs in insertProfile above, so a match failure
+  // here gets the same "Try again" recovery.
   async function handleLoginSuccess() {
     setAccountError(null);
-    try {
-      await runMatch(state);
-      setStage("results");
-    } catch (err) {
-      setAccountError(err instanceof Error ? err.message : "Couldn't reach the server. Check your connection and try again.");
-    }
+    await attemptMatchAfterAccountReady();
   }
 
   async function handleSend(buyer: Company, channel: "sms" | "email") {
@@ -398,7 +427,7 @@ export function SellFlowClient() {
         <StepIndicator current={2} />
         <button
           type="button"
-          onClick={() => setStage("build")}
+          onClick={backToBuildFromAccount}
           className="text-xs font-medium text-gray-500 hover:text-emerald-700 self-start"
         >
           ← Back to your order
@@ -422,74 +451,92 @@ export function SellFlowClient() {
                 <h2 className="font-semibold text-gray-900">Your Info</h2>
                 <p className="text-xs text-gray-500">We use this to find your local buyer and let you reach them directly.</p>
               </div>
-              <input
-                type="text"
-                required
-                id="sell-account-name"
-                name="name"
-                autoComplete="name"
-                placeholder="Your name"
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-                className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
-              />
-              <input
-                type="tel"
-                required
-                id="sell-account-phone"
-                name="tel"
-                autoComplete="tel"
-                placeholder="Phone"
-                value={customerPhone}
-                onChange={(e) => setCustomerPhone(e.target.value)}
-                className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
-              />
-              <input
-                type="email"
-                required
-                id="sell-account-email"
-                name="email"
-                autoComplete="email"
-                placeholder="Email"
-                value={customerEmail}
-                onChange={(e) => setCustomerEmail(e.target.value)}
-                className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
-              />
-              <input
-                type="password"
-                required
-                minLength={8}
-                id="sell-account-password"
-                name="new-password"
-                autoComplete="new-password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
-              />
+              <div>
+                <label htmlFor="sell-account-name" className="text-xs font-medium text-gray-500 block mb-1">Your name</label>
+                <input
+                  type="text"
+                  required
+                  id="sell-account-name"
+                  name="name"
+                  autoComplete="name"
+                  placeholder="Jane Doe"
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                />
+              </div>
+              <div>
+                <label htmlFor="sell-account-phone" className="text-xs font-medium text-gray-500 block mb-1">Phone</label>
+                <input
+                  type="tel"
+                  required
+                  id="sell-account-phone"
+                  name="tel"
+                  autoComplete="tel"
+                  placeholder="(555) 123-4567"
+                  value={customerPhone}
+                  onChange={(e) => setCustomerPhone(e.target.value)}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                />
+              </div>
+              <div>
+                <label htmlFor="sell-account-email" className="text-xs font-medium text-gray-500 block mb-1">Email</label>
+                <input
+                  type="email"
+                  required
+                  id="sell-account-email"
+                  name="email"
+                  autoComplete="email"
+                  placeholder="jane@example.com"
+                  value={customerEmail}
+                  onChange={(e) => setCustomerEmail(e.target.value)}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                />
+              </div>
+              <div>
+                <label htmlFor="sell-account-password" className="text-xs font-medium text-gray-500 block mb-1">Password</label>
+                <input
+                  type="password"
+                  required
+                  minLength={8}
+                  id="sell-account-password"
+                  name="new-password"
+                  autoComplete="new-password"
+                  placeholder="At least 8 characters"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                />
+              </div>
               <div className="flex gap-2">
-                <input
-                  type="text"
-                  required
-                  id="sell-account-city"
-                  name="address-level2"
-                  autoComplete="address-level2"
-                  placeholder="City"
-                  value={addressCity}
-                  onChange={(e) => setAddressCity(e.target.value)}
-                  className="border border-gray-200 rounded-lg px-3 py-2 text-sm flex-1"
-                />
-                <input
-                  type="text"
-                  required
-                  id="sell-account-state"
-                  name="address-level1"
-                  autoComplete="address-level1"
-                  placeholder="State"
-                  value={addressState}
-                  onChange={(e) => setAddressState(e.target.value)}
-                  className="border border-gray-200 rounded-lg px-3 py-2 text-sm w-24"
-                />
+                <div className="flex-1">
+                  <label htmlFor="sell-account-city" className="text-xs font-medium text-gray-500 block mb-1">City</label>
+                  <input
+                    type="text"
+                    required
+                    id="sell-account-city"
+                    name="address-level2"
+                    autoComplete="address-level2"
+                    placeholder="Albany"
+                    value={addressCity}
+                    onChange={(e) => setAddressCity(e.target.value)}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                  />
+                </div>
+                <div className="w-24">
+                  <label htmlFor="sell-account-state" className="text-xs font-medium text-gray-500 block mb-1">State</label>
+                  <input
+                    type="text"
+                    required
+                    id="sell-account-state"
+                    name="address-level1"
+                    autoComplete="address-level1"
+                    placeholder="NY"
+                    value={addressState}
+                    onChange={(e) => setAddressState(e.target.value)}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                  />
+                </div>
               </div>
               {accountError && (
                 <div className="flex flex-col gap-2">
@@ -498,6 +545,16 @@ export function SellFlowClient() {
                     <button
                       type="button"
                       onClick={handleRetryProfile}
+                      disabled={accountSubmitting}
+                      className="self-start text-sm font-medium text-emerald-700 underline disabled:opacity-50"
+                    >
+                      {accountSubmitting ? "Retrying..." : "Try again"}
+                    </button>
+                  )}
+                  {matchFailedAfterAccountReady && (
+                    <button
+                      type="button"
+                      onClick={handleRetryMatch}
                       disabled={accountSubmitting}
                       className="self-start text-sm font-medium text-emerald-700 underline disabled:opacity-50"
                     >
@@ -531,7 +588,21 @@ export function SellFlowClient() {
         ) : (
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex flex-col gap-3">
             <LoginForm onSuccess={handleLoginSuccess} compact />
-            {accountError && <p className="text-sm text-red-600 text-center">{accountError}</p>}
+            {accountError && (
+              <div className="flex flex-col gap-2 items-center">
+                <p className="text-sm text-red-600 text-center">{accountError}</p>
+                {matchFailedAfterAccountReady && (
+                  <button
+                    type="button"
+                    onClick={handleRetryMatch}
+                    disabled={accountSubmitting}
+                    className="text-sm font-medium text-emerald-700 underline disabled:opacity-50"
+                  >
+                    {accountSubmitting ? "Retrying..." : "Try again"}
+                  </button>
+                )}
+              </div>
+            )}
             <p className="text-center text-sm text-gray-500">
               Need an account?{" "}
               <button
