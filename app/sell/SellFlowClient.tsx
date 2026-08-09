@@ -9,6 +9,7 @@ import { EXPIRATION_MONTH_OPTIONS, isEffectivelyExpired, monthsFromNowToYYYYMM }
 import { useUser } from "@/lib/auth-client";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import { fetchOwnProfileContact } from "@/lib/profile-lookup";
+import { LoginForm } from "@/app/components/LoginForm";
 
 type Stage = "build" | "account" | "results" | "sent";
 
@@ -41,7 +42,8 @@ export function SellFlowClient() {
   const [accountSubmitting, setAccountSubmitting] = useState(false);
   const [accountError, setAccountError] = useState<string | null>(null);
   const [accountPendingUserId, setAccountPendingUserId] = useState<string | null>(null);
-  const { user } = useUser();
+  const [accountMode, setAccountMode] = useState<"signup" | "login">("signup");
+  const { user, loading: authLoading } = useUser();
   const hasAutoFilledRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -251,6 +253,18 @@ export function SellFlowClient() {
     await insertProfile(accountPendingUserId);
   }
 
+  // Runs after LoginForm's own signInWithPassword succeeds — same post-auth
+  // steps the signup path runs in insertProfile above.
+  async function handleLoginSuccess() {
+    setAccountError(null);
+    try {
+      await runMatch(state);
+      setStage("results");
+    } catch (err) {
+      setAccountError(err instanceof Error ? err.message : "Couldn't reach the server. Check your connection and try again.");
+    }
+  }
+
   async function handleSend(buyer: Company, channel: "sms" | "email") {
     setSelectedBuyer(buyer);
     setError(null);
@@ -354,99 +368,134 @@ export function SellFlowClient() {
           </div>
         </div>
 
-        <form onSubmit={handleCreateAccount} className="border border-gray-200 rounded-lg p-4 flex flex-col gap-3">
-          <h2 className="font-semibold text-gray-900">Your Info</h2>
-          <p className="text-xs text-gray-500 -mt-2">We use this to find your local buyer and let you reach them directly.</p>
-          <input
-            type="text"
-            required
-            placeholder="Your name"
-            value={customerName}
-            onChange={(e) => setCustomerName(e.target.value)}
-            className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
-          />
-          <input
-            type="tel"
-            required
-            placeholder="Phone"
-            value={customerPhone}
-            onChange={(e) => setCustomerPhone(e.target.value)}
-            className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
-          />
-          <input
-            type="email"
-            required
-            placeholder="Email"
-            value={customerEmail}
-            onChange={(e) => setCustomerEmail(e.target.value)}
-            className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
-          />
-          <input
-            type="password"
-            required
-            minLength={8}
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
-          />
-          <input
-            type="text"
-            required
-            placeholder="Street address"
-            value={addressStreet}
-            onChange={(e) => setAddressStreet(e.target.value)}
-            className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
-          />
-          <div className="flex gap-2">
-            <input
-              type="text"
-              required
-              placeholder="City"
-              value={addressCity}
-              onChange={(e) => setAddressCity(e.target.value)}
-              className="border border-gray-200 rounded-lg px-3 py-2 text-sm flex-1"
-            />
-            <input
-              type="text"
-              required
-              placeholder="State"
-              value={addressState}
-              onChange={(e) => setAddressState(e.target.value)}
-              className="border border-gray-200 rounded-lg px-3 py-2 text-sm w-20"
-            />
-            <input
-              type="text"
-              required
-              placeholder="ZIP"
-              value={addressZip}
-              onChange={(e) => setAddressZip(e.target.value)}
-              className="border border-gray-200 rounded-lg px-3 py-2 text-sm w-24"
-            />
-          </div>
-          {accountError && (
-            <div className="flex flex-col gap-2">
-              <p className="text-sm text-red-600">{accountError}</p>
-              {accountPendingUserId && (
-                <button
-                  type="button"
-                  onClick={handleRetryProfile}
-                  disabled={accountSubmitting}
-                  className="self-start text-sm font-medium text-emerald-700 underline disabled:opacity-50"
-                >
-                  {accountSubmitting ? "Retrying..." : "Try again"}
-                </button>
+        {accountMode === "signup" ? (
+          <>
+            <form onSubmit={handleCreateAccount} className="border border-gray-200 rounded-lg p-4 flex flex-col gap-3">
+              <h2 className="font-semibold text-gray-900">Your Info</h2>
+              <p className="text-xs text-gray-500 -mt-2">We use this to find your local buyer and let you reach them directly.</p>
+              <input
+                type="text"
+                required
+                placeholder="Your name"
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+                className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
+              />
+              <input
+                type="tel"
+                required
+                placeholder="Phone"
+                value={customerPhone}
+                onChange={(e) => setCustomerPhone(e.target.value)}
+                className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
+              />
+              <input
+                type="email"
+                required
+                placeholder="Email"
+                value={customerEmail}
+                onChange={(e) => setCustomerEmail(e.target.value)}
+                className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
+              />
+              <input
+                type="password"
+                required
+                minLength={8}
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
+              />
+              <input
+                type="text"
+                required
+                placeholder="Street address"
+                value={addressStreet}
+                onChange={(e) => setAddressStreet(e.target.value)}
+                className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
+              />
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  required
+                  placeholder="City"
+                  value={addressCity}
+                  onChange={(e) => setAddressCity(e.target.value)}
+                  className="border border-gray-200 rounded-lg px-3 py-2 text-sm flex-1"
+                />
+                <input
+                  type="text"
+                  required
+                  placeholder="State"
+                  value={addressState}
+                  onChange={(e) => setAddressState(e.target.value)}
+                  className="border border-gray-200 rounded-lg px-3 py-2 text-sm w-20"
+                />
+                <input
+                  type="text"
+                  required
+                  placeholder="ZIP"
+                  value={addressZip}
+                  onChange={(e) => setAddressZip(e.target.value)}
+                  className="border border-gray-200 rounded-lg px-3 py-2 text-sm w-24"
+                />
+              </div>
+              {accountError && (
+                <div className="flex flex-col gap-2">
+                  <p className="text-sm text-red-600">{accountError}</p>
+                  {accountPendingUserId && (
+                    <button
+                      type="button"
+                      onClick={handleRetryProfile}
+                      disabled={accountSubmitting}
+                      className="self-start text-sm font-medium text-emerald-700 underline disabled:opacity-50"
+                    >
+                      {accountSubmitting ? "Retrying..." : "Try again"}
+                    </button>
+                  )}
+                </div>
               )}
-            </div>
-          )}
-          <button
-            type="submit"
-            disabled={accountSubmitting}
-            className="bg-emerald-600 text-white font-semibold px-4 py-2 rounded-lg disabled:opacity-50"
-          >
-            {accountSubmitting ? "Creating your account..." : "Create your account"}
-          </button>
-        </form>
+              <button
+                type="submit"
+                disabled={accountSubmitting}
+                className="bg-emerald-600 text-white font-semibold px-4 py-2 rounded-lg disabled:opacity-50"
+              >
+                {accountSubmitting ? "Creating your account..." : "Create your account"}
+              </button>
+            </form>
+            <p className="text-center text-sm text-gray-500 -mt-2">
+              Already have an account?{" "}
+              <button
+                type="button"
+                onClick={() => {
+                  setAccountError(null);
+                  setAccountMode("login");
+                }}
+                className="text-emerald-700 underline"
+              >
+                Log in
+              </button>
+            </p>
+          </>
+        ) : (
+          <div className="border border-gray-200 rounded-lg p-4 flex flex-col gap-3">
+            <LoginForm onSuccess={handleLoginSuccess} />
+            {accountError && <p className="text-sm text-red-600 text-center -mt-4">{accountError}</p>}
+            <p className="text-center text-sm text-gray-500 -mt-2">
+              Need an account?{" "}
+              <button
+                type="button"
+                onClick={() => {
+                  setAccountError(null);
+                  setAccountMode("signup");
+                }}
+                className="text-emerald-700 underline"
+              >
+                Sign up
+              </button>
+            </p>
+          </div>
+        )}
       </div>
     );
   }
@@ -731,8 +780,12 @@ export function SellFlowClient() {
       </button>
 
       {error && <p className="text-red-600 text-sm">{error}</p>}
-      <button type="submit" disabled={loading} className="bg-emerald-600 text-white font-semibold px-4 py-2 rounded-lg">
-        {loading ? "Finding buyers..." : "Find My Buyer"}
+      <button
+        type="submit"
+        disabled={loading || authLoading}
+        className="bg-emerald-600 text-white font-semibold px-4 py-2 rounded-lg disabled:opacity-50"
+      >
+        {loading ? "Finding buyers..." : authLoading ? "Checking your account..." : "Find My Buyer"}
       </button>
     </form>
   );
