@@ -9,10 +9,8 @@ import { EXPIRATION_MONTH_OPTIONS, isEffectivelyExpired, monthsFromNowToYYYYMM }
 import { useUser } from "@/lib/auth-client";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import { fetchOwnProfileContact } from "@/lib/profile-lookup";
-import { RequiresAccount } from "@/app/components/RequiresAccount";
-import { AccountModal } from "@/app/components/AccountModal";
 
-type Stage = "build" | "results" | "sent";
+type Stage = "build" | "account" | "results" | "sent";
 
 const emptyItem: OrderItem = { brand: "", count: 1, expiration: "", condition: "sealed" };
 
@@ -35,9 +33,14 @@ export function SellFlowClient() {
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
-  const [accountModalOpen, setAccountModalOpen] = useState(false);
-  const [refillTrigger, setRefillTrigger] = useState(0);
-  const [refreshingMatch, setRefreshingMatch] = useState(false);
+  const [password, setPassword] = useState("");
+  const [addressStreet, setAddressStreet] = useState("");
+  const [addressCity, setAddressCity] = useState("");
+  const [addressState, setAddressState] = useState("");
+  const [addressZip, setAddressZip] = useState("");
+  const [accountSubmitting, setAccountSubmitting] = useState(false);
+  const [accountError, setAccountError] = useState<string | null>(null);
+  const [accountPendingUserId, setAccountPendingUserId] = useState<string | null>(null);
   const { user } = useUser();
   const hasAutoFilledRef = useRef<string | null>(null);
 
@@ -53,7 +56,7 @@ export function SellFlowClient() {
         setCustomerPhone((prev) => prev || contact.phone);
       })
       .catch(() => {});
-  }, [user, refillTrigger]);
+  }, [user]);
 
   function brandIdentity(brand: (typeof PRODUCT_BRANDS)[number]) {
     return `${brand.category}:${brand.key}`;
@@ -159,34 +162,93 @@ export function SellFlowClient() {
       setError("Fill in brand and count for every item.");
       return;
     }
-    setLoading(true);
+    if (user) {
+      setLoading(true);
+      try {
+        await runMatch(state);
+        setStage("results");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Couldn't reach the server. Check your connection and try again.");
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+    setStage("account");
+  }
+
+  async function insertProfile(userId: string) {
+    const supabase = createBrowserSupabaseClient();
+    const { error: profileError } = await supabase.from("profiles").insert({
+      id: userId,
+      role: "customer",
+      name: customerName,
+      phone: customerPhone,
+      address_street: addressStreet,
+      address_city: addressCity,
+      address_state: addressState,
+      address_zip: addressZip,
+    });
+
+    if (profileError) {
+      setAccountError(`Account created but profile setup failed: ${profileError.message}`);
+      setAccountPendingUserId(userId);
+      setAccountSubmitting(false);
+      return;
+    }
+
     try {
       await runMatch(state);
       setStage("results");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't reach the server. Check your connection and try again.");
+      setAccountError(err instanceof Error ? err.message : "Couldn't reach the server. Check your connection and try again.");
     } finally {
-      setLoading(false);
+      setAccountSubmitting(false);
     }
   }
 
-  // After a customer logs in or signs up via the modal, the buyer cards on
-  // screen still hold the pre-login (contact-stripped) response. Re-run the
-  // search so the now-authenticated request returns real email/phone. Keep
-  // this quiet on failure — don't blank out results the customer can already
-  // see just because a background refresh didn't succeed.
-  async function refreshMatchAfterAuth() {
-    if (!state) return;
-    setRefreshingMatch(true);
-    try {
-      await runMatch(state);
-    } catch {
-      // Swallow — keep showing the existing (possibly still-gated) results
-      // rather than clearing the list or surfacing an error for a refresh
-      // the customer didn't explicitly trigger.
-    } finally {
-      setRefreshingMatch(false);
+  async function handleCreateAccount(e: React.FormEvent) {
+    e.preventDefault();
+    setAccountError(null);
+    setAccountSubmitting(true);
+
+    const supabase = createBrowserSupabaseClient();
+
+    // NOTE: this flow assumes "Confirm email" is OFF in Supabase Auth
+    // settings, so signUp() returns a live session immediately — same
+    // assumption SignupForm makes, documented there.
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+      email: customerEmail,
+      password,
+    });
+
+    if (signUpError) {
+      setAccountError(signUpError.message);
+      setAccountSubmitting(false);
+      return;
     }
+
+    const userId = signUpData.user?.id;
+    if (!userId) {
+      setAccountError("Account created but sign-up response was incomplete. Please try again.");
+      setAccountSubmitting(false);
+      return;
+    }
+
+    if (!signUpData.session) {
+      setAccountError("Check your email to confirm your account before continuing.");
+      setAccountSubmitting(false);
+      return;
+    }
+
+    await insertProfile(userId);
+  }
+
+  async function handleRetryProfile() {
+    if (!accountPendingUserId) return;
+    setAccountError(null);
+    setAccountSubmitting(true);
+    await insertProfile(accountPendingUserId);
   }
 
   async function handleSend(buyer: Company, channel: "sms" | "email") {
@@ -270,11 +332,129 @@ export function SellFlowClient() {
     );
   }
 
+  if (stage === "account") {
+    return (
+      <div className="flex flex-col gap-4">
+        <button
+          type="button"
+          onClick={() => setStage("build")}
+          className="text-xs font-medium text-gray-500 hover:text-emerald-700 self-start"
+        >
+          ← Back to your order
+        </button>
+
+        <div className="border border-gray-200 rounded-lg p-4">
+          <h2 className="font-semibold text-gray-900 mb-2">Order Summary</h2>
+          <div className="flex flex-col gap-1">
+            {items.map((item, i) => (
+              <p key={i} className="text-sm text-gray-600">
+                {item.brand} × {item.count} box{item.count === 1 ? "" : "es"} (exp: {item.expiration}, {item.condition})
+              </p>
+            ))}
+          </div>
+        </div>
+
+        <form onSubmit={handleCreateAccount} className="border border-gray-200 rounded-lg p-4 flex flex-col gap-3">
+          <h2 className="font-semibold text-gray-900">Your Info</h2>
+          <p className="text-xs text-gray-500 -mt-2">We use this to find your local buyer and let you reach them directly.</p>
+          <input
+            type="text"
+            required
+            placeholder="Your name"
+            value={customerName}
+            onChange={(e) => setCustomerName(e.target.value)}
+            className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
+          />
+          <input
+            type="tel"
+            required
+            placeholder="Phone"
+            value={customerPhone}
+            onChange={(e) => setCustomerPhone(e.target.value)}
+            className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
+          />
+          <input
+            type="email"
+            required
+            placeholder="Email"
+            value={customerEmail}
+            onChange={(e) => setCustomerEmail(e.target.value)}
+            className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
+          />
+          <input
+            type="password"
+            required
+            minLength={8}
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
+          />
+          <input
+            type="text"
+            required
+            placeholder="Street address"
+            value={addressStreet}
+            onChange={(e) => setAddressStreet(e.target.value)}
+            className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
+          />
+          <div className="flex gap-2">
+            <input
+              type="text"
+              required
+              placeholder="City"
+              value={addressCity}
+              onChange={(e) => setAddressCity(e.target.value)}
+              className="border border-gray-200 rounded-lg px-3 py-2 text-sm flex-1"
+            />
+            <input
+              type="text"
+              required
+              placeholder="State"
+              value={addressState}
+              onChange={(e) => setAddressState(e.target.value)}
+              className="border border-gray-200 rounded-lg px-3 py-2 text-sm w-20"
+            />
+            <input
+              type="text"
+              required
+              placeholder="ZIP"
+              value={addressZip}
+              onChange={(e) => setAddressZip(e.target.value)}
+              className="border border-gray-200 rounded-lg px-3 py-2 text-sm w-24"
+            />
+          </div>
+          {accountError && (
+            <div className="flex flex-col gap-2">
+              <p className="text-sm text-red-600">{accountError}</p>
+              {accountPendingUserId && (
+                <button
+                  type="button"
+                  onClick={handleRetryProfile}
+                  disabled={accountSubmitting}
+                  className="self-start text-sm font-medium text-emerald-700 underline disabled:opacity-50"
+                >
+                  {accountSubmitting ? "Retrying..." : "Try again"}
+                </button>
+              )}
+            </div>
+          )}
+          <button
+            type="submit"
+            disabled={accountSubmitting}
+            className="bg-emerald-600 text-white font-semibold px-4 py-2 rounded-lg disabled:opacity-50"
+          >
+            {accountSubmitting ? "Creating your account..." : "Create your account"}
+          </button>
+        </form>
+      </div>
+    );
+  }
+
   if (stage === "results") {
     const cards = buyers.length > 0 ? buyers : mailIn ? [mailIn] : [];
     const nameMissing = customerName.trim().length === 0;
     return (
-      <>
       <div className="flex flex-col gap-4">
         <button
           type="button"
@@ -328,9 +508,6 @@ export function SellFlowClient() {
           </div>
         </div>
 
-        {refreshingMatch && (
-          <p className="text-xs text-gray-400">Unlocking buyer contact info...</p>
-        )}
         {cards.length === 0 ? (
           <p className="text-sm text-gray-500">
             We couldn&apos;t find a buyer for your area right now. Email{" "}
@@ -348,31 +525,29 @@ export function SellFlowClient() {
                   <p className="font-medium text-gray-900">{c.name}</p>
                   {c.city && <p className="text-xs text-gray-400">{c.city}</p>}
                 </div>
-                {(c.email || c.phone || c.hasContact) && (
-                  <RequiresAccount onRequestAccount={() => setAccountModalOpen(true)}>
-                    <div className="flex gap-2">
-                      {c.email && (
-                        <button
-                          onClick={() => handleSend(c, "email")}
-                          disabled={sending || nameMissing}
-                          title={nameMissing ? "Enter your name first" : undefined}
-                          className="text-xs font-medium bg-emerald-600 text-white px-3 py-2 rounded-lg disabled:opacity-50"
-                        >
-                          {sending && selectedBuyer?.id === c.id ? "Sending..." : "Request Quote"}
-                        </button>
-                      )}
-                      {c.phone && (
-                        <button
-                          onClick={() => handleSend(c, "sms")}
-                          disabled={sending || nameMissing}
-                          title={nameMissing ? "Enter your name first" : undefined}
-                          className="text-xs font-medium border border-emerald-600 text-emerald-700 px-3 py-2 rounded-lg disabled:opacity-50"
-                        >
-                          {sending && selectedBuyer?.id === c.id ? "Sending..." : "Text Now"}
-                        </button>
-                      )}
-                    </div>
-                  </RequiresAccount>
+                {(c.email || c.phone) && (
+                  <div className="flex gap-2">
+                    {c.email && (
+                      <button
+                        onClick={() => handleSend(c, "email")}
+                        disabled={sending || nameMissing}
+                        title={nameMissing ? "Enter your name first" : undefined}
+                        className="text-xs font-medium bg-emerald-600 text-white px-3 py-2 rounded-lg disabled:opacity-50"
+                      >
+                        {sending && selectedBuyer?.id === c.id ? "Sending..." : "Request Quote"}
+                      </button>
+                    )}
+                    {c.phone && (
+                      <button
+                        onClick={() => handleSend(c, "sms")}
+                        disabled={sending || nameMissing}
+                        title={nameMissing ? "Enter your name first" : undefined}
+                        className="text-xs font-medium border border-emerald-600 text-emerald-700 px-3 py-2 rounded-lg disabled:opacity-50"
+                      >
+                        {sending && selectedBuyer?.id === c.id ? "Sending..." : "Text Now"}
+                      </button>
+                    )}
+                  </div>
                 )}
               </div>
             ))}
@@ -380,17 +555,6 @@ export function SellFlowClient() {
         )}
         {error && <p className="text-red-600 text-sm">{error}</p>}
       </div>
-      {accountModalOpen && (
-        <AccountModal
-          onClose={() => setAccountModalOpen(false)}
-          onSuccess={() => {
-            setAccountModalOpen(false);
-            setRefillTrigger((n) => n + 1);
-            refreshMatchAfterAuth();
-          }}
-        />
-      )}
-      </>
     );
   }
 
