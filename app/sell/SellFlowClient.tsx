@@ -5,7 +5,7 @@ import Image from "next/image";
 import { STATE_LABELS } from "@/lib/states";
 import type { Company, OrderItem } from "@/lib/types";
 import { PRODUCT_BRANDS } from "@/lib/product-catalog";
-import { EXPIRATION_MONTH_OPTIONS, isEffectivelyExpired, monthsFromNowToYYYYMM } from "@/lib/expiration";
+import { DEFAULT_EXPIRATION_MONTHS, getExpirationMonthOptions, isEffectivelyExpired, monthsFromNowToYYYYMM } from "@/lib/expiration";
 import { useUser } from "@/lib/auth-client";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import { fetchOwnProfileContact } from "@/lib/profile-lookup";
@@ -138,6 +138,7 @@ export function SellFlowClient() {
       const onlyLine = brand.lines[0];
       setSelectedLines((prev) => prev.map((l, i) => (i === index ? onlyLine.label : l)));
       updateItem(index, { brand: composeBrandString(brand, onlyLine) });
+      selectMonths(index, DEFAULT_EXPIRATION_MONTHS);
     } else {
       setSelectedLines((prev) => prev.map((l, i) => (i === index ? "" : l)));
       updateItem(index, { brand: "" });
@@ -148,6 +149,7 @@ export function SellFlowClient() {
     const chosenLine = brand.lines.find((l) => l.label === lineLabel);
     setSelectedLines((prev) => prev.map((l, i) => (i === index ? lineLabel : l)));
     updateItem(index, { brand: chosenLine ? composeBrandString(brand, chosenLine) : "" });
+    if (chosenLine) selectMonths(index, DEFAULT_EXPIRATION_MONTHS);
   }
 
   function clearProduct(index: number) {
@@ -158,9 +160,11 @@ export function SellFlowClient() {
 
   function selectMonths(index: number, months: number) {
     setSelectedMonths((prev) => prev.map((m, i) => (i === index ? months : m)));
-    const isBoundaryValue = months === 0 || months === EXPIRATION_MONTH_OPTIONS[EXPIRATION_MONTH_OPTIONS.length - 1].value;
+    // 0 ("already expired") and 25 ("24+ months") are catch-all buckets, not
+    // an actual calendar month — everything in between maps to one.
+    const isBoundaryValue = months === 0 || months === 25;
     const expirationValue = isBoundaryValue
-      ? EXPIRATION_MONTH_OPTIONS.find((opt) => opt.value === months)!.label
+      ? getExpirationMonthOptions().find((opt) => opt.value === months)!.label
       : monthsFromNowToYYYYMM(months, new Date());
     updateItem(index, { expiration: expirationValue });
   }
@@ -874,7 +878,7 @@ export function SellFlowClient() {
                   className="border border-gray-200 rounded-lg px-2 py-1"
                 >
                   <option value="">Months until expiration</option>
-                  {EXPIRATION_MONTH_OPTIONS.map((opt) => (
+                  {getExpirationMonthOptions().map((opt) => (
                     <option key={opt.value} value={opt.value}>
                       {opt.label}
                     </option>

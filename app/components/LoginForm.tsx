@@ -84,6 +84,9 @@ export function LoginForm({
         >
           {submitting ? "Logging in..." : "Log in"}
         </button>
+        <a href="/forgot-password" className="text-xs text-gray-400 hover:text-emerald-600 text-center">
+          Forgot password?
+        </a>
       </form>
     </div>
   )

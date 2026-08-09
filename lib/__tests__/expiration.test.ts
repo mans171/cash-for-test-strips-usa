@@ -1,13 +1,26 @@
 import { describe, it, expect } from 'vitest'
-import { EXPIRATION_MONTH_OPTIONS, isEffectivelyExpired, monthsFromNowToYYYYMM } from '@/lib/expiration'
+import { DEFAULT_EXPIRATION_MONTHS, getExpirationMonthOptions, isEffectivelyExpired, monthsFromNowToYYYYMM } from '@/lib/expiration'
 
-describe('EXPIRATION_MONTH_OPTIONS', () => {
-  it('has 26 options from 0 to 24 months plus a 24+ catch-all', () => {
-    expect(EXPIRATION_MONTH_OPTIONS).toHaveLength(26)
-    expect(EXPIRATION_MONTH_OPTIONS[0]).toEqual({ value: 0, label: 'Already expired / less than 1 month' })
-    expect(EXPIRATION_MONTH_OPTIONS[1]).toEqual({ value: 1, label: '1 month' })
-    expect(EXPIRATION_MONTH_OPTIONS[24]).toEqual({ value: 24, label: '24 months' })
-    expect(EXPIRATION_MONTH_OPTIONS[25]).toEqual({ value: 25, label: '24+ months' })
+describe('getExpirationMonthOptions', () => {
+  it('has 26 options from 0 to 24 months plus a 24+ catch-all, each labeled with its calendar month', () => {
+    const aug27 = new Date(2026, 7, 27) // August 27, 2026
+    const options = getExpirationMonthOptions(aug27)
+    expect(options).toHaveLength(26)
+    expect(options[0]).toEqual({ value: 0, label: 'Already expired / less than 1 month' })
+    expect(options[1]).toEqual({ value: 1, label: '1 month (Sep 2026)' })
+    expect(options[9]).toEqual({ value: 9, label: '9 months (May 2027)' })
+    expect(options[24]).toEqual({ value: 24, label: '24 months (Aug 2028)' })
+    expect(options[25]).toEqual({ value: 25, label: '24+ months' })
+  })
+
+  it('defaults to the current date when none is passed', () => {
+    expect(getExpirationMonthOptions()).toHaveLength(26)
+  })
+})
+
+describe('DEFAULT_EXPIRATION_MONTHS', () => {
+  it('is 9', () => {
+    expect(DEFAULT_EXPIRATION_MONTHS).toBe(9)
   })
 })
 
