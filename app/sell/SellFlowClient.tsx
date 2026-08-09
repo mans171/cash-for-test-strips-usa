@@ -35,10 +35,8 @@ export function SellFlowClient() {
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [addressStreet, setAddressStreet] = useState("");
   const [addressCity, setAddressCity] = useState("");
   const [addressState, setAddressState] = useState("");
-  const [addressZip, setAddressZip] = useState("");
   const [accountSubmitting, setAccountSubmitting] = useState(false);
   const [accountError, setAccountError] = useState<string | null>(null);
   const [accountPendingUserId, setAccountPendingUserId] = useState<string | null>(null);
@@ -186,10 +184,10 @@ export function SellFlowClient() {
       role: "customer",
       name: customerName,
       phone: customerPhone,
-      address_street: addressStreet,
+      address_street: "",
       address_city: addressCity,
       address_state: addressState,
-      address_zip: addressZip,
+      address_zip: "",
     });
 
     if (profileError) {
@@ -376,6 +374,7 @@ export function SellFlowClient() {
               <input
                 type="text"
                 required
+                autoComplete="name"
                 placeholder="Your name"
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
@@ -384,6 +383,7 @@ export function SellFlowClient() {
               <input
                 type="tel"
                 required
+                autoComplete="tel"
                 placeholder="Phone"
                 value={customerPhone}
                 onChange={(e) => setCustomerPhone(e.target.value)}
@@ -392,6 +392,7 @@ export function SellFlowClient() {
               <input
                 type="email"
                 required
+                autoComplete="email"
                 placeholder="Email"
                 value={customerEmail}
                 onChange={(e) => setCustomerEmail(e.target.value)}
@@ -401,23 +402,17 @@ export function SellFlowClient() {
                 type="password"
                 required
                 minLength={8}
+                autoComplete="new-password"
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
-              />
-              <input
-                type="text"
-                required
-                placeholder="Street address"
-                value={addressStreet}
-                onChange={(e) => setAddressStreet(e.target.value)}
                 className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
               />
               <div className="flex gap-2">
                 <input
                   type="text"
                   required
+                  autoComplete="address-level2"
                   placeholder="City"
                   value={addressCity}
                   onChange={(e) => setAddressCity(e.target.value)}
@@ -426,17 +421,10 @@ export function SellFlowClient() {
                 <input
                   type="text"
                   required
+                  autoComplete="address-level1"
                   placeholder="State"
                   value={addressState}
                   onChange={(e) => setAddressState(e.target.value)}
-                  className="border border-gray-200 rounded-lg px-3 py-2 text-sm w-20"
-                />
-                <input
-                  type="text"
-                  required
-                  placeholder="ZIP"
-                  value={addressZip}
-                  onChange={(e) => setAddressZip(e.target.value)}
                   className="border border-gray-200 rounded-lg px-3 py-2 text-sm w-24"
                 />
               </div>
