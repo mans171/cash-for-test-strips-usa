@@ -129,14 +129,14 @@ function DirectoryCard({ company }: { company: Company }) {
               href={`/api/track?company=${company.id}&url=${encodeURIComponent(company.url)}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex-1 text-center text-xs font-medium bg-emerald-600 text-white px-3 py-2 rounded-lg hover:bg-emerald-700 transition-colors"
+              className="flex-1 text-center text-xs font-medium bg-emerald-600 text-white px-3 py-2 rounded-lg hover:bg-emerald-700 transition-colors block"
             >
               Visit site →
             </a>
           ) : (
             <a
               href={`tel:${company.phone ?? "5187799751"}`}
-              className="flex-1 text-center text-xs font-medium bg-emerald-600 text-white px-3 py-2 rounded-lg hover:bg-emerald-700 transition-colors"
+              className="flex-1 text-center text-xs font-medium bg-emerald-600 text-white px-3 py-2 rounded-lg hover:bg-emerald-700 transition-colors block"
             >
               Contact
             </a>

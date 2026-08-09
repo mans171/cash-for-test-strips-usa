@@ -73,7 +73,7 @@ export default async function CompanyPage({ params }: Props) {
                 href={`/api/track?company=${company.id}&url=${encodeURIComponent(company.url)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="shrink-0 bg-emerald-600 text-white font-semibold px-5 py-3 rounded-full text-sm hover:bg-emerald-700 transition-colors"
+                className="shrink-0 inline-block bg-emerald-600 text-white font-semibold px-5 py-3 rounded-full text-sm hover:bg-emerald-700 transition-colors"
               >
                 Visit Website →
               </a>
