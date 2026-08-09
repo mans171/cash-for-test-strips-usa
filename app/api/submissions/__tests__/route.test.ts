@@ -23,6 +23,20 @@ vi.mock('@/lib/email', async (importOriginal) => {
   }
 })
 
+// createSubmission defers that notification email with next/server's after(),
+// which requires Next's real request-scope machinery — absent when a route
+// handler is invoked directly like this. Stub it to just run the callback,
+// preserving every other next/server export (NextResponse, etc.) untouched.
+vi.mock('next/server', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('next/server')>()
+  return {
+    ...actual,
+    after: (cb: () => unknown) => {
+      void cb()
+    },
+  }
+})
+
 const cleanupIds: string[] = []
 
 afterEach(async () => {

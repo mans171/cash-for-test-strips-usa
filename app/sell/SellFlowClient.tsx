@@ -226,7 +226,11 @@ export function SellFlowClient() {
     });
 
     if (profileError) {
-      setAccountError(`Account created but profile setup failed: ${profileError.message}`);
+      // Never surface profileError.message to the customer — it's a raw
+      // Postgres/RLS error (e.g. policy or constraint text) not written for
+      // end users. Log it for debugging; show a safe, actionable message.
+      console.error("[sell] profile insert failed", profileError);
+      setAccountError("Your account was created, but we couldn't save your info. Please try again.");
       setAccountPendingUserId(userId);
       setAccountSubmitting(false);
       return;
@@ -258,7 +262,16 @@ export function SellFlowClient() {
     });
 
     if (signUpError) {
-      setAccountError(signUpError.message);
+      // Supabase Auth's own messages are written for end users (weak
+      // password, invalid email, rate limited) and are safe to show as-is —
+      // except the duplicate-account case, which reads better as a nudge
+      // toward the login toggle than as a raw error.
+      if (signUpError.code === "user_already_exists" || signUpError.code === "email_exists") {
+        setAccountError("Looks like you already have an account with this email — log in instead.");
+        setAccountMode("login");
+      } else {
+        setAccountError(signUpError.message);
+      }
       setAccountSubmitting(false);
       return;
     }

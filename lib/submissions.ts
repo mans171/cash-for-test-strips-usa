@@ -1,3 +1,4 @@
+import { after } from 'next/server'
 import { supabaseAdmin } from './supabase-admin'
 import { VALID_STATE_CODES } from './states'
 import type { SubmissionPayload } from './types'
@@ -109,11 +110,19 @@ export async function createSubmission(input: CreateSubmissionInput): Promise<Su
 
   const notifyEmail = process.env.ADMIN_NOTIFY_EMAIL
   if (notifyEmail) {
-    await sendEmail({
-      to: notifyEmail,
-      subject: `New ${input.targetCompanyId ? 'edit' : 'buyer'} submission: ${escapeHtml(input.payload.name)}`,
-      html: `<p>${escapeHtml(input.payload.name)} (${escapeHtml(input.submittedPhone)}) submitted ${input.targetCompanyId ? 'an edit to their listing' : 'a new buyer profile'}.</p><p><a href="https://cash4teststripsusa.com/admin">Review it in the admin dashboard</a>.</p>`,
-    })
+    // sendEmail() already swallows its own errors — awaiting it here only
+    // makes the caller (a customer or admin) wait on Gmail's SMTP round
+    // trip for a notification email that's best-effort by design. Defer it
+    // with after() so the response returns immediately; Vercel keeps the
+    // function alive until the send finishes instead of risking it getting
+    // cut off mid-send the way a bare fire-and-forget would.
+    after(() =>
+      sendEmail({
+        to: notifyEmail,
+        subject: `New ${input.targetCompanyId ? 'edit' : 'buyer'} submission: ${escapeHtml(input.payload.name)}`,
+        html: `<p>${escapeHtml(input.payload.name)} (${escapeHtml(input.submittedPhone)}) submitted ${input.targetCompanyId ? 'an edit to their listing' : 'a new buyer profile'}.</p><p><a href="https://cash4teststripsusa.com/admin">Review it in the admin dashboard</a>.</p>`,
+      })
+    )
   }
 
   return {
@@ -204,11 +213,13 @@ export async function approveSubmission(submissionId: string): Promise<void> {
   if (statusError) throw new Error(`Failed to update submission status: ${statusError.message}`)
 
   if (payload.email) {
-    await sendEmail({
-      to: payload.email,
-      subject: 'Your listing is live on Cash4TestStripsUSA',
-      html: `<p>Hi ${escapeHtml(payload.owner_name ?? payload.name)},</p><p>Your listing "${escapeHtml(payload.name)}" is now live on Cash4TestStripsUSA. Customers in your area can find and contact you.</p>`,
-    })
+    after(() =>
+      sendEmail({
+        to: payload.email!,
+        subject: 'Your listing is live on Cash4TestStripsUSA',
+        html: `<p>Hi ${escapeHtml(payload.owner_name ?? payload.name)},</p><p>Your listing "${escapeHtml(payload.name)}" is now live on Cash4TestStripsUSA. Customers in your area can find and contact you.</p>`,
+      })
+    )
   }
 }
 
@@ -227,10 +238,12 @@ export async function rejectSubmission(submissionId: string): Promise<void> {
 
   const payload = submission?.payload as SubmissionPayload | undefined
   if (payload?.email) {
-    await sendEmail({
-      to: payload.email,
-      subject: 'Update on your Cash4TestStripsUSA submission',
-      html: `<p>Hi ${escapeHtml(payload.owner_name ?? payload.name)},</p><p>Your recent submission to Cash4TestStripsUSA was not approved. If you think this is a mistake, reply to this email or contact us directly.</p>`,
-    })
+    after(() =>
+      sendEmail({
+        to: payload.email!,
+        subject: 'Update on your Cash4TestStripsUSA submission',
+        html: `<p>Hi ${escapeHtml(payload.owner_name ?? payload.name)},</p><p>Your recent submission to Cash4TestStripsUSA was not approved. If you think this is a mistake, reply to this email or contact us directly.</p>`,
+      })
+    )
   }
 }
