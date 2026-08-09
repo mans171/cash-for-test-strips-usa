@@ -13,7 +13,7 @@ export type Company = {
   description: string | null
   featured: boolean
   phone: string | null
-  // Set only by /api/sell/match's stripContactInfo() for anonymous requests:
+  // Set only by lib/company-contact.ts's stripCompanyContact() for anonymous requests:
   // true when the underlying buyer has real email/phone on file, even though
   // those fields are nulled out here. Lets the client render the account-gate
   // prompt for logged-out visitors without leaking the actual contact info.

@@ -1,12 +1,7 @@
 import { NextResponse } from 'next/server'
 import { matchBuyersForState, getMailInFallback } from '@/lib/order-matching'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
-import type { Company } from '@/lib/types'
-
-function stripContactInfo(company: Company): Company {
-  const hasContact = !!(company.email || company.phone)
-  return { ...company, email: null, phone: null, hasContact }
-}
+import { stripCompanyContact } from '@/lib/company-contact'
 
 export async function POST(request: Request) {
   try {
@@ -23,12 +18,12 @@ export async function POST(request: Request) {
 
     const buyers = await matchBuyersForState(state)
     if (buyers.length > 0) {
-      const result = isAuthenticated ? buyers : buyers.map(stripContactInfo)
+      const result = isAuthenticated ? buyers : buyers.map(stripCompanyContact)
       return NextResponse.json({ buyers: result, mailIn: null })
     }
 
     const mailIn = await getMailInFallback()
-    const result = mailIn && !isAuthenticated ? stripContactInfo(mailIn) : mailIn
+    const result = mailIn && !isAuthenticated ? stripCompanyContact(mailIn) : mailIn
     return NextResponse.json({ buyers: [], mailIn: result })
   } catch (error) {
     console.error('[POST /api/sell/match]', error)

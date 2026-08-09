@@ -3,7 +3,9 @@ import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import type { Metadata } from "next";
 import { STATE_LABELS } from "@/lib/states";
-import { RequiresAccount } from "@/app/components/RequiresAccount";
+import type { Company } from "@/lib/types";
+import { stripCompanyContact } from "@/lib/company-contact";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -29,13 +31,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function CompanyPage({ params }: Props) {
   const { slug } = await params;
 
-  const { data: company } = await supabase
+  const { data: rawCompany } = await supabase
     .from("companies")
-    .select("id, name, slug, url, city, owner_name, states, payment_methods, accepted_brands, rating, description, featured, phone, mail_in")
+    .select("id, name, slug, url, email, city, owner_name, states, payment_methods, accepted_brands, rating, description, featured, phone, mail_in")
     .eq("slug", slug)
     .single();
 
-  if (!company || company.mail_in) notFound();
+  if (!rawCompany || rawCompany.mail_in) notFound();
+
+  const hasUrl = !!rawCompany.url;
+  const hasPhone = !!rawCompany.phone;
+
+  const supabaseServer = await createServerSupabaseClient();
+  const { data: { user } } = await supabaseServer.auth.getUser();
+  const isAuthenticated = !!user;
+  const company = (isAuthenticated ? rawCompany : stripCompanyContact(rawCompany as Company)) as Company;
 
   const stateNames = company.states.map((s: string) => STATE_LABELS[s] ?? s);
 
@@ -67,8 +77,8 @@ export default async function CompanyPage({ params }: Props) {
             )}
           </div>
 
-          {company.url && (
-            <RequiresAccount className="shrink-0">
+          {hasUrl && (
+            isAuthenticated && company.url ? (
               <a
                 href={`/api/track?company=${company.id}&url=${encodeURIComponent(company.url)}`}
                 target="_blank"
@@ -77,7 +87,16 @@ export default async function CompanyPage({ params }: Props) {
               >
                 Visit Website →
               </a>
-            </RequiresAccount>
+            ) : (
+              <div className="shrink-0 flex flex-col gap-1 items-end">
+                <span className="inline-block bg-emerald-600 text-white font-semibold px-5 py-3 rounded-full text-sm opacity-40 pointer-events-none">
+                  Visit Website →
+                </span>
+                <p className="text-xs text-red-600">
+                  <Link href="/signup" className="underline">Create an account</Link> to view
+                </p>
+              </div>
+            )
           )}
         </div>
 
@@ -113,13 +132,13 @@ export default async function CompanyPage({ params }: Props) {
         <div className="bg-emerald-50 rounded-xl p-6 text-center">
           <h2 className="font-semibold text-gray-900 mb-2">Ready to sell?</h2>
           <p className="text-sm text-gray-500 mb-4">
-            {company.url
+            {hasUrl
               ? "Visit their website to get a quote and arrange payment."
               : "Tap the button below to get connected with this buyer."}
           </p>
-          {(company.url || company.phone) && (
-            <RequiresAccount>
-              {company.url ? (
+          {(hasUrl || hasPhone) && (
+            isAuthenticated ? (
+              company.url ? (
                 <a
                   href={`/api/track?company=${company.id}&url=${encodeURIComponent(company.url)}`}
                   target="_blank"
@@ -135,8 +154,17 @@ export default async function CompanyPage({ params }: Props) {
                 >
                   Contact
                 </a>
-              )}
-            </RequiresAccount>
+              )
+            ) : (
+              <div className="flex flex-col gap-1 items-center">
+                <span className="inline-block bg-emerald-600 text-white font-semibold px-6 py-3 rounded-full text-sm opacity-40 pointer-events-none">
+                  {hasUrl ? "Visit site →" : "Contact"}
+                </span>
+                <p className="text-xs text-red-600">
+                  <Link href="/signup" className="underline">Create an account</Link> to view
+                </p>
+              </div>
+            )
           )}
         </div>
       </div>

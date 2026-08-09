@@ -4,7 +4,8 @@ import type { Metadata } from "next";
 import { DirectoryFilters } from "./filters";
 import { STATE_LABELS } from "@/lib/states";
 import type { Company } from "@/lib/types";
-import { RequiresAccount } from "@/app/components/RequiresAccount";
+import { stripCompanyContact } from "@/lib/company-contact";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "Directory — Find Test Strip Buyers Near You",
@@ -31,7 +32,12 @@ export default async function DirectoryPage({
   }
 
   const { data } = await query;
-  const companies = (data ?? []) as Company[];
+  const rawCompanies = (data ?? []) as Company[];
+
+  const supabaseServer = await createServerSupabaseClient();
+  const { data: { user } } = await supabaseServer.auth.getUser();
+  const isAuthenticated = !!user;
+  const companies = isAuthenticated ? rawCompanies : rawCompanies.map(stripCompanyContact);
 
   const stateCode = state?.toUpperCase();
   const stateLabel = stateCode ? (STATE_LABELS[stateCode] ?? stateCode) : null;
@@ -60,7 +66,7 @@ export default async function DirectoryPage({
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {companies.map((c) => (
-            <DirectoryCard key={c.id} company={c} />
+            <DirectoryCard key={c.id} company={c} isAuthenticated={isAuthenticated} />
           ))}
         </div>
       )}
@@ -68,7 +74,7 @@ export default async function DirectoryPage({
   );
 }
 
-function DirectoryCard({ company }: { company: Company }) {
+function DirectoryCard({ company, isAuthenticated }: { company: Company; isAuthenticated: boolean }) {
   const stateLabels = company.states
     .slice(0, 2)
     .map((s) => STATE_LABELS[s] ?? s)
@@ -123,9 +129,9 @@ function DirectoryCard({ company }: { company: Company }) {
         >
           View details
         </Link>
-        {company.url || company.phone ? (
-          <RequiresAccount className="flex-1">
-            {company.url ? (
+        {company.url || company.phone || company.hasContact ? (
+          isAuthenticated ? (
+            company.url ? (
               <a
                 href={`/api/track?company=${company.id}&url=${encodeURIComponent(company.url)}`}
                 target="_blank"
@@ -141,8 +147,17 @@ function DirectoryCard({ company }: { company: Company }) {
               >
                 Contact
               </a>
-            )}
-          </RequiresAccount>
+            )
+          ) : (
+            <div className="flex-1 flex flex-col gap-1">
+              <span className="text-center text-xs font-medium bg-emerald-600 text-white px-3 py-2 rounded-lg opacity-40 pointer-events-none block">
+                Contact
+              </span>
+              <p className="text-xs text-red-600 text-center">
+                <Link href="/signup" className="underline">Create an account</Link> to view
+              </p>
+            </div>
+          )
         ) : (
           <a
             href="tel:5187799751"
