@@ -1,8 +1,29 @@
-import { describe, it, expect, afterEach } from 'vitest'
+import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { signSession, ADMIN_SESSION_COOKIE_NAME } from '@/lib/admin-auth'
 import { createSubmission } from '@/lib/submissions'
 import { POST } from '../route'
+
+// createSubmission (used in test setup below) and approveSubmission (called
+// through the route) both fire real notification emails and await them — a
+// real SMTP round trip to Gmail occasionally exceeds Vitest's 5000ms default
+// timeout, which is this suite's actual flake cause, not environmental
+// noise. Mock it out, same precedent as
+// app/api/leads/__tests__/route.test.ts mocking sendEmailOrThrow.
+const mockSendEmail = vi.fn()
+
+beforeEach(() => {
+  mockSendEmail.mockReset()
+  mockSendEmail.mockResolvedValue(undefined)
+})
+
+vi.mock('@/lib/email', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/email')>()
+  return {
+    ...actual,
+    sendEmail: (...args: unknown[]) => mockSendEmail(...args),
+  }
+})
 
 const cleanupSubmissionIds: string[] = []
 const cleanupCompanySlugs: string[] = []

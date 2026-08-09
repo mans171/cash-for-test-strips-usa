@@ -1,6 +1,27 @@
-import { describe, it, expect, afterEach } from 'vitest'
+import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { POST } from '../route'
+
+// createSubmission fires a real admin-notification email whenever
+// ADMIN_NOTIFY_EMAIL is set (it is, in .env.local), and awaits it — a real
+// SMTP round trip to Gmail occasionally exceeds Vitest's 5000ms default
+// timeout, which is the "approves a pending submission" flake's actual
+// cause, not environmental noise. Mock it out, same precedent as
+// app/api/leads/__tests__/route.test.ts mocking sendEmailOrThrow.
+const mockSendEmail = vi.fn()
+
+beforeEach(() => {
+  mockSendEmail.mockReset()
+  mockSendEmail.mockResolvedValue(undefined)
+})
+
+vi.mock('@/lib/email', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/email')>()
+  return {
+    ...actual,
+    sendEmail: (...args: unknown[]) => mockSendEmail(...args),
+  }
+})
 
 const cleanupIds: string[] = []
 
