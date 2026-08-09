@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import type { Metadata } from "next";
 import { STATE_LABELS } from "@/lib/states";
+import { RequiresAccount } from "@/app/components/RequiresAccount";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -67,14 +68,16 @@ export default async function CompanyPage({ params }: Props) {
           </div>
 
           {company.url && (
-            <a
-              href={`/api/track?company=${company.id}&url=${encodeURIComponent(company.url)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="shrink-0 bg-emerald-600 text-white font-semibold px-5 py-3 rounded-full text-sm hover:bg-emerald-700 transition-colors"
-            >
-              Visit Website →
-            </a>
+            <RequiresAccount className="shrink-0">
+              <a
+                href={`/api/track?company=${company.id}&url=${encodeURIComponent(company.url)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="shrink-0 bg-emerald-600 text-white font-semibold px-5 py-3 rounded-full text-sm hover:bg-emerald-700 transition-colors"
+              >
+                Visit Website →
+              </a>
+            </RequiresAccount>
           )}
         </div>
 
@@ -114,23 +117,27 @@ export default async function CompanyPage({ params }: Props) {
               ? "Visit their website to get a quote and arrange payment."
               : "Tap the button below to get connected with this buyer."}
           </p>
-          {company.url ? (
-            <a
-              href={`/api/track?company=${company.id}&url=${encodeURIComponent(company.url)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-block bg-emerald-600 text-white font-semibold px-6 py-3 rounded-full text-sm hover:bg-emerald-700 transition-colors"
-            >
-              Visit site →
-            </a>
-          ) : company.phone ? (
-            <a
-              href={`tel:${company.phone}`}
-              className="inline-block bg-emerald-600 text-white font-semibold px-6 py-3 rounded-full text-sm hover:bg-emerald-700 transition-colors"
-            >
-              Contact
-            </a>
-          ) : null}
+          {(company.url || company.phone) && (
+            <RequiresAccount>
+              {company.url ? (
+                <a
+                  href={`/api/track?company=${company.id}&url=${encodeURIComponent(company.url)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block bg-emerald-600 text-white font-semibold px-6 py-3 rounded-full text-sm hover:bg-emerald-700 transition-colors"
+                >
+                  Visit site →
+                </a>
+              ) : (
+                <a
+                  href={`tel:${company.phone}`}
+                  className="inline-block bg-emerald-600 text-white font-semibold px-6 py-3 rounded-full text-sm hover:bg-emerald-700 transition-colors"
+                >
+                  Contact
+                </a>
+              )}
+            </RequiresAccount>
+          )}
         </div>
       </div>
 
