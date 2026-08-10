@@ -32,7 +32,7 @@ export default function AboutPage() {
         Finding a buyer used to mean posting on Craigslist or Facebook Marketplace and hoping someone
         responded. We built a better option: a searchable directory of vetted buyers organized by
         state, brand, and payment method, with pricing guides and state-by-state legal information so
-        sellers know exactly what they're getting into before they make a call.
+        sellers know exactly what they&apos;re getting into before they make a call.
       </p>
 
       <h2 className="text-xl font-bold text-gray-900 mt-10 mb-3">How the buyer network works</h2>
@@ -45,15 +45,15 @@ export default function AboutPage() {
       <p className="text-gray-600 leading-relaxed mb-6">
         For sellers who want a single point of contact, we also buy directly. Call or text{' '}
         <a href="tel:5187799751" className="text-emerald-600 hover:underline">518-779-9751</a> and
-        we'll quote you on the spot — single boxes or bulk lots.
+        we&apos;ll quote you on the spot — single boxes or bulk lots.
       </p>
 
       <h2 className="text-xl font-bold text-gray-900 mt-10 mb-3">Who uses the site</h2>
       <p className="text-gray-600 leading-relaxed mb-6">
         Our sellers fall into a few consistent categories: people with diabetes who switched meters or
-        moved to a CGM and have leftover strips, caregivers who managed a family member's supplies,
+        moved to a CGM and have leftover strips, caregivers who managed a family member&apos;s supplies,
         estate liquidators dealing with diabetic inventory after a loss, and pharmacies or medical
-        supply businesses with excess stock they can't otherwise move. We handle all of them, from one
+        supply businesses with excess stock they can&apos;t otherwise move. We handle all of them, from one
         box to several hundred.
       </p>
 
@@ -73,9 +73,9 @@ export default function AboutPage() {
       <h2 className="text-xl font-bold text-gray-900 mt-10 mb-3">Operating across all 50 states</h2>
       <p className="text-gray-600 leading-relaxed mb-6">
         Our <Link href="/blog" className="text-emerald-600 hover:underline">blog</Link> covers the
-        legal and practical details of selling in every state. Whether you're in a major metro or a
+        legal and practical details of selling in every state. Whether you&apos;re in a major metro or a
         rural county, the process is the same: find a buyer, describe what you have, and get paid
-        fast. If you're not sure whether your supplies qualify, call us and we'll tell you.
+        fast. If you&apos;re not sure whether your supplies qualify, call us and we&apos;ll tell you.
       </p>
 
       <div className="bg-emerald-50 rounded-xl p-6 text-center mt-10">

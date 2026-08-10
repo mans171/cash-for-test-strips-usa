@@ -130,7 +130,7 @@ export default function PriceGuidePage() {
         The ranges above are what buyers in our network pay for standard-condition, single-box
         transactions. Your actual offer may be higher or lower depending on lot size, expiration
         dates, and demand. Call{' '}
-        <a href="tel:5187799751" className="text-emerald-600 hover:underline">518-779-9751</a> — we'll
+        <a href="tel:5187799751" className="text-emerald-600 hover:underline">518-779-9751</a> — we&apos;ll
         give you a number on the spot.
       </p>
 

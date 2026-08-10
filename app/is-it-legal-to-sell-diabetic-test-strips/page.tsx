@@ -69,7 +69,7 @@ export default function IsItLegalPage() {
         The strips must not have been purchased through Medicare or Medicaid. This is the critical
         legal line. If Medicare or Medicaid paid for the supplies — directly or through a Part D plan
         — those supplies cannot legally be resold. Selling government-purchased medical supplies is
-        considered fraud. If you're not certain how your strips were paid for, check your insurance
+        considered fraud. If you&apos;re not certain how your strips were paid for, check your insurance
         documentation or ask your pharmacy before trying to sell.
       </p>
       <p className="text-gray-600 leading-relaxed mb-6">
@@ -90,7 +90,7 @@ export default function IsItLegalPage() {
       <h2 className="text-xl font-bold text-gray-900 mt-10 mb-3">Is there a legal gray area?</h2>
       <p className="text-gray-600 leading-relaxed mb-6">
         The Medicare/Medicaid rule is where sellers most often run into problems, and it is the area
-        where you should be careful. "I didn't know they were Medicare-paid" is not a defense. The
+        where you should be careful. &quot;I didn&apos;t know they were Medicare-paid&quot; is not a defense. The
         rest of the transaction — the actual exchange of sealed, personally owned supplies for cash —
         is a standard private-party sale with no unusual legal complexity. Some buyers will ask you to
         confirm, in writing, that the strips were not obtained through Medicare or Medicaid. This is
@@ -102,7 +102,7 @@ export default function IsItLegalPage() {
         The federal rules above apply everywhere. Some states have additional resale or consumer
         protection statutes that apply to medical supplies, but no state prohibits the private sale of
         personally owned, unused diabetic test strips. See{' '}
-        <Link href="/blog" className="text-emerald-600 hover:underline">your state's guide</Link>{' '}
+        <Link href="/blog" className="text-emerald-600 hover:underline">your state&apos;s guide</Link>{' '}
         for any relevant local context.
       </p>
 
