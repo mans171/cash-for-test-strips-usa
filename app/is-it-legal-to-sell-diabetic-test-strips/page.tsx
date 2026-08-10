@@ -46,6 +46,12 @@ export default function IsItLegalPage() {
 
       <h1 className="text-3xl font-bold text-gray-900 mb-6">Is It Legal to Sell Diabetic Test Strips?</h1>
 
+      <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6 not-prose">
+        <p className="text-sm text-amber-900 leading-relaxed">
+          <strong>General Information, Not Legal Advice:</strong> This page provides general information only. Laws can vary and change — if you have specific concerns about your situation, consult a licensed attorney in your state.
+        </p>
+      </div>
+
       <p className="text-gray-600 leading-relaxed mb-6">
         Yes. Selling unused, personally owned, unopened diabetic test strips is legal throughout the
         United States. It is not a Medicare or Medicaid fraud issue when the strips are legitimately
@@ -116,13 +122,16 @@ export default function IsItLegalPage() {
         ))}
       </div>
 
-      <div className="bg-emerald-50 rounded-xl p-6 text-center mt-10 not-prose">
-        <a
-          href="tel:5187799751"
-          className="inline-block bg-emerald-600 text-white font-semibold px-6 py-3 rounded-full text-sm hover:bg-emerald-700 transition-colors"
-        >
-          Call 518-779-9751 with questions →
-        </a>
+      <div className="text-center mt-10 not-prose">
+        <p className="text-xs text-gray-500 mb-4">Not legal advice — consult an attorney with specific questions about your situation.</p>
+        <div className="bg-emerald-50 rounded-xl p-6">
+          <a
+            href="tel:5187799751"
+            className="inline-block bg-emerald-600 text-white font-semibold px-6 py-3 rounded-full text-sm hover:bg-emerald-700 transition-colors"
+          >
+            Call 518-779-9751 with questions →
+          </a>
+        </div>
       </div>
     </div>
   )
