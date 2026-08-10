@@ -11,7 +11,7 @@ export default function BuyerPortalPage() {
     <div className="max-w-2xl mx-auto px-4 py-12">
       <h1 className="text-2xl font-bold text-gray-900 mb-2">Manage Your Listing</h1>
       <p className="text-gray-500 text-sm mb-8">
-        Enter your phone number to edit your existing listing, or create a new one. Changes are reviewed before going live.
+        Log in or create a buyer account to claim your existing listing or add a new one. Changes are reviewed before going live.
       </p>
       <BuyerPortalClient />
     </div>
