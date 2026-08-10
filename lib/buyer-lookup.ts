@@ -1,12 +1,12 @@
 import { supabaseAdmin } from './supabase-admin'
 import type { Company } from './types'
 
-const COMPANY_FIELDS =
+export const BUYER_COMPANY_FIELDS =
   'id, name, slug, url, email, city, owner_name, states, payment_methods, accepted_brands, rating, description, featured, phone'
 
 export async function lookupCompaniesByPhone(phone: string): Promise<Company[]> {
   const normalized = phone.replace(/[^0-9]/g, '')
-  const { data, error } = await supabaseAdmin.from('companies').select(COMPANY_FIELDS)
+  const { data, error } = await supabaseAdmin.from('companies').select(BUYER_COMPANY_FIELDS)
 
   if (error) throw new Error(`Lookup failed: ${error.message}`)
   return (data ?? []).filter(
