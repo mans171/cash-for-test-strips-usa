@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { STATE_BLOG_POSTS, getPostBySlug } from "@/lib/blog-posts";
 import { supabase } from "@/lib/supabase";
+import { buildFaqPageSchema, buildArticleSchema, buildBreadcrumbSchema } from "@/lib/schema";
+import { JsonLd } from "@/app/components/JsonLd";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -18,6 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: post.title,
     description: post.metaDescription,
+    alternates: { canonical: `https://cash4teststripsusa.com/blog/${slug}` },
     openGraph: {
       title: post.title,
       description: post.metaDescription,
@@ -42,8 +45,48 @@ export default async function BlogPostPage({ params }: Props) {
 
   const hasLocalBuyers = (localBuyers ?? []).length > 0;
 
+  const faqs = [
+    {
+      q: `How fast will I get paid in ${stateName}?`,
+      a: "Most payments are sent within 24 hours of us receiving and verifying your strips. For local transactions in some areas, same-day cash is possible.",
+    },
+    {
+      q: "Do you accept partial boxes or opened packaging?",
+      a: "No — we only accept strips in their original, unopened, sealed packaging. Partial or damaged boxes cannot be resold.",
+    },
+    {
+      q: "What if my strips are close to expiring?",
+      a: "We generally require at least 6 months before expiration for test strips and most supplies. Exception: we accept expired Omnipod pods and expired Dexcom G7 sensors. Call 518-779-9751 and we'll let you know if we can make an offer.",
+    },
+    {
+      q: "Can I sell strips if I'm an estate liquidator or caregiver?",
+      a: "Absolutely. Estate liquidators and caregivers are some of our most frequent customers. We handle bulk lots regularly and make the process as smooth as possible.",
+    },
+    {
+      q: `Do I have to ship the strips, or can you pick them up in ${stateName}?`,
+      a: "For most transactions, we provide a prepaid shipping label at no cost to you. For very large bulk lots, local pickup in parts of the country may be available — ask us when you call.",
+    },
+  ];
+
+  const pageUrl = `https://cash4teststripsusa.com/blog/${slug}`;
+  const faqSchema = buildFaqPageSchema(faqs.map((f) => ({ question: f.q, answer: f.a })));
+  const articleSchema = buildArticleSchema({
+    headline: post.title,
+    description: post.metaDescription,
+    datePublished: post.datePublished,
+    url: pageUrl,
+  });
+  const breadcrumbSchema = buildBreadcrumbSchema([
+    { name: "Home", url: "https://cash4teststripsusa.com" },
+    { name: "Blog", url: "https://cash4teststripsusa.com/blog" },
+    { name: stateName, url: pageUrl },
+  ]);
+
   return (
     <article className="max-w-3xl mx-auto px-4 py-12">
+      <JsonLd data={faqSchema} />
+      <JsonLd data={articleSchema} />
+      <JsonLd data={breadcrumbSchema} />
       {/* Breadcrumb */}
       <nav className="text-sm text-gray-400 mb-6">
         <Link href="/" className="hover:text-emerald-600">Home</Link>
@@ -348,28 +391,7 @@ export default async function BlogPostPage({ params }: Props) {
             Frequently Asked Questions — Selling Test Strips in {stateName}
           </h2>
           <div className="space-y-6">
-            {[
-              {
-                q: `How fast will I get paid in ${stateName}?`,
-                a: "Most payments are sent within 24 hours of us receiving and verifying your strips. For local transactions in some areas, same-day cash is possible.",
-              },
-              {
-                q: "Do you accept partial boxes or opened packaging?",
-                a: "No — we only accept strips in their original, unopened, sealed packaging. Partial or damaged boxes cannot be resold.",
-              },
-              {
-                q: "What if my strips are close to expiring?",
-                a: "We generally require at least 6 months before expiration for test strips and most supplies. Exception: we accept expired Omnipod pods and expired Dexcom G7 sensors. Call 518-779-9751 and we'll let you know if we can make an offer.",
-              },
-              {
-                q: "Can I sell strips if I'm an estate liquidator or caregiver?",
-                a: "Absolutely. Estate liquidators and caregivers are some of our most frequent customers. We handle bulk lots regularly and make the process as smooth as possible.",
-              },
-              {
-                q: `Do I have to ship the strips, or can you pick them up in ${stateName}?`,
-                a: "For most transactions, we provide a prepaid shipping label at no cost to you. For very large bulk lots, local pickup in parts of the country may be available — ask us when you call.",
-              },
-            ].map(({ q, a }) => (
+            {faqs.map(({ q, a }) => (
               <div key={q}>
                 <h3 className="font-semibold text-gray-900 mb-1 text-sm">{q}</h3>
                 <p className="text-sm text-gray-500 leading-relaxed">{a}</p>
