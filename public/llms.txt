@@ -1,0 +1,20 @@
+# Cash For Test Strips USA
+
+Cash For Test Strips USA (https://cash4teststripsusa.com) is a directory
+connecting people who have unused diabetic test strips and CGM supplies
+with vetted local cash buyers across the United States.
+
+## Key pages
+
+- /directory — full buyer directory, filterable by state
+- /sell-test-strips/{state} — per-state buyer listings and legal/pricing info
+- /blog/{slug} — per-state guides covering legality, pricing, and process
+- /company/{slug} — individual buyer profiles
+- /about — who operates this site and how the buyer network works
+- /is-it-legal-to-sell-diabetic-test-strips — national legality guide
+- /how-much-are-diabetic-test-strips-worth — brand-by-brand price guide
+- /sell — seller checkout flow
+
+## Contact
+
+518-779-9751
