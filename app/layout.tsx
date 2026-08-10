@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   },
   description:
     "Find local cash buyers for unused diabetic test strips. Get paid fast via PayPal, Zelle, or check. Serving buyers in all 50 states.",
-  metadataBase: new URL("https://cashforteststripsusa.com"),
+  metadataBase: new URL("https://cash4teststripsusa.com"),
   openGraph: {
     siteName: "Cash For Test Strips USA",
     type: "website",
