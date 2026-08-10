@@ -74,6 +74,7 @@ describe('createSubmission + approveSubmission (new buyer)', () => {
     const submission = await createSubmission({
       targetCompanyId: null,
       submittedPhone: '5559990001',
+      submittedByUserId: null,
       payload: { name: 'Test New Buyer Co', states: ['NY'], phone: '5559990001' },
     })
     cleanupSubmissionIds.push(submission.id)
@@ -112,6 +113,7 @@ describe('createSubmission + approveSubmission (edit existing buyer)', () => {
     const submission = await createSubmission({
       targetCompanyId: existing!.id,
       submittedPhone: '5559990002',
+      submittedByUserId: null,
       payload: { name: 'Test Edit Target Co', states: ['NY', 'NJ'], phone: '5559990099' },
     })
     cleanupSubmissionIds.push(submission.id)
@@ -138,6 +140,7 @@ describe('createSubmission + approveSubmission (edit existing buyer)', () => {
     const submission = await createSubmission({
       targetCompanyId: existing!.id,
       submittedPhone: '5559990098',
+      submittedByUserId: null,
       payload: { name: 'Test FK Target Co', states: ['NY'], phone: '5559990098' },
     })
     cleanupSubmissionIds.push(submission.id)
@@ -161,6 +164,7 @@ describe('createSubmission phone verification (edit target)', () => {
       createSubmission({
         targetCompanyId: existing!.id,
         submittedPhone: '5559990202', // does not match the company's real phone
+        submittedByUserId: null,
         payload: { name: 'Test Phone Guard Co', states: ['NY'], phone: '5559990202' },
       })
     ).rejects.toThrow('Phone number does not match the listing you are trying to edit')
@@ -177,6 +181,7 @@ describe('createSubmission phone verification (edit target)', () => {
     const submission = await createSubmission({
       targetCompanyId: existing!.id,
       submittedPhone: '555-999-0301', // same digits, different formatting
+      submittedByUserId: null,
       payload: { name: 'Test Phone Match Co', states: ['NY'], phone: '5559990301' },
     })
     cleanupSubmissionIds.push(submission.id)
@@ -190,6 +195,7 @@ describe('approveSubmission slug collision handling', () => {
     const submissionA = await createSubmission({
       targetCompanyId: null,
       submittedPhone: '5559990401',
+      submittedByUserId: null,
       payload: { name: 'Slug Collision Co', states: ['NY'], phone: '5559990401' },
     })
     cleanupSubmissionIds.push(submissionA.id)
@@ -197,6 +203,7 @@ describe('approveSubmission slug collision handling', () => {
     const submissionB = await createSubmission({
       targetCompanyId: null,
       submittedPhone: '5559990402',
+      submittedByUserId: null,
       payload: { name: 'Slug Collision Co', states: ['NY'], phone: '5559990402' },
     })
     cleanupSubmissionIds.push(submissionB.id)
@@ -229,6 +236,7 @@ describe('rejectSubmission', () => {
     const submission = await createSubmission({
       targetCompanyId: null,
       submittedPhone: '5559990003',
+      submittedByUserId: null,
       payload: { name: 'Test Rejected Co', states: ['NY'], phone: '5559990003' },
     })
     cleanupSubmissionIds.push(submission.id)
@@ -247,5 +255,168 @@ describe('rejectSubmission', () => {
       .select('id')
       .eq('phone', '5559990003')
     expect(company).toEqual([])
+  })
+})
+
+describe('createSubmission owner-relaxed phone check', () => {
+  const cleanupUserIds: string[] = []
+  const cleanupClaimIds: string[] = []
+
+  afterEach(async () => {
+    if (cleanupClaimIds.length) {
+      await supabaseAdmin.from('claims').delete().in('id', cleanupClaimIds)
+      cleanupClaimIds.length = 0
+    }
+    for (const id of cleanupUserIds) {
+      await supabaseAdmin.auth.admin.deleteUser(id)
+    }
+    cleanupUserIds.length = 0
+  })
+
+  async function makeBuyer(): Promise<string> {
+    const { data, error } = await supabaseAdmin.auth.admin.createUser({
+      email: `submissions-owner-test-${Date.now()}-${Math.random().toString(36).slice(2)}@example.com`,
+      password: 'test-password-123',
+      email_confirm: true,
+    })
+    expect(error).toBeNull()
+    const userId = data!.user!.id
+    cleanupUserIds.push(userId)
+    return userId
+  }
+
+  it('skips the phone-match check when the submitter has an approved claim, even if the phone is wrong', async () => {
+    const userId = await makeBuyer()
+    const { data: existing } = await supabaseAdmin
+      .from('companies')
+      .insert({ name: 'Test Owner Edit Co', slug: 'test-owner-edit-co', states: ['NY'], active: true, phone: '5559992001' })
+      .select('id, slug')
+      .single()
+    cleanupCompanySlugs.push(existing!.slug)
+
+    const { data: claim } = await supabaseAdmin
+      .from('claims')
+      .insert({ company_id: existing!.id, user_id: userId, submitted_phone: '5559992001', status: 'approved', reviewed_at: new Date().toISOString() })
+      .select('id')
+      .single()
+    cleanupClaimIds.push(claim!.id)
+
+    const submission = await createSubmission({
+      targetCompanyId: existing!.id,
+      submittedPhone: 'this-does-not-match-anything',
+      submittedByUserId: userId,
+      payload: { name: 'Test Owner Edit Co', states: ['NY', 'NJ'], phone: '5559992001' },
+    })
+    cleanupSubmissionIds.push(submission.id)
+    expect(submission.status).toBe('pending')
+  })
+
+  it('rejects an edit from an authenticated buyer with no approved claim on that company', async () => {
+    const userId = await makeBuyer()
+    const { data: existing } = await supabaseAdmin
+      .from('companies')
+      .insert({ name: 'Test No Claim Co', slug: 'test-no-claim-co', states: ['NY'], active: true, phone: '5559992101' })
+      .select('id, slug')
+      .single()
+    cleanupCompanySlugs.push(existing!.slug)
+
+    await expect(
+      createSubmission({
+        targetCompanyId: existing!.id,
+        submittedPhone: '5559992101',
+        submittedByUserId: userId,
+        payload: { name: 'Test No Claim Co', states: ['NY'], phone: '5559992101' },
+      })
+    ).rejects.toThrow('You do not have an approved claim on this listing')
+  })
+
+  it('still uses the phone-match check when submittedByUserId is absent (unauthenticated caller)', async () => {
+    const { data: existing } = await supabaseAdmin
+      .from('companies')
+      .insert({ name: 'Test Anon Edit Co', slug: 'test-anon-edit-co', states: ['NY'], active: true, phone: '5559992201' })
+      .select('id, slug')
+      .single()
+    cleanupCompanySlugs.push(existing!.slug)
+
+    await expect(
+      createSubmission({
+        targetCompanyId: existing!.id,
+        submittedPhone: 'wrong-phone',
+        submittedByUserId: null,
+        payload: { name: 'Test Anon Edit Co', states: ['NY'], phone: '5559992201' },
+      })
+    ).rejects.toThrow('Phone number does not match the listing you are trying to edit')
+  })
+})
+
+describe('approveSubmission auto-claim', () => {
+  const cleanupUserIds: string[] = []
+  const cleanupClaimIds: string[] = []
+
+  afterEach(async () => {
+    if (cleanupClaimIds.length) {
+      await supabaseAdmin.from('claims').delete().in('id', cleanupClaimIds)
+      cleanupClaimIds.length = 0
+    }
+    for (const id of cleanupUserIds) {
+      await supabaseAdmin.auth.admin.deleteUser(id)
+    }
+    cleanupUserIds.length = 0
+  })
+
+  async function makeBuyer(): Promise<string> {
+    const { data, error } = await supabaseAdmin.auth.admin.createUser({
+      email: `submissions-autoclaim-test-${Date.now()}-${Math.random().toString(36).slice(2)}@example.com`,
+      password: 'test-password-123',
+      email_confirm: true,
+    })
+    expect(error).toBeNull()
+    const userId = data!.user!.id
+    cleanupUserIds.push(userId)
+    return userId
+  }
+
+  it('inserts an approved claim for a new-listing submission with submittedByUserId set', async () => {
+    const userId = await makeBuyer()
+    const submission = await createSubmission({
+      targetCompanyId: null,
+      submittedPhone: '5559993001',
+      submittedByUserId: userId,
+      payload: { name: 'Test Autoclaim Co', states: ['NY'], phone: '5559993001' },
+    })
+    cleanupSubmissionIds.push(submission.id)
+
+    await approveSubmission(submission.id)
+
+    const { data: company } = await supabaseAdmin.from('companies').select('id, slug').eq('phone', '5559993001').single()
+    if (company) cleanupCompanySlugs.push(company.slug)
+
+    const { data: claim } = await supabaseAdmin
+      .from('claims')
+      .select('id, status, company_id, user_id')
+      .eq('company_id', company!.id)
+      .eq('user_id', userId)
+      .single()
+    expect(claim?.status).toBe('approved')
+
+    await supabaseAdmin.from('claims').delete().eq('id', claim!.id)
+  })
+
+  it('does not insert a claim for a new-listing submission with no submittedByUserId', async () => {
+    const submission = await createSubmission({
+      targetCompanyId: null,
+      submittedPhone: '5559993101',
+      submittedByUserId: null,
+      payload: { name: 'Test No Autoclaim Co', states: ['NY'], phone: '5559993101' },
+    })
+    cleanupSubmissionIds.push(submission.id)
+
+    await approveSubmission(submission.id)
+
+    const { data: company } = await supabaseAdmin.from('companies').select('id, slug').eq('phone', '5559993101').single()
+    if (company) cleanupCompanySlugs.push(company.slug)
+
+    const { data: claims } = await supabaseAdmin.from('claims').select('id').eq('company_id', company!.id)
+    expect(claims).toEqual([])
   })
 })

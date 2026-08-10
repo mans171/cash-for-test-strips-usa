@@ -41,6 +41,7 @@ export type CreateSubmissionInput = {
   targetCompanyId: string | null
   payload: SubmissionPayload
   submittedPhone: string
+  submittedByUserId: string | null
 }
 
 export type Submission = {
@@ -48,6 +49,7 @@ export type Submission = {
   target_company_id: string | null
   payload: SubmissionPayload
   submitted_phone: string
+  submitted_by_user_id: string | null
   status: 'pending' | 'approved' | 'rejected'
   created_at: string
   reviewed_at: string | null
@@ -60,10 +62,11 @@ export async function createSubmission(input: CreateSubmissionInput): Promise<Su
   }
 
   // Security: when this submission is an edit targeting an existing company,
-  // verify the submitter actually knows that company's current phone number.
-  // Company IDs are public (returned by /api/sell/match and the directory), so
-  // without this check anyone could submit an "edit" for a competitor's listing
-  // and silently take over its phone number.
+  // verify the submitter actually owns it. An authenticated buyer (submittedByUserId
+  // set) must have an approved claim — phone numbers change, so claim ownership is
+  // the real authority once an account exists. An anonymous/unauthenticated caller
+  // (submittedByUserId absent — shouldn't happen once /buyer is fully replaced, but
+  // this path isn't deleted) falls back to today's phone-match check.
   if (input.targetCompanyId) {
     const { data: targetCompany, error: lookupError } = await supabaseAdmin
       .from('companies')
@@ -75,10 +78,24 @@ export async function createSubmission(input: CreateSubmissionInput): Promise<Su
       throw new Error('The listing you are trying to edit could not be found')
     }
 
-    const currentPhone = normalizePhone(targetCompany.phone ?? '')
-    const submittedPhone = normalizePhone(input.submittedPhone)
-    if (!currentPhone || currentPhone !== submittedPhone) {
-      throw new Error('Phone number does not match the listing you are trying to edit')
+    if (input.submittedByUserId) {
+      const { data: approvedClaim } = await supabaseAdmin
+        .from('claims')
+        .select('id')
+        .eq('company_id', input.targetCompanyId)
+        .eq('user_id', input.submittedByUserId)
+        .eq('status', 'approved')
+        .maybeSingle()
+
+      if (!approvedClaim) {
+        throw new Error('You do not have an approved claim on this listing')
+      }
+    } else {
+      const currentPhone = normalizePhone(targetCompany.phone ?? '')
+      const submittedPhone = normalizePhone(input.submittedPhone)
+      if (!currentPhone || currentPhone !== submittedPhone) {
+        throw new Error('Phone number does not match the listing you are trying to edit')
+      }
     }
   }
 
@@ -101,6 +118,7 @@ export async function createSubmission(input: CreateSubmissionInput): Promise<Su
     target_company_id: input.targetCompanyId,
     payload: input.payload,
     submitted_phone: input.submittedPhone,
+    submitted_by_user_id: input.submittedByUserId,
   })
 
   if (error) throw new Error(`Failed to create submission: ${error.message}`)
@@ -127,6 +145,7 @@ export async function createSubmission(input: CreateSubmissionInput): Promise<Su
     target_company_id: input.targetCompanyId,
     payload: input.payload,
     submitted_phone: input.submittedPhone,
+    submitted_by_user_id: input.submittedByUserId,
     status: 'pending',
     created_at: createdAt,
     reviewed_at: null,
@@ -152,7 +171,7 @@ function baseSlugFor(name: string): string {
 export async function approveSubmission(submissionId: string): Promise<void> {
   const { data: submission, error: fetchError } = await supabaseAdmin
     .from('submissions')
-    .select('id, target_company_id, payload, status')
+    .select('id, target_company_id, payload, status, submitted_phone, submitted_by_user_id')
     .eq('id', submissionId)
     .single()
 
@@ -174,6 +193,8 @@ export async function approveSubmission(submissionId: string): Promise<void> {
     active: true,
   }
 
+  let newCompanyId: string | null = null
+
   if (submission.target_company_id) {
     const { error } = await supabaseAdmin
       .from('companies')
@@ -184,7 +205,11 @@ export async function approveSubmission(submissionId: string): Promise<void> {
     if (error) throw new Error(`Failed to update company: ${error.message}`)
   } else {
     const slug = baseSlugFor(payload.name)
-    const { error } = await supabaseAdmin.from('companies').insert({ ...companyData, slug })
+    const { data: inserted, error } = await supabaseAdmin
+      .from('companies')
+      .insert({ ...companyData, slug })
+      .select('id')
+      .single()
 
     if (error) {
       // Postgres unique_violation on companies.slug: retry once with a random
@@ -193,13 +218,18 @@ export async function approveSubmission(submissionId: string): Promise<void> {
       // would otherwise leave the submission stuck in `pending` forever).
       if (error.code === '23505') {
         const retrySlug = `${slug}-${randomSuffix()}`
-        const { error: retryError } = await supabaseAdmin
+        const { data: retryInserted, error: retryError } = await supabaseAdmin
           .from('companies')
           .insert({ ...companyData, slug: retrySlug })
+          .select('id')
+          .single()
         if (retryError) throw new Error(`Failed to create company: ${retryError.message}`)
+        newCompanyId = retryInserted!.id
       } else {
         throw new Error(`Failed to create company: ${error.message}`)
       }
+    } else {
+      newCompanyId = inserted!.id
     }
   }
 
@@ -208,6 +238,21 @@ export async function approveSubmission(submissionId: string): Promise<void> {
     .update({ status: 'approved', reviewed_at: new Date().toISOString() })
     .eq('id', submissionId)
   if (statusError) throw new Error(`Failed to update submission status: ${statusError.message}`)
+
+  // Auto-claim: a brand-new listing submitted by an authenticated buyer becomes
+  // that buyer's approved claim the moment it goes live — no separate claim step.
+  // Edits to an existing company never reach here with a fresh company id, so this
+  // only fires for genuinely new listings.
+  if (newCompanyId && submission.submitted_by_user_id) {
+    const { error: claimError } = await supabaseAdmin.from('claims').insert({
+      company_id: newCompanyId,
+      user_id: submission.submitted_by_user_id,
+      submitted_phone: submission.submitted_phone,
+      status: 'approved',
+      reviewed_at: new Date().toISOString(),
+    })
+    if (claimError) throw new Error(`Failed to auto-claim new listing: ${claimError.message}`)
+  }
 
   if (payload.email) {
     after(() =>
