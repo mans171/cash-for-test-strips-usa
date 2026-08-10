@@ -57,7 +57,14 @@ export async function createClaim(input: CreateClaimInput): Promise<Claim> {
     submitted_phone: input.submittedPhone,
   })
 
-  if (error) throw new Error(`Failed to create claim: ${error.message}`)
+  // Handle unique constraint violation (TOCTOU race on duplicate pending/approved claims)
+  // Postgres error code 23505 = unique_violation
+  if (error) {
+    if (error.code === '23505') {
+      throw new Error('You already have a pending or approved claim on this listing')
+    }
+    throw new Error(`Failed to create claim: ${error.message}`)
+  }
 
   const notifyEmail = process.env.ADMIN_NOTIFY_EMAIL
   if (notifyEmail) {
