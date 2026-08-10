@@ -3,6 +3,7 @@ import { supabaseAdmin } from './supabase-admin'
 import { VALID_STATE_CODES } from './states'
 import type { SubmissionPayload } from './types'
 import { sendEmail, escapeHtml } from './email'
+import { normalizePhone } from './phone'
 
 export function validateSubmissionPayload(payload: SubmissionPayload): { valid: boolean; errors: string[] } {
   const errors: string[] = []
@@ -34,10 +35,6 @@ export function validateSubmissionPayload(payload: SubmissionPayload): { valid: 
   }
 
   return { valid: errors.length === 0, errors }
-}
-
-function normalizePhone(phone: string): string {
-  return phone.replace(/\D/g, '')
 }
 
 export type CreateSubmissionInput = {
