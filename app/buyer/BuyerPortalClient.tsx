@@ -54,18 +54,33 @@ export function BuyerPortalClient() {
 
   const loadDashboard = useCallback(async () => {
     setError(null);
-    const res = await fetch("/api/buyer/claims");
-    if (res.status === 401) {
-      setStage(user ? "wrong-role" : "auth");
-      return;
+    try {
+      let res = await fetch("/api/buyer/claims");
+      if (res.status === 401 && user) {
+        // Right after signup, onAuthStateChange can fire (making `user` truthy)
+        // before SignupForm's own insertProfile() has finished writing the
+        // profiles row with role: 'buyer'. A single fast retry gives that
+        // insert time to land before we conclude this is a genuine
+        // wrong-role session.
+        await new Promise((resolve) => setTimeout(resolve, 400));
+        res = await fetch("/api/buyer/claims");
+      }
+      if (res.status === 401) {
+        setStage(user ? "wrong-role" : "auth");
+        return;
+      }
+      const body = await res.json();
+      if (!res.ok) {
+        setError(body.error ?? "Something went wrong");
+        setStage("checking");
+        return;
+      }
+      setClaims(body.claims as BuyerClaim[]);
+      setStage("dashboard");
+    } catch {
+      setError("Couldn't reach the server. Check your connection and try again.");
+      setStage("checking");
     }
-    const body = await res.json();
-    if (!res.ok) {
-      setError(body.error ?? "Something went wrong");
-      return;
-    }
-    setClaims(body.claims as BuyerClaim[]);
-    setStage("dashboard");
   }, [user]);
 
   useEffect(() => {
@@ -91,27 +106,33 @@ export function BuyerPortalClient() {
     e.preventDefault();
     setError(null);
     setLoading(true);
-    const res = await fetch("/api/buyer-lookup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phone }),
-    });
-    const body = await res.json();
-    setLoading(false);
-    if (!res.ok) {
-      setError(body.error ?? "Something went wrong");
-      return;
-    }
-    const companies = body.companies as Company[];
-    if (companies.length === 0) {
-      setForm({ ...emptyPayload, phone });
-      setStage("add-form");
-    } else if (companies.length === 1) {
-      setSelectedCompany(companies[0]);
-      setStage("claim-confirm");
-    } else {
-      setMatches(companies);
-      setStage("claim-choose");
+    try {
+      const res = await fetch("/api/buyer-lookup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone }),
+      });
+      const body = await res.json();
+      if (!res.ok) {
+        setError(body.error ?? "Something went wrong");
+        return;
+      }
+      const companies = body.companies as Company[];
+      if (companies.length === 0) {
+        setEditingCompanyId(null);
+        setForm({ ...emptyPayload, phone });
+        setStage("add-form");
+      } else if (companies.length === 1) {
+        setSelectedCompany(companies[0]);
+        setStage("claim-confirm");
+      } else {
+        setMatches(companies);
+        setStage("claim-choose");
+      }
+    } catch {
+      setError("Couldn't reach the server. Check your connection and try again.");
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -124,18 +145,23 @@ export function BuyerPortalClient() {
     if (!selectedCompany) return;
     setError(null);
     setLoading(true);
-    const res = await fetch("/api/claims", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ companyId: selectedCompany.id, submittedPhone: phone }),
-    });
-    const body = await res.json();
-    setLoading(false);
-    if (!res.ok) {
-      setError(body.error ?? "Something went wrong");
-      return;
+    try {
+      const res = await fetch("/api/claims", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ companyId: selectedCompany.id, submittedPhone: phone }),
+      });
+      const body = await res.json();
+      if (!res.ok) {
+        setError(body.error ?? "Something went wrong");
+        return;
+      }
+      setStage("submitted");
+    } catch {
+      setError("Couldn't reach the server. Check your connection and try again.");
+    } finally {
+      setLoading(false);
     }
-    setStage("submitted");
   }
 
   function startAddListing() {
@@ -176,18 +202,23 @@ export function BuyerPortalClient() {
       return;
     }
     setLoading(true);
-    const res = await fetch("/api/submissions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ targetCompanyId: editingCompanyId, submittedPhone: form.phone, payload: form }),
-    });
-    const body = await res.json();
-    setLoading(false);
-    if (!res.ok) {
-      setError(body.error ?? "Something went wrong");
-      return;
+    try {
+      const res = await fetch("/api/submissions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ targetCompanyId: editingCompanyId, submittedPhone: form.phone, payload: form }),
+      });
+      const body = await res.json();
+      if (!res.ok) {
+        setError(body.error ?? "Something went wrong");
+        return;
+      }
+      setStage("submitted");
+    } catch {
+      setError("Couldn't reach the server. Check your connection and try again.");
+    } finally {
+      setLoading(false);
     }
-    setStage("submitted");
   }
 
   function toggleState(code: string) {
@@ -198,6 +229,16 @@ export function BuyerPortalClient() {
   }
 
   if (stage === "checking" || userLoading) {
+    if (error) {
+      return (
+        <div className="flex flex-col gap-3">
+          <p className="text-red-600 text-sm">{error}</p>
+          <button onClick={() => loadDashboard()} className="self-start text-sm font-medium text-emerald-700 underline">
+            Try again
+          </button>
+        </div>
+      );
+    }
     return <p className="text-gray-400 text-sm">Loading...</p>;
   }
 
