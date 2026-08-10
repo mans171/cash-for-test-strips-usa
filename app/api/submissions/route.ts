@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createSubmission, validateSubmissionPayload } from '@/lib/submissions'
+import { getCurrentUser } from '@/lib/auth'
 
 export async function POST(request: Request) {
   try {
@@ -15,10 +16,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: validation.errors.join(', ') }, { status: 400 })
     }
 
+    const user = await getCurrentUser()
+    const submittedByUserId = user?.profile?.role === 'buyer' ? user.id : null
+
     const submission = await createSubmission({
       targetCompanyId: targetCompanyId ?? null,
       submittedPhone,
       payload,
+      submittedByUserId,
     })
 
     return NextResponse.json({ submissionId: submission.id })

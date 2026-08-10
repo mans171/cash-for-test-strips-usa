@@ -9,11 +9,18 @@ import { POST } from '../route'
 // cause, not environmental noise. Mock it out, same precedent as
 // app/api/leads/__tests__/route.test.ts mocking sendEmailOrThrow.
 const mockSendEmail = vi.fn()
+const mockGetCurrentUser = vi.fn()
 
 beforeEach(() => {
   mockSendEmail.mockReset()
   mockSendEmail.mockResolvedValue(undefined)
+  mockGetCurrentUser.mockReset()
+  mockGetCurrentUser.mockResolvedValue(null)
 })
+
+vi.mock('@/lib/auth', () => ({
+  getCurrentUser: () => mockGetCurrentUser(),
+}))
 
 vi.mock('@/lib/email', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/lib/email')>()
@@ -38,13 +45,34 @@ vi.mock('next/server', async (importOriginal) => {
 })
 
 const cleanupIds: string[] = []
+const cleanupUserIds: string[] = []
 
 afterEach(async () => {
   if (cleanupIds.length) {
     await supabaseAdmin.from('submissions').delete().in('id', cleanupIds)
     cleanupIds.length = 0
   }
+  for (const id of cleanupUserIds) {
+    await supabaseAdmin.auth.admin.deleteUser(id)
+  }
+  cleanupUserIds.length = 0
 })
+
+// submitted_by_user_id is a uuid FK to auth.users (see
+// supabase/migrations/20260810000000_create_claims_and_submissions_owner.sql),
+// so the mocked getCurrentUser() result needs a real auth user id, not an
+// arbitrary string, to satisfy the foreign key on insert.
+async function makeBuyer(): Promise<string> {
+  const { data, error } = await supabaseAdmin.auth.admin.createUser({
+    email: `submissions-route-test-${Date.now()}-${Math.random().toString(36).slice(2)}@example.com`,
+    password: 'test-password-123',
+    email_confirm: true,
+  })
+  expect(error).toBeNull()
+  const userId = data!.user!.id
+  cleanupUserIds.push(userId)
+  return userId
+}
 
 function makeRequest(body: unknown) {
   return new Request('http://localhost/api/submissions', {
@@ -74,5 +102,28 @@ describe('POST /api/submissions', () => {
     expect(response.status).toBe(200)
     expect(body.submissionId).toBeDefined()
     cleanupIds.push(body.submissionId)
+  })
+
+  it('threads submitted_by_user_id through when the caller is an authenticated buyer', async () => {
+    const userId = await makeBuyer()
+    mockGetCurrentUser.mockResolvedValue({ id: userId, email: 'b@example.com', profile: { role: 'buyer' } })
+
+    const response = await POST(
+      makeRequest({
+        targetCompanyId: null,
+        submittedPhone: '5551234569',
+        payload: { name: 'Route Buyer Test Co', states: ['NY'], phone: '5551234569' },
+      })
+    )
+    const body = await response.json()
+    expect(response.status).toBe(200)
+    cleanupIds.push(body.submissionId)
+
+    const { data: submission } = await supabaseAdmin
+      .from('submissions')
+      .select('submitted_by_user_id')
+      .eq('id', body.submissionId)
+      .single()
+    expect(submission?.submitted_by_user_id).toBe(userId)
   })
 })
