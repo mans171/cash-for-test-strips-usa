@@ -10,6 +10,31 @@ type SubmissionPayload = {
   states?: string[];
 };
 
+type ClaimCompany = {
+  id: string;
+  name: string;
+  phone: string | null;
+  email: string | null;
+  city: string | null;
+  states: string[];
+  owner_name: string | null;
+};
+
+type ClaimBuyer = {
+  name: string | null;
+  email: string | null;
+};
+
+type Claim = {
+  id: string;
+  company_id: string;
+  status: "pending" | "approved" | "rejected";
+  submitted_phone: string;
+  created_at: string;
+  company: ClaimCompany | null;
+  buyer: ClaimBuyer | null;
+};
+
 type CurrentCompany = {
   id: string;
   name: string;
@@ -29,6 +54,7 @@ type DashboardData = {
     currentCompany: CurrentCompany | null;
     created_at: string;
   }>;
+  claims: Claim[];
   leads: Array<{ id: string; items: unknown; channel: string; created_at: string; name: string | null; email: string | null; phone: string | null }>;
   clicks: Array<{ id: string; company_id: string; created_at: string }>;
   missingPhones: Array<{ id: string; name: string; city: string | null }>;
@@ -36,7 +62,7 @@ type DashboardData = {
 
 export function AdminDashboardClient() {
   const [data, setData] = useState<DashboardData | null>(null);
-  const [tab, setTab] = useState<"submissions" | "leads" | "clicks" | "missingPhones">("submissions");
+  const [tab, setTab] = useState<"submissions" | "claims" | "leads" | "clicks" | "missingPhones">("submissions");
   const [error, setError] = useState<string | null>(null);
 
   async function load() {
@@ -76,6 +102,24 @@ export function AdminDashboardClient() {
     }
   }
 
+  async function reviewClaim(claimId: string, action: "approve" | "reject") {
+    try {
+      const res = await fetch("/api/admin/claims/review", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ claimId, action }),
+      });
+      const body = await res.json();
+      if (!res.ok) {
+        setError(body.error ?? "Failed to review claim");
+        return;
+      }
+      await load();
+    } catch {
+      setError("Couldn't reach the server. Check your connection and try again.");
+    }
+  }
+
   if (error) {
     return (
       <div className="text-center py-12">
@@ -92,7 +136,7 @@ export function AdminDashboardClient() {
   return (
     <div>
       <div className="flex gap-2 mb-6">
-        {(["submissions", "leads", "clicks", "missingPhones"] as const).map((t) => (
+        {(["submissions", "claims", "leads", "clicks", "missingPhones"] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -133,6 +177,31 @@ export function AdminDashboardClient() {
             </div>
           ))}
           {data.submissions.length === 0 && <p className="text-sm text-gray-400">No pending submissions.</p>}
+        </div>
+      )}
+
+      {tab === "claims" && (
+        <div className="flex flex-col gap-3">
+          {data.claims.map((c) => (
+            <div key={c.id} className="border border-gray-200 rounded-lg p-4 flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">{c.company?.name ?? "(company not found)"}</p>
+                  <p className="text-xs text-gray-400">
+                    Claimed by {c.buyer?.name ?? "unknown"} ({c.buyer?.email ?? "no email on file"}) · submitted from {c.submitted_phone}
+                  </p>
+                  {c.company?.phone && c.company.phone !== c.submitted_phone && (
+                    <p className="text-xs text-red-500">Listing's phone on file: {c.company.phone}</p>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={() => reviewClaim(c.id, "approve")} className="text-xs bg-emerald-600 text-white px-3 py-1.5 rounded-lg">Approve</button>
+                  <button onClick={() => reviewClaim(c.id, "reject")} className="text-xs border border-red-300 text-red-600 px-3 py-1.5 rounded-lg">Reject</button>
+                </div>
+              </div>
+            </div>
+          ))}
+          {data.claims.length === 0 && <p className="text-sm text-gray-400">No pending claims.</p>}
         </div>
       )}
 
