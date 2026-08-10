@@ -6,6 +6,8 @@ import { STATE_LABELS } from "@/lib/states";
 import type { Company } from "@/lib/types";
 import { stripCompanyContact } from "@/lib/company-contact";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { buildItemListSchema } from "@/lib/schema";
+import { JsonLd } from "@/app/components/JsonLd";
 
 export const metadata: Metadata = {
   title: "Directory — Find Test Strip Buyers Near You",
@@ -39,11 +41,16 @@ export default async function DirectoryPage({
   const isAuthenticated = !!user;
   const companies = isAuthenticated ? rawCompanies : rawCompanies.map(stripCompanyContact);
 
+  const itemListSchema = buildItemListSchema(
+    companies.map((c) => ({ name: c.name, url: `https://cash4teststripsusa.com/company/${c.slug}` }))
+  );
+
   const stateCode = state?.toUpperCase();
   const stateLabel = stateCode ? (STATE_LABELS[stateCode] ?? stateCode) : null;
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-12">
+      <JsonLd data={itemListSchema} />
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
           {stateLabel ? `Test Strip Buyers in ${stateLabel}` : "Find a Test Strip Buyer"}
