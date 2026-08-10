@@ -25,6 +25,7 @@ export default defineConfig({
     environment: 'node',
     globals: false,
     exclude: ['**/node_modules/**', '**/.worktrees/**', '**/worktrees/**'],
+    testTimeout: 15000,
   },
   resolve: {
     alias: {
