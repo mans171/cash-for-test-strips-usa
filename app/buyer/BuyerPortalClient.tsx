@@ -85,6 +85,7 @@ export function BuyerPortalClient() {
 
   useEffect(() => {
     if (userLoading) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadDashboard();
     // Only re-run when the session itself changes (userLoading flips, or user
     // identity changes) — loadDashboard is intentionally not a dependency here

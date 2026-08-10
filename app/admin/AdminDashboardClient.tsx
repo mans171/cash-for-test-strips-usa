@@ -191,7 +191,7 @@ export function AdminDashboardClient() {
                     Claimed by {c.buyer?.name ?? "unknown"} ({c.buyer?.email ?? "no email on file"}) · submitted from {c.submitted_phone}
                   </p>
                   {c.company?.phone && c.company.phone !== c.submitted_phone && (
-                    <p className="text-xs text-red-500">Listing's phone on file: {c.company.phone}</p>
+                    <p className="text-xs text-red-500">Listing&apos;s phone on file: {c.company.phone}</p>
                   )}
                 </div>
                 <div className="flex gap-2">

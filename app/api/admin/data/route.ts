@@ -52,7 +52,7 @@ export async function GET(request: Request) {
     // Buyer identity for each pending claim: name from profiles, email from
     // auth.users (profiles doesn't store email). supabaseAdmin bypasses RLS.
     const claimUserIds = Array.from(new Set((claims.data ?? []).map((c) => c.user_id)))
-    let buyersById = new Map<string, { name: string | null; email: string | null }>()
+    const buyersById = new Map<string, { name: string | null; email: string | null }>()
     if (claimUserIds.length > 0) {
       const [profilesResult, ...userResults] = await Promise.all([
         supabaseAdmin.from('profiles').select('id, name').in('id', claimUserIds),

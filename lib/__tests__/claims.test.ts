@@ -10,7 +10,7 @@ vi.mock('@/lib/email', () => ({
 
 // Mock next/server's after() to handle being called outside request scope in tests
 vi.mock('next/server', () => ({
-  after: (callback: () => void | Promise<void>) => {
+  after: () => {
     // no-op in tests; after() doesn't work outside request scope
   },
 }))
