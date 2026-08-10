@@ -6,6 +6,8 @@ import { STATE_LABELS } from "@/lib/states";
 import type { Company } from "@/lib/types";
 import { stripCompanyContact } from "@/lib/company-contact";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { buildLocalBusinessSchema } from "@/lib/schema";
+import { JsonLd } from "@/app/components/JsonLd";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -49,8 +51,18 @@ export default async function CompanyPage({ params }: Props) {
 
   const stateNames = company.states.map((s: string) => STATE_LABELS[s] ?? s);
 
+  const localBusinessSchema = buildLocalBusinessSchema({
+    name: company.name,
+    url: `https://cash4teststripsusa.com/company/${company.slug}`,
+    telephone: company.phone,
+    description: company.description,
+    areaServed: stateNames,
+    paymentAccepted: company.payment_methods ?? [],
+  });
+
   return (
     <div className="max-w-3xl mx-auto px-4 py-12">
+      <JsonLd data={localBusinessSchema} />
       <Link href="/directory" className="text-sm text-emerald-600 hover:underline mb-6 inline-block">
         ← Back to directory
       </Link>
