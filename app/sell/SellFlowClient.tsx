@@ -832,7 +832,18 @@ export function SellFlowClient() {
             );
           })() : (
             <div className="col-span-2 flex flex-col gap-2">
-              <label className="text-xs font-medium text-gray-500">What are you selling?</label>
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-medium text-gray-500">What are you selling?</label>
+                {items.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => removeItem(i)}
+                    className="text-xs font-medium text-red-600 hover:underline"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
               {(["Test Strips", "CGM", "Infusion Sets", "Lancets"] as const).map((category) => (
                 <div key={category}>
                   <p className="text-xs text-gray-400 mb-1">{category}</p>
