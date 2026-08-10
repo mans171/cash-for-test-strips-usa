@@ -188,11 +188,10 @@ export function AdminDashboardClient() {
                 <div>
                   <p className="font-medium">{c.company?.name ?? "(company not found)"}</p>
                   <p className="text-xs text-gray-400">
-                    Claimed by {c.buyer?.name ?? "unknown"} ({c.buyer?.email ?? "no email on file"}) · submitted from {c.submitted_phone}
+                    Claimed by {c.buyer?.name ?? "unknown"} ({c.buyer?.email ?? "no email on file"})
                   </p>
-                  {c.company?.phone && c.company.phone !== c.submitted_phone && (
-                    <p className="text-xs text-red-500">Listing&apos;s phone on file: {c.company.phone}</p>
-                  )}
+                  <p className="text-xs text-gray-500">Submitted phone: {c.submitted_phone}</p>
+                  <p className="text-xs text-gray-500">Company phone on file: {c.company?.phone ?? "none"}</p>
                 </div>
                 <div className="flex gap-2">
                   <button onClick={() => reviewClaim(c.id, "approve")} className="text-xs bg-emerald-600 text-white px-3 py-1.5 rounded-lg">Approve</button>

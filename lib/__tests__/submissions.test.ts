@@ -22,20 +22,52 @@ afterAll(() => {
 
 const cleanupCompanySlugs: string[] = []
 const cleanupSubmissionIds: string[] = []
+const cleanupClaimIds: string[] = []
+const cleanupUserIds: string[] = []
 
 afterEach(async () => {
-  // Submissions must be deleted before companies: submissions.target_company_id
-  // has a foreign key to companies.id, and a pending/approved submission created
-  // in a test may still reference the company row being cleaned up here.
+  // Submissions and claims must be deleted before companies: both have FKs to
+  // companies.id, and a pending/approved submission or claim created in a test
+  // may still reference the company row being cleaned up here.
   if (cleanupSubmissionIds.length) {
     await supabaseAdmin.from('submissions').delete().in('id', cleanupSubmissionIds)
     cleanupSubmissionIds.length = 0
+  }
+  if (cleanupClaimIds.length) {
+    await supabaseAdmin.from('claims').delete().in('id', cleanupClaimIds)
+    cleanupClaimIds.length = 0
   }
   if (cleanupCompanySlugs.length) {
     await supabaseAdmin.from('companies').delete().in('slug', cleanupCompanySlugs)
     cleanupCompanySlugs.length = 0
   }
+  for (const id of cleanupUserIds) {
+    await supabaseAdmin.auth.admin.deleteUser(id)
+  }
+  cleanupUserIds.length = 0
 })
+
+// Edits now require an authenticated buyer with an approved claim on the
+// target company (Finding 5 — the anonymous phone-match fallback was removed).
+async function makeApprovedBuyerForCompany(companyId: string): Promise<string> {
+  const { data, error } = await supabaseAdmin.auth.admin.createUser({
+    email: `submissions-test-${Date.now()}-${Math.random().toString(36).slice(2)}@example.com`,
+    password: 'test-password-123',
+    email_confirm: true,
+  })
+  expect(error).toBeNull()
+  const userId = data!.user!.id
+  cleanupUserIds.push(userId)
+
+  const { data: claim } = await supabaseAdmin
+    .from('claims')
+    .insert({ company_id: companyId, user_id: userId, submitted_phone: '0000000000', status: 'approved', reviewed_at: new Date().toISOString() })
+    .select('id')
+    .single()
+  cleanupClaimIds.push(claim!.id)
+
+  return userId
+}
 
 describe('validateSubmissionPayload', () => {
   it('requires a name', () => {
@@ -109,11 +141,12 @@ describe('createSubmission + approveSubmission (edit existing buyer)', () => {
       .select('id, slug')
       .single()
     cleanupCompanySlugs.push(existing!.slug)
+    const userId = await makeApprovedBuyerForCompany(existing!.id)
 
     const submission = await createSubmission({
       targetCompanyId: existing!.id,
       submittedPhone: '5559990002',
-      submittedByUserId: null,
+      submittedByUserId: userId,
       payload: { name: 'Test Edit Target Co', states: ['NY', 'NJ'], phone: '5559990099' },
     })
     cleanupSubmissionIds.push(submission.id)
@@ -136,11 +169,12 @@ describe('createSubmission + approveSubmission (edit existing buyer)', () => {
       .select('id, slug')
       .single()
     cleanupCompanySlugs.push(existing!.slug)
+    const userId = await makeApprovedBuyerForCompany(existing!.id)
 
     const submission = await createSubmission({
       targetCompanyId: existing!.id,
       submittedPhone: '5559990098',
-      submittedByUserId: null,
+      submittedByUserId: userId,
       payload: { name: 'Test FK Target Co', states: ['NY'], phone: '5559990098' },
     })
     cleanupSubmissionIds.push(submission.id)
@@ -151,8 +185,8 @@ describe('createSubmission + approveSubmission (edit existing buyer)', () => {
   })
 })
 
-describe('createSubmission phone verification (edit target)', () => {
-  it('rejects an edit submission whose submittedPhone does not match the target company phone', async () => {
+describe('createSubmission requires an approved claim for edits', () => {
+  it('rejects an edit submission with no submittedByUserId, even when the phone matches', async () => {
     const { data: existing } = await supabaseAdmin
       .from('companies')
       .insert({ name: 'Test Phone Guard Co', slug: 'test-phone-guard-co', states: ['NY'], active: true, phone: '5559990201' })
@@ -160,32 +194,17 @@ describe('createSubmission phone verification (edit target)', () => {
       .single()
     cleanupCompanySlugs.push(existing!.slug)
 
+    // The anonymous phone-match fallback was removed: /buyer is fully login-gated
+    // now, so an edit with no authenticated submitter must always be rejected,
+    // regardless of whether submittedPhone happens to match the listing.
     await expect(
       createSubmission({
         targetCompanyId: existing!.id,
-        submittedPhone: '5559990202', // does not match the company's real phone
+        submittedPhone: '5559990201', // matches the company's real phone
         submittedByUserId: null,
-        payload: { name: 'Test Phone Guard Co', states: ['NY'], phone: '5559990202' },
+        payload: { name: 'Test Phone Guard Co', states: ['NY'], phone: '5559990201' },
       })
-    ).rejects.toThrow('Phone number does not match the listing you are trying to edit')
-  })
-
-  it('accepts an edit submission whose submittedPhone matches the target company phone (ignoring formatting)', async () => {
-    const { data: existing } = await supabaseAdmin
-      .from('companies')
-      .insert({ name: 'Test Phone Match Co', slug: 'test-phone-match-co', states: ['NY'], active: true, phone: '(555) 999-0301' })
-      .select('id, slug')
-      .single()
-    cleanupCompanySlugs.push(existing!.slug)
-
-    const submission = await createSubmission({
-      targetCompanyId: existing!.id,
-      submittedPhone: '555-999-0301', // same digits, different formatting
-      submittedByUserId: null,
-      payload: { name: 'Test Phone Match Co', states: ['NY'], phone: '5559990301' },
-    })
-    cleanupSubmissionIds.push(submission.id)
-    expect(submission.status).toBe('pending')
+    ).rejects.toThrow('You must be logged in with an approved claim to edit this listing')
   })
 })
 
@@ -330,7 +349,7 @@ describe('createSubmission owner-relaxed phone check', () => {
     ).rejects.toThrow('You do not have an approved claim on this listing')
   })
 
-  it('still uses the phone-match check when submittedByUserId is absent (unauthenticated caller)', async () => {
+  it('rejects an edit when submittedByUserId is absent (unauthenticated caller) regardless of phone', async () => {
     const { data: existing } = await supabaseAdmin
       .from('companies')
       .insert({ name: 'Test Anon Edit Co', slug: 'test-anon-edit-co', states: ['NY'], active: true, phone: '5559992201' })
@@ -345,7 +364,7 @@ describe('createSubmission owner-relaxed phone check', () => {
         submittedByUserId: null,
         payload: { name: 'Test Anon Edit Co', states: ['NY'], phone: '5559992201' },
       })
-    ).rejects.toThrow('Phone number does not match the listing you are trying to edit')
+    ).rejects.toThrow('You must be logged in with an approved claim to edit this listing')
   })
 })
 

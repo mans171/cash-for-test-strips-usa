@@ -95,6 +95,8 @@ describe('createClaim', () => {
     expect(claim.status).toBe('pending')
     expect(claim.company_id).toBe(companyId)
     expect(claim.user_id).toBe(userId)
+    // submitted_phone is stored normalized (digits only), not the raw formatted input.
+    expect(claim.submitted_phone).toBe('5559990601')
   })
 
   it('rejects a duplicate pending claim from the same user on the same company', async () => {

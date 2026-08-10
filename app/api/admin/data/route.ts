@@ -20,7 +20,7 @@ export async function GET(request: Request) {
       supabaseAdmin.from('leads').select('*').order('created_at', { ascending: false }).limit(50),
       supabaseAdmin.from('clicks').select('*').order('created_at', { ascending: false }).limit(50),
       supabaseAdmin.from('companies').select('id, name, city, states').or('phone.is.null,phone.eq.'),
-      supabaseAdmin.from('claims').select('*').eq('status', 'pending').order('created_at', { ascending: false }),
+      supabaseAdmin.from('claims').select('*').eq('status', 'pending').order('created_at', { ascending: false }).limit(50),
     ])
 
     const firstError = [submissions, leads, clicks, missingPhones, claims].find((r) => r.error)?.error

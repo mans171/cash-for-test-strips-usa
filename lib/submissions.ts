@@ -3,7 +3,17 @@ import { supabaseAdmin } from './supabase-admin'
 import { VALID_STATE_CODES } from './states'
 import type { SubmissionPayload } from './types'
 import { sendEmail, escapeHtml } from './email'
-import { normalizePhone } from './phone'
+
+// Thrown for expected, user-facing business-logic failures (no approved
+// claim, listing not found, must be logged in) — as opposed to unexpected
+// errors (DB failures, etc). Route handlers catch this specifically to
+// surface error.message to the caller instead of a generic 500.
+export class SubmissionValidationError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'SubmissionValidationError'
+  }
+}
 
 export function validateSubmissionPayload(payload: SubmissionPayload): { valid: boolean; errors: string[] } {
   const errors: string[] = []
@@ -58,44 +68,41 @@ export type Submission = {
 export async function createSubmission(input: CreateSubmissionInput): Promise<Submission> {
   const validation = validateSubmissionPayload(input.payload)
   if (!validation.valid) {
-    throw new Error(`Invalid submission: ${validation.errors.join(', ')}`)
+    throw new SubmissionValidationError(`Invalid submission: ${validation.errors.join(', ')}`)
   }
 
   // Security: when this submission is an edit targeting an existing company,
-  // verify the submitter actually owns it. An authenticated buyer (submittedByUserId
-  // set) must have an approved claim — phone numbers change, so claim ownership is
-  // the real authority once an account exists. An anonymous/unauthenticated caller
-  // (submittedByUserId absent — shouldn't happen once /buyer is fully replaced, but
-  // this path isn't deleted) falls back to today's phone-match check.
+  // verify the submitter actually owns it. This requires an authenticated
+  // buyer (submittedByUserId set) with an approved claim on that company —
+  // /buyer is now fully login-gated, so there is no legitimate anonymous edit
+  // path anymore. Anonymous phone-match "verification" used to be accepted as
+  // a fallback, but company phone numbers are visible to any logged-in
+  // customer account, so it wasn't much of a barrier — closed entirely.
   if (input.targetCompanyId) {
     const { data: targetCompany, error: lookupError } = await supabaseAdmin
       .from('companies')
-      .select('phone')
+      .select('id')
       .eq('id', input.targetCompanyId)
       .single()
 
     if (lookupError || !targetCompany) {
-      throw new Error('The listing you are trying to edit could not be found')
+      throw new SubmissionValidationError('The listing you are trying to edit could not be found')
     }
 
-    if (input.submittedByUserId) {
-      const { data: approvedClaim } = await supabaseAdmin
-        .from('claims')
-        .select('id')
-        .eq('company_id', input.targetCompanyId)
-        .eq('user_id', input.submittedByUserId)
-        .eq('status', 'approved')
-        .maybeSingle()
+    if (!input.submittedByUserId) {
+      throw new SubmissionValidationError('You must be logged in with an approved claim to edit this listing')
+    }
 
-      if (!approvedClaim) {
-        throw new Error('You do not have an approved claim on this listing')
-      }
-    } else {
-      const currentPhone = normalizePhone(targetCompany.phone ?? '')
-      const submittedPhone = normalizePhone(input.submittedPhone)
-      if (!currentPhone || currentPhone !== submittedPhone) {
-        throw new Error('Phone number does not match the listing you are trying to edit')
-      }
+    const { data: approvedClaim } = await supabaseAdmin
+      .from('claims')
+      .select('id')
+      .eq('company_id', input.targetCompanyId)
+      .eq('user_id', input.submittedByUserId)
+      .eq('status', 'approved')
+      .maybeSingle()
+
+    if (!approvedClaim) {
+      throw new SubmissionValidationError('You do not have an approved claim on this listing')
     }
   }
 

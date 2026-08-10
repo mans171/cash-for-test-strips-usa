@@ -100,4 +100,42 @@ describe('POST /api/claims', () => {
     expect(body.claimId).toBeDefined()
     cleanupClaimIds.push(body.claimId)
   })
+
+  it('returns 400 with a phone-mismatch message when submittedPhone does not match the company', async () => {
+    const userId = await makeBuyer()
+    const { data: company } = await supabaseAdmin
+      .from('companies')
+      .insert({ name: 'Route Claim Mismatch Co', slug: 'route-claim-mismatch-co', states: ['NY'], active: true, phone: '5559994101' })
+      .select('id, slug')
+      .single()
+    cleanupCompanySlugs.push(company!.slug)
+
+    mockGetCurrentUser.mockResolvedValue({ id: userId, email: 'b@example.com', profile: { role: 'buyer' } })
+    const response = await POST(makeRequest({ companyId: company!.id, submittedPhone: '5559994102' }))
+    const body = await response.json()
+    expect(response.status).toBe(400)
+    expect(body.error).toContain('Phone number does not match this listing')
+  })
+
+  it('returns 400 with a duplicate-claim message on a second claim for the same company', async () => {
+    const userId = await makeBuyer()
+    const { data: company } = await supabaseAdmin
+      .from('companies')
+      .insert({ name: 'Route Claim Dup Co', slug: 'route-claim-dup-co', states: ['NY'], active: true, phone: '5559994201' })
+      .select('id, slug')
+      .single()
+    cleanupCompanySlugs.push(company!.slug)
+
+    mockGetCurrentUser.mockResolvedValue({ id: userId, email: 'b@example.com', profile: { role: 'buyer' } })
+
+    const firstResponse = await POST(makeRequest({ companyId: company!.id, submittedPhone: '5559994201' }))
+    const firstBody = await firstResponse.json()
+    expect(firstResponse.status).toBe(200)
+    cleanupClaimIds.push(firstBody.claimId)
+
+    const secondResponse = await POST(makeRequest({ companyId: company!.id, submittedPhone: '5559994201' }))
+    const secondBody = await secondResponse.json()
+    expect(secondResponse.status).toBe(400)
+    expect(secondBody.error).toContain('You already have a pending or approved claim on this listing')
+  })
 })

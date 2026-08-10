@@ -3,6 +3,17 @@ import { supabaseAdmin } from './supabase-admin'
 import { normalizePhone } from './phone'
 import { sendEmail, escapeHtml } from './email'
 
+// Thrown for expected, user-facing business-logic failures (phone mismatch,
+// duplicate claim, listing not found) — as opposed to unexpected errors
+// (DB failures, etc). Route handlers catch this specifically to surface
+// error.message to the caller instead of a generic 500.
+export class ClaimValidationError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'ClaimValidationError'
+  }
+}
+
 export type Claim = {
   id: string
   company_id: string
@@ -27,13 +38,13 @@ export async function createClaim(input: CreateClaimInput): Promise<Claim> {
     .single()
 
   if (lookupError || !company) {
-    throw new Error('The listing you are trying to claim could not be found')
+    throw new ClaimValidationError('The listing you are trying to claim could not be found')
   }
 
   const currentPhone = normalizePhone(company.phone ?? '')
   const submittedPhone = normalizePhone(input.submittedPhone)
   if (!currentPhone || currentPhone !== submittedPhone) {
-    throw new Error('Phone number does not match this listing')
+    throw new ClaimValidationError('Phone number does not match this listing')
   }
 
   const { data: existingClaim } = await supabaseAdmin
@@ -45,23 +56,27 @@ export async function createClaim(input: CreateClaimInput): Promise<Claim> {
     .maybeSingle()
 
   if (existingClaim) {
-    throw new Error('You already have a pending or approved claim on this listing')
+    throw new ClaimValidationError('You already have a pending or approved claim on this listing')
   }
 
   const id = crypto.randomUUID()
   const createdAt = new Date().toISOString()
+  // Store the normalized phone (not the raw input) — it's already been verified
+  // to match the company's normalized phone above, and normalizing it here means
+  // the stored value on the claims row is directly comparable to other normalized
+  // phones without a caller having to re-normalize it (e.g. admin UI display).
   const { error } = await supabaseAdmin.from('claims').insert({
     id,
     company_id: input.companyId,
     user_id: input.userId,
-    submitted_phone: input.submittedPhone,
+    submitted_phone: submittedPhone,
   })
 
   // Handle unique constraint violation (TOCTOU race on duplicate pending/approved claims)
   // Postgres error code 23505 = unique_violation
   if (error) {
     if (error.code === '23505') {
-      throw new Error('You already have a pending or approved claim on this listing')
+      throw new ClaimValidationError('You already have a pending or approved claim on this listing')
     }
     throw new Error(`Failed to create claim: ${error.message}`)
   }
@@ -81,7 +96,7 @@ export async function createClaim(input: CreateClaimInput): Promise<Claim> {
     id,
     company_id: input.companyId,
     user_id: input.userId,
-    submitted_phone: input.submittedPhone,
+    submitted_phone: submittedPhone,
     status: 'pending',
     created_at: createdAt,
     reviewed_at: null,
