@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import type { Metadata } from "next";
+import { buildWebsiteSchema, buildServiceSchema, buildFaqPageSchema } from "@/lib/schema";
+import { JsonLd } from "@/app/components/JsonLd";
 
 export const metadata: Metadata = {
   title: "Cash For Test Strips USA — Sell Diabetic Test Strips Near You",
@@ -47,8 +49,42 @@ export default async function HomePage() {
 
   const companies = (featured ?? []) as Company[];
 
+  const homeFaqs = [
+    {
+      q: 'What brands do you accept?',
+      a: 'We buy all major brands of diabetic test strips — OneTouch, FreeStyle, Accu-Chek, Contour Next, and True Metrix — plus CGM sensors from Dexcom, FreeStyle Libre, and Omnipod, and infusion sets from Medtronic and Tandem. All supplies must be sealed and unexpired, from U.S. retail sources.',
+    },
+    {
+      q: 'Is it legal to sell diabetic test strips?',
+      a: "Yes, selling unused, sealed, personally owned diabetic test strips is legal across the United States. The one firm rule: supplies purchased through Medicare or Medicaid cannot be resold. If your strips were paid for out of pocket or through private insurance, you're in the clear.",
+    },
+    {
+      q: 'How fast will I get paid?',
+      a: 'Most buyers pay within 24 hours of receiving and verifying your supplies. Payment is sent via PayPal, Zelle, Venmo, check, or cash — your choice. For local transactions, same-day payment is often possible.',
+    },
+    {
+      q: 'How does the process work?',
+      a: "Call or text us at 518-779-9751 with the brand, quantity, and expiration date of what you have. We quote you immediately. For most transactions, we send a prepaid shipping label at no cost. Once we receive and verify the strips, you get paid.",
+    },
+    {
+      q: 'What if my strips are expired or the box has been opened?',
+      a: "Opened boxes are not accepted — we require original, sealed packaging only. For expired supplies: most expired test strips have no buyer market, but expired Omnipod pods and expired Dexcom G7 sensors are exceptions. Call us and we'll tell you whether what you have qualifies.",
+    },
+    {
+      q: 'Do you buy in bulk?',
+      a: 'Yes — bulk is our specialty. Many of our customers are estate liquidators, caregivers, and pharmacies handling large quantities. We buy everything from a single box to 500 or more, and we pay a higher per-box rate on lots of 10 or more boxes.',
+    },
+  ]
+
+  const websiteSchema = buildWebsiteSchema()
+  const serviceSchema = buildServiceSchema()
+  const faqSchema = buildFaqPageSchema(homeFaqs.map((f) => ({ question: f.q, answer: f.a })))
+
   return (
     <>
+      <JsonLd data={websiteSchema} />
+      <JsonLd data={serviceSchema} />
+      <JsonLd data={faqSchema} />
       {/* Hero */}
       <section className="bg-gradient-to-br from-emerald-50 to-white border-b border-emerald-100 py-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
@@ -165,6 +201,21 @@ export default async function HomePage() {
             >
               All states →
             </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="py-16 px-4 bg-gray-50">
+        <div className="max-w-3xl mx-auto">
+          <h2 className="text-2xl font-bold text-center text-gray-900 mb-10">Frequently Asked Questions</h2>
+          <div className="space-y-6">
+            {homeFaqs.map(({ q, a }) => (
+              <div key={q}>
+                <h3 className="font-semibold text-gray-900 mb-1 text-sm">{q}</h3>
+                <p className="text-sm text-gray-500 leading-relaxed">{a}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
