@@ -39,6 +39,15 @@ export default function RootLayout({
               <Link href="/directory" className="hover:text-emerald-700 transition-colors">
                 Directory
               </Link>
+              <Link href="/about" className="hover:text-emerald-700 transition-colors">
+                About
+              </Link>
+              <Link href="/is-it-legal-to-sell-diabetic-test-strips" className="hover:text-emerald-700 transition-colors">
+                Is It Legal?
+              </Link>
+              <Link href="/how-much-are-diabetic-test-strips-worth" className="hover:text-emerald-700 transition-colors">
+                Price Guide
+              </Link>
               <Link href="/buyer" className="hover:text-emerald-700 transition-colors">
                 Manage Your Listing
               </Link>
