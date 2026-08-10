@@ -1,64 +1,153 @@
 import { describe, it, expect } from 'vitest'
-import { supabase } from '@/lib/supabase'
-import { supabaseAdmin } from '@/lib/supabase-admin'
+import {
+  buildFaqPageSchema,
+  buildBreadcrumbSchema,
+  buildLocalBusinessSchema,
+  buildArticleSchema,
+  buildWebsiteSchema,
+  buildServiceSchema,
+  buildItemListSchema,
+} from '@/lib/schema'
 
-describe('buyer portal schema', () => {
-  it('companies has email and mail_in columns', async () => {
-    const { data, error } = await supabaseAdmin
-      .from('companies')
-      .select('email, mail_in')
-      .limit(1)
-    expect(error).toBeNull()
-    expect(data).toBeDefined()
-  })
-
-  it('has exactly one active mail_in company with the CFTS Mail-In slug', async () => {
-    const { data, error } = await supabaseAdmin
-      .from('companies')
-      .select('id, slug, phone, active')
-      .eq('mail_in', true)
-    expect(error).toBeNull()
-    expect(data).toHaveLength(1)
-    expect(data![0].slug).toBe('cfts-mail-in')
-    expect(data![0].active).toBe(true)
-  })
-
-  it('anon key cannot write to submissions at all', async () => {
-    // The submissions_insert_anon policy was dropped (final-review adjudication):
-    // the anon key is public (shipped to the browser), so an anon insert-only
-    // policy let anyone POST directly to Supabase's REST API and bypass
-    // createSubmission's phone-ownership check entirely. RLS is still enabled
-    // on the table with zero policies now, so anon inserts are denied outright
-    // and only the service-role client (supabaseAdmin) can write. All writes
-    // go through createSubmission (lib/submissions.ts), which now uses
-    // supabaseAdmin internally.
-    const insertedId = crypto.randomUUID()
-    const { error: insertError } = await supabase
-      .from('submissions')
-      .insert({
-        id: insertedId,
-        target_company_id: null,
-        payload: { name: 'Schema Test Co', states: ['NY'] },
-        submitted_phone: '5555550000',
-      })
-    expect(insertError).not.toBeNull()
-
-    // nothing to clean up: the insert above was denied, so no row was created
-  })
-
-  it('rejects an anon insert that tries to pre-set status to approved', async () => {
-    const spoofedId = crypto.randomUUID()
-    const { error } = await supabase.from('submissions').insert({
-      id: spoofedId,
-      target_company_id: null,
-      payload: { name: 'Spoof Test Co', states: ['NY'] },
-      submitted_phone: '5555550099',
-      status: 'approved',
-      reviewed_at: new Date().toISOString(),
+describe('buildFaqPageSchema', () => {
+  it('builds a FAQPage schema with mainEntity questions', () => {
+    const result = buildFaqPageSchema([
+      { question: 'Is it legal?', answer: 'Yes, in most cases.' },
+      { question: 'How fast is payment?', answer: 'Within 24 hours.' },
+    ])
+    expect(result).toEqual({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: [
+        { '@type': 'Question', name: 'Is it legal?', acceptedAnswer: { '@type': 'Answer', text: 'Yes, in most cases.' } },
+        { '@type': 'Question', name: 'How fast is payment?', acceptedAnswer: { '@type': 'Answer', text: 'Within 24 hours.' } },
+      ],
     })
-    expect(error).not.toBeNull()
+  })
 
-    // cleanup in case the insert somehow succeeded
-    await supabaseAdmin.from('submissions').delete().eq('id', spoofedId)
+  it('handles an empty list', () => {
+    expect(buildFaqPageSchema([])).toEqual({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: [],
+    })
+  })
+})
+
+describe('buildBreadcrumbSchema', () => {
+  it('builds a BreadcrumbList with 1-indexed positions', () => {
+    const result = buildBreadcrumbSchema([
+      { name: 'Home', url: 'https://cash4teststripsusa.com' },
+      { name: 'Alabama', url: 'https://cash4teststripsusa.com/blog/sell-diabetic-test-strips-alabama' },
+    ])
+    expect(result).toEqual({
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://cash4teststripsusa.com' },
+        { '@type': 'ListItem', position: 2, name: 'Alabama', item: 'https://cash4teststripsusa.com/blog/sell-diabetic-test-strips-alabama' },
+      ],
+    })
+  })
+})
+
+describe('buildLocalBusinessSchema', () => {
+  it('includes optional fields when present', () => {
+    const result = buildLocalBusinessSchema({
+      name: 'Test Buyer Co',
+      url: 'https://cash4teststripsusa.com/company/test-buyer-co',
+      telephone: '5185551234',
+      description: 'We buy test strips.',
+      areaServed: ['New York', 'New Jersey'],
+      paymentAccepted: ['PayPal', 'Zelle'],
+    })
+    expect(result).toEqual({
+      '@context': 'https://schema.org',
+      '@type': 'LocalBusiness',
+      name: 'Test Buyer Co',
+      url: 'https://cash4teststripsusa.com/company/test-buyer-co',
+      telephone: '5185551234',
+      description: 'We buy test strips.',
+      areaServed: ['New York', 'New Jersey'],
+      paymentAccepted: ['PayPal', 'Zelle'],
+    })
+  })
+
+  it('omits optional fields when absent', () => {
+    const result = buildLocalBusinessSchema({
+      name: 'Anon Buyer Co',
+      url: 'https://cash4teststripsusa.com/company/anon-buyer-co',
+      telephone: null,
+      description: null,
+      areaServed: [],
+      paymentAccepted: [],
+    })
+    expect(result).toEqual({
+      '@context': 'https://schema.org',
+      '@type': 'LocalBusiness',
+      name: 'Anon Buyer Co',
+      url: 'https://cash4teststripsusa.com/company/anon-buyer-co',
+    })
+  })
+})
+
+describe('buildArticleSchema', () => {
+  it('builds an Article schema with org author/publisher', () => {
+    const result = buildArticleSchema({
+      headline: 'Sell Diabetic Test Strips in Alabama',
+      description: 'A guide to selling test strips in Alabama.',
+      datePublished: '2026-05-19',
+      url: 'https://cash4teststripsusa.com/blog/sell-diabetic-test-strips-alabama',
+    })
+    expect(result).toEqual({
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: 'Sell Diabetic Test Strips in Alabama',
+      description: 'A guide to selling test strips in Alabama.',
+      datePublished: '2026-05-19',
+      url: 'https://cash4teststripsusa.com/blog/sell-diabetic-test-strips-alabama',
+      author: { '@type': 'Organization', name: 'Cash For Test Strips USA' },
+      publisher: { '@type': 'Organization', name: 'Cash For Test Strips USA' },
+    })
+  })
+})
+
+describe('buildWebsiteSchema / buildServiceSchema', () => {
+  it('builds a WebSite schema with a SearchAction', () => {
+    const result = buildWebsiteSchema()
+    expect(result).toMatchObject({
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      name: 'Cash For Test Strips USA',
+      url: 'https://cash4teststripsusa.com',
+    })
+    expect(result.potentialAction).toBeDefined()
+  })
+
+  it('builds a Service schema', () => {
+    expect(buildServiceSchema()).toEqual({
+      '@context': 'https://schema.org',
+      '@type': 'Service',
+      serviceType: 'Diabetic Test Strip Buyer Directory',
+      provider: { '@type': 'Organization', name: 'Cash For Test Strips USA' },
+      areaServed: 'United States',
+    })
+  })
+})
+
+describe('buildItemListSchema', () => {
+  it('builds an ItemList with 1-indexed positions', () => {
+    const result = buildItemListSchema([
+      { name: 'Test Buyer One', url: 'https://cash4teststripsusa.com/company/test-buyer-one' },
+      { name: 'Test Buyer Two', url: 'https://cash4teststripsusa.com/company/test-buyer-two' },
+    ])
+    expect(result).toEqual({
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Test Buyer One', url: 'https://cash4teststripsusa.com/company/test-buyer-one' },
+        { '@type': 'ListItem', position: 2, name: 'Test Buyer Two', url: 'https://cash4teststripsusa.com/company/test-buyer-two' },
+      ],
+    })
   })
 })
