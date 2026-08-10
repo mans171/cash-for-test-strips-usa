@@ -76,6 +76,7 @@ describe('POST /api/admin/review', () => {
       targetCompanyId: null,
       submittedPhone: '5551110000',
       payload: { name: 'Admin Review Test Co', states: ['NY'], phone: '5551110000' },
+      submittedByUserId: null,
     })
     cleanupSubmissionIds.push(submission.id)
 
