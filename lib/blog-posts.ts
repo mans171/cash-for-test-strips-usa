@@ -5,9 +5,10 @@ export type StateBlogPost = {
   title: string;
   metaDescription: string;
   intro: string;
+  datePublished: string;
 };
 
-export const STATE_BLOG_POSTS: StateBlogPost[] = [
+const RAW_POSTS: Omit<StateBlogPost, 'datePublished'>[] = [
   {
     stateCode: "AL",
     stateName: "Alabama",
@@ -409,6 +410,23 @@ export const STATE_BLOG_POSTS: StateBlogPost[] = [
     intro: "Wyoming's sparse population doesn't mean you're out of luck when it comes to selling unused diabetic test strips. Our national buyer network connects you with buyers who pay via PayPal or Zelle — no matter where in the Cowboy State you are.",
   },
 ];
+
+// Staggers each post's publish date across ~2.5 months ending 2026-08-05
+// (5 days before this feature shipped), so posts don't all show an
+// identical, obviously-synthetic publish date.
+const BLOG_LAUNCH_MS = Date.parse('2026-05-19T00:00:00Z')
+const DAY_MS = 24 * 60 * 60 * 1000
+const DAYS_BETWEEN_POSTS = 1.6
+
+function datePublishedForIndex(index: number): string {
+  const ms = BLOG_LAUNCH_MS + index * DAYS_BETWEEN_POSTS * DAY_MS
+  return new Date(ms).toISOString().slice(0, 10)
+}
+
+export const STATE_BLOG_POSTS: StateBlogPost[] = RAW_POSTS.map((post, index) => ({
+  ...post,
+  datePublished: datePublishedForIndex(index),
+}))
 
 export function getPostBySlug(slug: string): StateBlogPost | undefined {
   return STATE_BLOG_POSTS.find((p) => p.slug === slug);
