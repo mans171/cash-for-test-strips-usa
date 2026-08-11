@@ -3,26 +3,14 @@ import { supabase } from "@/lib/supabase";
 import type { Metadata } from "next";
 import { buildWebsiteSchema, buildServiceSchema, buildFaqPageSchema } from "@/lib/schema";
 import { JsonLd } from "@/app/components/JsonLd";
+import { stripCompanyContact } from "@/lib/company-contact";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
+import type { Company } from "@/lib/types";
 
 export const metadata: Metadata = {
   title: "Cash For Test Strips USA — Sell Diabetic Test Strips Near You",
   description:
     "Find local cash buyers for your unused diabetic test strips. Get paid fast via PayPal, Zelle, or check. Free to use. Free account required.",
-};
-
-type Company = {
-  id: string;
-  name: string;
-  slug: string;
-  url: string | null;
-  phone: string | null;
-  city: string | null;
-  states: string[];
-  payment_methods: string[];
-  accepted_brands: string[];
-  rating: number | null;
-  description: string | null;
-  featured: boolean;
 };
 
 const STATE_LABELS: Record<string, string> = {
@@ -43,11 +31,16 @@ const POPULAR_STATES = ["NY", "TX", "FL", "CA", "PA", "NC", "OH", "GA", "MA", "N
 export default async function HomePage() {
   const { data: featured } = await supabase
     .from("companies")
-    .select("id, name, slug, url, phone, city, states, payment_methods, accepted_brands, rating, description, featured")
+    .select("id, name, slug, url, email, phone, city, owner_name, states, payment_methods, accepted_brands, rating, description, featured")
     .eq("featured", true)
     .limit(6);
 
-  const companies = (featured ?? []) as Company[];
+  const rawCompanies = (featured ?? []) as Company[];
+
+  const supabaseServer = await createServerSupabaseClient();
+  const { data: { user } } = await supabaseServer.auth.getUser();
+  const isAuthenticated = !!user;
+  const companies = isAuthenticated ? rawCompanies : rawCompanies.map(stripCompanyContact);
 
   const homeFaqs = [
     {
@@ -173,7 +166,7 @@ export default async function HomePage() {
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {companies.map((c) => (
-                <CompanyCard key={c.id} company={c} />
+                <CompanyCard key={c.id} company={c} isAuthenticated={isAuthenticated} />
               ))}
             </div>
           </div>
@@ -239,7 +232,7 @@ export default async function HomePage() {
   );
 }
 
-function CompanyCard({ company }: { company: Company }) {
+function CompanyCard({ company, isAuthenticated }: { company: Company; isAuthenticated: boolean }) {
   const stateLabels = company.states
     .slice(0, 3)
     .map((s) => STATE_LABELS[s] ?? s)
@@ -279,19 +272,39 @@ function CompanyCard({ company }: { company: Company }) {
         >
           View details
         </Link>
-        {company.url ? (
-          <a
-            href={`/api/track?company=${company.id}&url=${encodeURIComponent(company.url)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1 text-center text-xs font-medium bg-emerald-600 text-white px-3 py-2 rounded-lg hover:bg-emerald-700 transition-colors"
-          >
-            Visit site →
-          </a>
+        {company.url || company.phone || company.hasContact ? (
+          isAuthenticated ? (
+            company.url ? (
+              <a
+                href={`/api/track?company=${company.id}&url=${encodeURIComponent(company.url)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 text-center text-xs font-medium bg-emerald-600 text-white px-3 py-2 rounded-lg hover:bg-emerald-700 transition-colors block"
+              >
+                Visit site →
+              </a>
+            ) : (
+              <a
+                href={`tel:${company.phone}`}
+                className="flex-1 text-center text-xs font-medium bg-emerald-600 text-white px-3 py-2 rounded-lg hover:bg-emerald-700 transition-colors block"
+              >
+                Contact
+              </a>
+            )
+          ) : (
+            <div className="flex-1 flex flex-col gap-1">
+              <span className="text-center text-xs font-medium bg-emerald-600 text-white px-3 py-2 rounded-lg opacity-40 pointer-events-none block">
+                Contact
+              </span>
+              <p className="text-xs text-red-600 text-center">
+                <Link href="/signup" className="underline">Create an account</Link> to view
+              </p>
+            </div>
+          )
         ) : (
           <a
-            href={`tel:${company.phone ?? "5187799751"}`}
-            className="flex-1 text-center text-xs font-medium bg-emerald-600 text-white px-3 py-2 rounded-lg hover:bg-emerald-700 transition-colors"
+            href="tel:5187799751"
+            className="flex-1 text-center text-xs font-medium bg-emerald-600 text-white px-3 py-2 rounded-lg hover:bg-emerald-700 transition-colors block"
           >
             Contact
           </a>
