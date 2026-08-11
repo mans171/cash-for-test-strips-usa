@@ -8,19 +8,17 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-ink: #071b10;
+  --color-ink-deep: #052e16;
+  --color-cash: #16a34a;
+  --color-cash-hover: #15803d;
+  --color-electric: #4ade80;
+  --color-ground: #f7f9f7;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
 }
