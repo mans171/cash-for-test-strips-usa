@@ -4,6 +4,9 @@ import { supabase } from "@/lib/supabase";
 import type { Metadata } from "next";
 import { buildFaqPageSchema, buildBreadcrumbSchema } from "@/lib/schema";
 import { JsonLd } from "@/app/components/JsonLd";
+import { stripCompanyContact } from "@/lib/company-contact";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
+import type { Company } from "@/lib/types";
 
 const STATE_LABELS: Record<string, string> = {
   AL: "Alabama", AK: "Alaska", AZ: "Arizona", AR: "Arkansas", CA: "California",
@@ -42,12 +45,17 @@ export default async function StatePage({ params }: Props) {
 
   const { data } = await supabase
     .from("companies")
-    .select("id, name, slug, url, city, owner_name, states, payment_methods, accepted_brands, rating, description, featured")
+    .select("id, name, slug, url, email, phone, city, owner_name, states, payment_methods, accepted_brands, rating, description, featured")
     .contains("states", [code])
     .order("featured", { ascending: false })
     .order("name");
 
-  const companies = data ?? [];
+  const rawCompanies = (data ?? []) as Company[];
+
+  const supabaseServer = await createServerSupabaseClient();
+  const { data: { user } } = await supabaseServer.auth.getUser();
+  const isAuthenticated = !!user;
+  const companies = isAuthenticated ? rawCompanies : rawCompanies.map(stripCompanyContact);
 
   const faqs = [
     {
@@ -121,7 +129,7 @@ export default async function StatePage({ params }: Props) {
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
             {companies.map((c) => (
-              <StateCompanyCard key={c.id} company={c} stateLabels={STATE_LABELS} />
+              <StateCompanyCard key={c.id} company={c} isAuthenticated={isAuthenticated} />
             ))}
           </div>
         </>
@@ -160,21 +168,10 @@ export default async function StatePage({ params }: Props) {
 
 function StateCompanyCard({
   company,
-  stateLabels,
+  isAuthenticated,
 }: {
-  company: {
-    id: string;
-    name: string;
-    slug: string;
-    url: string | null;
-    city: string | null;
-    states: string[];
-    payment_methods: string[];
-    rating: number | null;
-    description: string | null;
-    featured: boolean;
-  };
-  stateLabels: Record<string, string>;
+  company: Company;
+  isAuthenticated: boolean;
 }) {
   return (
     <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex flex-col gap-3 hover:shadow-md transition-shadow">
@@ -211,19 +208,39 @@ function StateCompanyCard({
         >
           View details
         </Link>
-        {company.url ? (
-          <a
-            href={`/api/track?company=${company.id}&url=${encodeURIComponent(company.url)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1 text-center text-xs font-medium bg-emerald-600 text-white px-3 py-2 rounded-lg hover:bg-emerald-700 transition-colors"
-          >
-            Visit site →
-          </a>
+        {company.url || company.phone || company.hasContact ? (
+          isAuthenticated ? (
+            company.url ? (
+              <a
+                href={`/api/track?company=${company.id}&url=${encodeURIComponent(company.url)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 text-center text-xs font-medium bg-emerald-600 text-white px-3 py-2 rounded-lg hover:bg-emerald-700 transition-colors block"
+              >
+                Visit site →
+              </a>
+            ) : (
+              <a
+                href={`tel:${company.phone}`}
+                className="flex-1 text-center text-xs font-medium bg-emerald-600 text-white px-3 py-2 rounded-lg hover:bg-emerald-700 transition-colors block"
+              >
+                Contact
+              </a>
+            )
+          ) : (
+            <div className="flex-1 flex flex-col gap-1">
+              <span className="text-center text-xs font-medium bg-emerald-600 text-white px-3 py-2 rounded-lg opacity-40 pointer-events-none block">
+                Contact
+              </span>
+              <p className="text-xs text-red-600 text-center">
+                <Link href="/signup" className="underline">Create an account</Link> to view
+              </p>
+            </div>
+          )
         ) : (
           <a
             href="tel:5187799751"
-            className="flex-1 text-center text-xs font-medium bg-emerald-600 text-white px-3 py-2 rounded-lg hover:bg-emerald-700 transition-colors"
+            className="flex-1 text-center text-xs font-medium bg-emerald-600 text-white px-3 py-2 rounded-lg hover:bg-emerald-700 transition-colors block"
           >
             Contact
           </a>
