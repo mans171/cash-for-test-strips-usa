@@ -18,6 +18,9 @@ export const metadata: Metadata = {
     siteName: "Cash For Test Strips USA",
     type: "website",
   },
+  verification: {
+    google: "Or0aVFN_Z8IubP3wQVvGSB3NKGqw-t-JdrjQfyElikA",
+  },
 };
 
 export default function RootLayout({
