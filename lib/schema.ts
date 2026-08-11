@@ -66,6 +66,10 @@ export function buildArticleSchema(input: ArticleInput): Record<string, unknown>
     headline: input.headline,
     description: input.description,
     datePublished: input.datePublished,
+    // No per-post edit tracking exists yet, so dateModified mirrors
+    // datePublished rather than going unset.
+    dateModified: input.datePublished,
+    image: 'https://cash4teststripsusa.com/opengraph-image',
     url: input.url,
     author: { '@type': 'Organization', name: 'Cash For Test Strips USA' },
     publisher: { '@type': 'Organization', name: 'Cash For Test Strips USA' },

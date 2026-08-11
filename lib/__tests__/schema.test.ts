@@ -105,6 +105,8 @@ describe('buildArticleSchema', () => {
       headline: 'Sell Diabetic Test Strips in Alabama',
       description: 'A guide to selling test strips in Alabama.',
       datePublished: '2026-05-19',
+      dateModified: '2026-05-19',
+      image: 'https://cash4teststripsusa.com/opengraph-image',
       url: 'https://cash4teststripsusa.com/blog/sell-diabetic-test-strips-alabama',
       author: { '@type': 'Organization', name: 'Cash For Test Strips USA' },
       publisher: { '@type': 'Organization', name: 'Cash For Test Strips USA' },

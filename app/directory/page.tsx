@@ -13,6 +13,9 @@ export const metadata: Metadata = {
   title: "Directory — Find Test Strip Buyers Near You",
   description:
     "Browse our full directory of cash buyers for diabetic test strips. Filter by state, payment method, and brand accepted.",
+  // All ?state= filtered views canonicalize to the unfiltered directory —
+  // they're the same content with a subset applied, not distinct pages.
+  alternates: { canonical: "https://cash4teststripsusa.com/directory" },
 };
 
 export default async function DirectoryPage({
