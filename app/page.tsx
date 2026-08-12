@@ -108,9 +108,9 @@ export default async function HomePage() {
             </button>
           </form>
 
-          <div className="flex justify-center gap-8 mt-10 text-sm">
+          <div className="flex flex-wrap justify-center gap-x-8 gap-y-2 mt-10 text-sm">
             <span className="text-white/60"><b className="text-electric font-black text-lg">{localBuyerCount ?? 29}</b> local buyers</span>{/* ?? 29: static fallback if the count query errors */}
-            <span className="text-white/60"><b className="text-electric font-black text-lg">24hr</b> payouts</span>
+            <span className="text-white/60"><b className="text-electric font-black text-lg">Same day</b> local &middot; 24hr mail-in</span>
             <span className="text-white/60"><b className="text-electric font-black text-lg">50</b> states</span>
           </div>
         </div>
