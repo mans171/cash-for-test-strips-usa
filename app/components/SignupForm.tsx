@@ -107,7 +107,7 @@ export function SignupForm({
 
   return (
     <div className="max-w-md mx-auto py-12 px-4">
-      <h1 className="text-2xl font-semibold mb-6">Create an account</h1>
+      <h1 className="text-2xl font-semibold mb-6 text-gray-900">Create an account</h1>
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
         <input
           type="email"
@@ -115,7 +115,7 @@ export function SignupForm({
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2"
+          className="border border-gray-300 rounded-lg px-3 py-2 text-gray-900"
         />
         <input
           type="password"
@@ -124,7 +124,7 @@ export function SignupForm({
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2"
+          className="border border-gray-300 rounded-lg px-3 py-2 text-gray-900"
         />
         <input
           type="text"
@@ -132,7 +132,7 @@ export function SignupForm({
           placeholder="Full name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2"
+          className="border border-gray-300 rounded-lg px-3 py-2 text-gray-900"
         />
         <input
           type="tel"
@@ -140,7 +140,7 @@ export function SignupForm({
           placeholder="Phone"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2"
+          className="border border-gray-300 rounded-lg px-3 py-2 text-gray-900"
         />
         <input
           type="text"
@@ -148,7 +148,7 @@ export function SignupForm({
           placeholder="Street address"
           value={addressStreet}
           onChange={(e) => setAddressStreet(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2"
+          className="border border-gray-300 rounded-lg px-3 py-2 text-gray-900"
         />
         <div className="flex gap-2">
           <input
@@ -157,7 +157,7 @@ export function SignupForm({
             placeholder="City"
             value={addressCity}
             onChange={(e) => setAddressCity(e.target.value)}
-            className="border border-gray-300 rounded-lg px-3 py-2 flex-1"
+            className="border border-gray-300 rounded-lg px-3 py-2 text-gray-900 flex-1"
           />
           <input
             type="text"
@@ -165,7 +165,7 @@ export function SignupForm({
             placeholder="State"
             value={addressState}
             onChange={(e) => setAddressState(e.target.value)}
-            className="border border-gray-300 rounded-lg px-3 py-2 w-20"
+            className="border border-gray-300 rounded-lg px-3 py-2 text-gray-900 w-20"
           />
           <input
             type="text"
@@ -173,7 +173,7 @@ export function SignupForm({
             placeholder="ZIP"
             value={addressZip}
             onChange={(e) => setAddressZip(e.target.value)}
-            className="border border-gray-300 rounded-lg px-3 py-2 w-24"
+            className="border border-gray-300 rounded-lg px-3 py-2 text-gray-900 w-24"
           />
         </div>
         {error && (

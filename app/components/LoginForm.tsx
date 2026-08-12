@@ -51,7 +51,7 @@ export function LoginForm({
       {compact ? (
         <h2 className="font-semibold text-gray-900 mb-2">Log in</h2>
       ) : (
-        <h1 className="text-2xl font-semibold mb-6">Log in</h1>
+        <h1 className="text-2xl font-semibold mb-6 text-gray-900">Log in</h1>
       )}
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
         <input
@@ -63,7 +63,7 @@ export function LoginForm({
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2"
+          className="border border-gray-300 rounded-lg px-3 py-2 text-gray-900"
         />
         <input
           type="password"
@@ -74,7 +74,7 @@ export function LoginForm({
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2"
+          className="border border-gray-300 rounded-lg px-3 py-2 text-gray-900"
         />
         {error && <p className="text-sm text-red-600">{error}</p>}
         <button
