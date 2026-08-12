@@ -12,6 +12,7 @@ import { JsonLd } from "@/app/components/JsonLd";
 import { BuyerCard } from "@/app/components/BuyerCard";
 import { UnlockContact } from "@/app/components/UnlockContact";
 import { ZipCookieSync } from "@/app/components/ZipCookieSync";
+import { btnOnDark } from "@/app/components/ui";
 import { isValidZip } from "@/lib/geo";
 import { getZipCentroid, tierCompanies, type CompanyWithMiles } from "@/lib/zip-lookup";
 import { COMPANY_COLUMNS } from "@/lib/company-columns";
@@ -60,15 +61,20 @@ export default async function DirectoryPage({
   const cookieZip = (await cookies()).get("c4ts_zip")?.value;
   const prefillZip = zipValid ? zip : cookieZip && isValidZip(cookieZip) ? cookieZip : undefined;
 
-  // Mail-in fallback card data (Feldon's own operation) — only in ZIP mode
+  // Mail-in fallback card data (Feldon's own operation) — only in ZIP mode.
+  // A searched ZIP must never dead-end, so mailIn staying null (query error,
+  // or the row missing/deactivated) is not treated as "nothing to show" —
+  // MailInFallback renders a generic /sell fallback in that case instead of
+  // silently disappearing. See the render call below.
   let mailIn: Company | null = null;
   if (tiers) {
-    const { data: mailInRow } = await supabase
+    const { data: mailInRow, error: mailInError } = await supabase
       .from("companies")
       .select(COMPANY_COLUMNS)
       .eq("mail_in", true)
       .limit(1)
       .maybeSingle();
+    if (mailInError) console.error("mail-in fallback lookup failed:", mailInError.message);
     if (mailInRow) {
       const row = mailInRow as Company;
       mailIn = isAuthenticated ? row : stripCompanyContact(row);
@@ -130,7 +136,7 @@ export default async function DirectoryPage({
               No local buyers near {zip} yet — but you're covered:
             </p>
           )}
-          {mailIn && <MailInFallback company={mailIn} isAuthenticated={isAuthenticated} />}
+          <MailInFallback company={mailIn} isAuthenticated={isAuthenticated} />
           <p className="text-sm text-gray-400">
             Not what you're looking for? <Link href="/directory" className="underline hover:text-ink">Browse all buyers</Link>
           </p>
@@ -181,7 +187,12 @@ function TierSection({
   );
 }
 
-function MailInFallback({ company, isAuthenticated }: { company: Company; isAuthenticated: boolean }) {
+// company is null when the mail-in row lookup errored or came back empty
+// (query failure, or the row missing/deactivated) — the section still
+// renders so a searched ZIP never dead-ends, just with a generic /sell CTA
+// instead of a real buyer's UnlockContact gate. No contact data involved in
+// that variant, so there's no security surface to strip for anon visitors.
+function MailInFallback({ company, isAuthenticated }: { company: Company | null; isAuthenticated: boolean }) {
   return (
     <section className="bg-ink rounded-2xl p-6 sm:p-8 text-white">
       <div className="flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
@@ -191,11 +202,17 @@ function MailInFallback({ company, isAuthenticated }: { company: Company; isAuth
           </p>
           <h2 className="text-xl font-black mb-1">No local buyer? We buy by mail.</h2>
           <p className="text-sm text-white/70">
-            Free prepaid shipping label, payment within 24 hours of verification. Run by Cash For Test Strips USA.
+            Free prepaid shipping label, payment within 24 hours of verification.
           </p>
         </div>
         <div className="shrink-0">
-          <UnlockContact company={company} isAuthenticated={isAuthenticated} size="page" />
+          {company ? (
+            <UnlockContact company={company} isAuthenticated={isAuthenticated} size="page" />
+          ) : (
+            <Link href="/sell" className={btnOnDark}>
+              Start a sale →
+            </Link>
+          )}
         </div>
       </div>
     </section>

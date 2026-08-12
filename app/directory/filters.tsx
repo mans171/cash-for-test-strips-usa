@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 export function DirectorySearch({
@@ -14,6 +14,14 @@ export function DirectorySearch({
 }) {
   const router = useRouter();
   const [zip, setZip] = useState(currentZip ?? "");
+
+  // useState only seeds from currentZip on first mount — the App Router
+  // doesn't remount this component for a searchParams-only navigation (e.g.
+  // clicking Clear, or a fresh zip search overwriting an old typed value),
+  // so without this the input can go stale relative to the actual URL/prop.
+  useEffect(() => {
+    setZip(currentZip ?? "");
+  }, [currentZip]);
 
   function submitZip(e: React.FormEvent) {
     e.preventDefault();
