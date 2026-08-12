@@ -28,13 +28,71 @@ const cleanupCompanySlugs: string[] = []
 const cleanupClaimIds: string[] = []
 const cleanupUserIds: string[] = []
 
+// Every fixed slug this file passes to makeCompany() below. A run that
+// crashes before afterEach can run leaves these rows behind; the next run's
+// insert then collides with the fixed slug. beforeAll self-heals that debris.
+const FIXTURE_SLUGS = [
+  'claim-phone-guard-co',
+  'claim-phone-match-co',
+  'claim-dup-pending-co',
+  'claim-dup-approved-co',
+  'claim-approve-co',
+  'claim-reject-co',
+  'claim-already-reviewed-co',
+]
+
+beforeAll(async () => {
+  const { data: debris, error: selectError } = await supabaseAdmin
+    .from('companies')
+    .select('id, slug')
+    .in('slug', FIXTURE_SLUGS)
+  if (selectError) {
+    throw new Error(`beforeAll debris lookup failed: ${selectError.message}`)
+  }
+  if (debris && debris.length) {
+    const ids = debris.map((row) => row.id)
+    console.log(
+      `[claims.test] beforeAll: self-healing ${ids.length} leftover fixture compan${ids.length === 1 ? 'y' : 'ies'} from a prior run: ${debris.map((row) => row.slug).join(', ')}`
+    )
+    // Claims first — they FK-reference companies, and a blocked company
+    // delete's error was previously discarded (supabase-js never throws).
+    const { error: claimsError } = await supabaseAdmin.from('claims').delete().in('company_id', ids)
+    if (claimsError) {
+      throw new Error(`beforeAll debris cleanup failed deleting claims: ${claimsError.message}`)
+    }
+    const { error: companiesError } = await supabaseAdmin.from('companies').delete().in('id', ids)
+    if (companiesError) {
+      throw new Error(`beforeAll debris cleanup failed deleting companies: ${companiesError.message}`)
+    }
+  }
+})
+
 afterEach(async () => {
   if (cleanupClaimIds.length) {
     await supabaseAdmin.from('claims').delete().in('id', cleanupClaimIds)
     cleanupClaimIds.length = 0
   }
   if (cleanupCompanySlugs.length) {
-    await supabaseAdmin.from('companies').delete().in('slug', cleanupCompanySlugs)
+    // Look up ids first so any claims still referencing these companies
+    // (e.g. left behind by a crash) can be cleared before the FK delete,
+    // instead of silently blocking it — read every error, never discard it.
+    const { data: companies, error: lookupError } = await supabaseAdmin
+      .from('companies')
+      .select('id')
+      .in('slug', cleanupCompanySlugs)
+    if (lookupError) {
+      console.error('afterEach: failed to look up companies for cleanup:', lookupError.message)
+    } else if (companies && companies.length) {
+      const ids = companies.map((c) => c.id)
+      const { error: claimsError } = await supabaseAdmin.from('claims').delete().in('company_id', ids)
+      if (claimsError) {
+        console.error('afterEach: failed to delete claims before company cleanup:', claimsError.message)
+      }
+      const { error: companiesError } = await supabaseAdmin.from('companies').delete().in('id', ids)
+      if (companiesError) {
+        console.error('afterEach: failed to delete companies:', companiesError.message)
+      }
+    }
     cleanupCompanySlugs.length = 0
   }
   for (const id of cleanupUserIds) {
