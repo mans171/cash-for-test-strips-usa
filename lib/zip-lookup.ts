@@ -18,17 +18,20 @@ export async function getZipCentroid(
   supabase: SupabaseLike,
   zip: string
 ): Promise<ZipCentroid | null> {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('zip_centroids')
     .select('lat, lng, state')
     .eq('zip', zip)
     .maybeSingle()
+  if (error) {
+    console.error('zip_centroids lookup failed:', error.message)
+    return null
+  }
   if (!data) return null
   return { lat: data.lat, lng: data.lng, state: data.state ?? null }
 }
 
 const byFeaturedThenName = (a: CompanyWithMiles, b: CompanyWithMiles) => {
-  if ((a.miles ?? Infinity) !== (b.miles ?? Infinity)) return 0 // only used within same-distance ties
   if (a.featured !== b.featured) return a.featured ? -1 : 1
   return a.name.localeCompare(b.name)
 }
