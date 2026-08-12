@@ -888,6 +888,13 @@ Note: when neither url/phone/hasContact exists, `UnlockContact` renders null and
 - Modify: `app/directory/filters.tsx` (full rewrite)
 - Modify: `app/directory/page.tsx` (full rewrite)
 - Create: `app/components/ZipCookieSync.tsx`
+- Create: `lib/company-columns.ts` — single source for the companies select list:
+
+```ts
+// Every column the public pages need. One source so pages can't drift.
+export const COMPANY_COLUMNS =
+  "id, name, slug, url, phone, email, city, owner_name, states, payment_methods, accepted_brands, rating, description, featured, lat, lng, verified, transaction_modes, response_time, est_year"
+```
 
 **Interfaces:**
 - Consumes: `getZipCentroid`, `tierCompanies`, types (Task 5); `isValidZip` (Task 2); `BuyerCard` (Task 7); `stripCompanyContact`, `createServerSupabaseClient`, `supabase` (anon client), `buildItemListSchema`, `JsonLd`, `STATE_LABELS` (existing).
@@ -998,9 +1005,7 @@ import { BuyerCard } from "@/app/components/BuyerCard";
 import { ZipCookieSync } from "@/app/components/ZipCookieSync";
 import { isValidZip } from "@/lib/geo";
 import { getZipCentroid, tierCompanies, type CompanyWithMiles } from "@/lib/zip-lookup";
-
-const COMPANY_COLUMNS =
-  "id, name, slug, url, phone, email, city, owner_name, states, payment_methods, accepted_brands, rating, description, featured, lat, lng, verified, transaction_modes, response_time, est_year";
+import { COMPANY_COLUMNS } from "@/lib/company-columns";
 
 export const metadata: Metadata = {
   title: "Directory — Find Test Strip Buyers Near You",
@@ -1207,7 +1212,7 @@ function MailInFallback({ company, isAuthenticated }: { company: Company; isAuth
 - Consumes: `BuyerCard` (Task 7), `btnOnDark`/`btnSecondary` (Task 1), `STATE_LABELS` from `@/lib/states` (replaces the page's private copy), existing schema builders + `stripCompanyContact` pattern.
 - Produces: homepage with hero ZIP form submitting GET to `/directory` (plain `<form action="/directory" method="get">` with `name="zip"` input — no client JS needed).
 
-- [ ] **Step 1: Rewrite `app/page.tsx`.** Keep EXACTLY as-is: the `homeFaqs` array (verbatim — FAQPage schema), the three `JsonLd` calls, the `metadata` export, the featured-companies fetch + `stripCompanyContact` gating block (lines fetching `featured` + auth check), `POPULAR_STATES`. Replace the local `STATE_LABELS` const with `import { STATE_LABELS } from "@/lib/states"`, delete the local `CompanyCard` (BuyerCard replaces it), update the featured select to the `COMPANY_COLUMNS` list from Task 8 (copy the string; it isn't exported). New JSX structure:
+- [ ] **Step 1: Rewrite `app/page.tsx`.** Keep EXACTLY as-is: the `homeFaqs` array (verbatim — FAQPage schema), the three `JsonLd` calls, the `metadata` export, the featured-companies fetch + `stripCompanyContact` gating block (lines fetching `featured` + auth check), `POPULAR_STATES`. Replace the local `STATE_LABELS` const with `import { STATE_LABELS } from "@/lib/states"`, delete the local `CompanyCard` (BuyerCard replaces it), update the featured select to use `COMPANY_COLUMNS` imported from `@/lib/company-columns` (created in Task 8). New JSX structure:
 
 ```tsx
       {/* Hero — dark ink, heavy type, ZIP-first */}
@@ -1285,7 +1290,7 @@ Then, in order, all on the light `bg-ground`/white grounds:
 - Consumes: `BuyerCard`, `UnlockContact` (size="page"), ui primitives, `haversineMiles` (Task 2), `getZipCentroid` (Task 5), `cookies()` from `next/headers`, existing `buildLocalBusinessSchema`/`JsonLd`/`stripCompanyContact`.
 - Produces: dossier profile; distance line when `c4ts_zip` cookie present; "Other buyers nearby" (top 3 by haversine from this buyer's coords, excluding self and mail-in; falls back to same-state when no coords).
 
-- [ ] **Step 1: Rewrite the page.** Keep: `generateMetadata` (as-is), the company fetch + `notFound()` guard + auth/strip block, `buildLocalBusinessSchema` + `JsonLd`. Update the select to `COMPANY_COLUMNS` (copy the Task 8 string). Add after the strip block:
+- [ ] **Step 1: Rewrite the page.** Keep: `generateMetadata` (as-is), the company fetch + `notFound()` guard + auth/strip block, `buildLocalBusinessSchema` + `JsonLd`. Update the select to use `COMPANY_COLUMNS` imported from `@/lib/company-columns`. Add after the strip block:
 
 ```tsx
   // Distance from the visitor's last searched ZIP (cookie set by directory search)
@@ -1469,7 +1474,7 @@ function ProfileSection({ label, children }: { label: string; children: React.Re
 - Produces: consistent Cash Energy styling on the SEO state pages and the sell wizard.
 
 - [ ] **Step 1: State pages** — in `app/sell-test-strips/[state]/page.tsx`:
-  - Update the companies `select(...)` to the Task 8 `COMPANY_COLUMNS` string.
+  - Update the companies `select(...)` to use `COMPANY_COLUMNS` imported from `@/lib/company-columns`.
   - Delete the whole local `StateCompanyCard` component; render `<BuyerCard company={c} isAuthenticated={isAuthenticated} />` in its place (imports at top). The page's `stripCompanyContact` gating block stays byte-identical.
   - Restyle ONLY: h1 → `text-3xl sm:text-4xl font-black tracking-tight`; primary CTAs on the page → `btnPrimary`; section headings → `font-extrabold`. Body copy, FAQ text, and every `JsonLd` call remain byte-identical.
 - [ ] **Step 2: Sell wizard reskin** — in `SellFlowClient.tsx` + `app/sell/page.tsx`, apply class swaps only (use search-replace; touch no handlers/state/JSX structure):

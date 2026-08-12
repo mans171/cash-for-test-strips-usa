@@ -29,20 +29,20 @@ function StepIndicator({ current }: { current: 1 | 2 | 3 }) {
             <div className="flex items-center gap-1.5 shrink-0">
               <span
                 className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-semibold shrink-0 ${
-                  isDone || isActive ? "bg-emerald-600 text-white" : "bg-gray-200 text-gray-500"
+                  isDone || isActive ? "bg-ink text-electric font-black" : "bg-gray-200 text-gray-500"
                 }`}
               >
                 {isDone ? "✓" : step}
               </span>
               <span
                 className={`text-xs font-medium whitespace-nowrap ${
-                  isActive ? "text-emerald-700" : isDone ? "text-gray-700" : "text-gray-400"
+                  isActive ? "text-cash" : isDone ? "text-gray-700" : "text-gray-400"
                 }`}
               >
                 {label}
               </span>
             </div>
-            {step < 3 && <div className={`h-px flex-1 mx-2 ${isDone ? "bg-emerald-300" : "bg-gray-200"}`} />}
+            {step < 3 && <div className={`h-px flex-1 mx-2 ${isDone ? "bg-electric/40" : "bg-gray-200"}`} />}
           </div>
         );
       })}
@@ -93,6 +93,21 @@ export function SellFlowClient() {
       })
       .catch(() => {});
   }, [user]);
+
+  // Prefill state from the last-searched ZIP cookie (set by the directory
+  // page) so a visitor who already told us their ZIP doesn't have to repeat
+  // it here. Mount-only: never overwrites a state the visitor already chose.
+  useEffect(() => {
+    if (state) return;
+    const m = document.cookie.match(/(?:^|; )c4ts_zip=(\d{5})/);
+    if (!m) return;
+    fetch(`/api/zip-state?zip=${m[1]}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d?.state) setState(d.state);
+      })
+      .catch(() => {});
+  }, []);
 
   function brandIdentity(brand: (typeof PRODUCT_BRANDS)[number]) {
     return `${brand.category}:${brand.key}`;
@@ -387,7 +402,7 @@ export function SellFlowClient() {
       <div className="flex flex-col gap-3">
         {sentChannel === "sms" ? (
           <>
-            <p className="text-emerald-700 font-medium">
+            <p className="text-cash font-medium">
               Almost done — send the text we opened in your messages app to {selectedBuyer.name}.
             </p>
             <p className="text-sm text-gray-500">
@@ -398,7 +413,7 @@ export function SellFlowClient() {
                 <p className="text-sm text-gray-600 whitespace-pre-wrap">{sentMessage}</p>
                 <a
                   href={`sms:${digitsOnlyPhone}?body=${encodeURIComponent(sentMessage)}`}
-                  className="text-sm font-medium text-emerald-600 hover:underline self-start"
+                  className="text-sm font-medium text-cash hover:underline self-start"
                 >
                   Open my messages app
                 </a>
@@ -407,7 +422,7 @@ export function SellFlowClient() {
           </>
         ) : (
           <>
-            <p className="text-emerald-700 font-medium">Request sent to {selectedBuyer.name}.</p>
+            <p className="text-cash font-medium">Request sent to {selectedBuyer.name}.</p>
             <p className="text-sm text-gray-500">They&apos;ll reach out to you directly to arrange your sale.</p>
           </>
         )}
@@ -432,7 +447,7 @@ export function SellFlowClient() {
         <button
           type="button"
           onClick={backToBuildFromAccount}
-          className="text-xs font-medium text-gray-500 hover:text-emerald-700 self-start"
+          className="text-xs font-medium text-gray-500 hover:text-cash self-start"
         >
           ← Back to your order
         </button>
@@ -550,7 +565,7 @@ export function SellFlowClient() {
                       type="button"
                       onClick={handleRetryProfile}
                       disabled={accountSubmitting}
-                      className="self-start text-sm font-medium text-emerald-700 underline disabled:opacity-50"
+                      className="self-start text-sm font-medium text-cash underline disabled:opacity-50"
                     >
                       {accountSubmitting ? "Retrying..." : "Try again"}
                     </button>
@@ -560,7 +575,7 @@ export function SellFlowClient() {
                       type="button"
                       onClick={handleRetryMatch}
                       disabled={accountSubmitting}
-                      className="self-start text-sm font-medium text-emerald-700 underline disabled:opacity-50"
+                      className="self-start text-sm font-medium text-cash underline disabled:opacity-50"
                     >
                       {accountSubmitting ? "Retrying..." : "Try again"}
                     </button>
@@ -570,7 +585,7 @@ export function SellFlowClient() {
               <button
                 type="submit"
                 disabled={accountSubmitting}
-                className="bg-emerald-600 text-white font-semibold px-6 py-3 rounded-full hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:hover:bg-emerald-600"
+                className="bg-cash text-white font-semibold px-6 py-3 rounded-lg hover:bg-cash-hover transition-colors disabled:opacity-50 disabled:hover:bg-cash"
               >
                 {accountSubmitting ? "Creating your account..." : "Create your account"}
               </button>
@@ -583,7 +598,7 @@ export function SellFlowClient() {
                   setAccountError(null);
                   setAccountMode("login");
                 }}
-                className="text-emerald-700 underline"
+                className="text-cash underline"
               >
                 Log in
               </button>
@@ -600,7 +615,7 @@ export function SellFlowClient() {
                     type="button"
                     onClick={handleRetryMatch}
                     disabled={accountSubmitting}
-                    className="text-sm font-medium text-emerald-700 underline disabled:opacity-50"
+                    className="text-sm font-medium text-cash underline disabled:opacity-50"
                   >
                     {accountSubmitting ? "Retrying..." : "Try again"}
                   </button>
@@ -615,7 +630,7 @@ export function SellFlowClient() {
                   setAccountError(null);
                   setAccountMode("signup");
                 }}
-                className="text-emerald-700 underline"
+                className="text-cash underline"
               >
                 Sign up
               </button>
@@ -635,7 +650,7 @@ export function SellFlowClient() {
         <button
           type="button"
           onClick={() => setStage("build")}
-          className="text-xs font-medium text-gray-500 hover:text-emerald-700 self-start"
+          className="text-xs font-medium text-gray-500 hover:text-cash self-start"
         >
           ← Back to your order
         </button>
@@ -687,8 +702,8 @@ export function SellFlowClient() {
         {cards.length === 0 ? (
           <p className="text-sm text-gray-500">
             We couldn&apos;t find a buyer for your area right now. Email{" "}
-            <a href="mailto:feldon.richards@gmail.com" className="text-emerald-600 hover:underline">feldon.richards@gmail.com</a>{" "}
-            or call <a href="tel:5187799751" className="text-emerald-600 hover:underline">518-779-9751</a> directly and we&apos;ll help you sell your strips.
+            <a href="mailto:feldon.richards@gmail.com" className="text-cash hover:underline">feldon.richards@gmail.com</a>{" "}
+            or call <a href="tel:5187799751" className="text-cash hover:underline">518-779-9751</a> directly and we&apos;ll help you sell your strips.
           </p>
         ) : (
           <div className="flex flex-col gap-2">
@@ -708,7 +723,7 @@ export function SellFlowClient() {
                         onClick={() => handleSend(c, "email")}
                         disabled={sending || nameMissing}
                         title={nameMissing ? "Enter your name first" : undefined}
-                        className="text-xs font-medium bg-emerald-600 text-white px-3 py-2 rounded-lg disabled:opacity-50"
+                        className="text-xs font-medium bg-cash text-white px-3 py-2 rounded-lg disabled:opacity-50"
                       >
                         {sending && selectedBuyer?.id === c.id ? "Sending..." : "Request Quote"}
                       </button>
@@ -718,7 +733,7 @@ export function SellFlowClient() {
                         onClick={() => handleSend(c, "sms")}
                         disabled={sending || nameMissing}
                         title={nameMissing ? "Enter your name first" : undefined}
-                        className="text-xs font-medium border border-emerald-600 text-emerald-700 px-3 py-2 rounded-lg disabled:opacity-50"
+                        className="text-xs font-medium border border-cash text-cash px-3 py-2 rounded-lg disabled:opacity-50"
                       >
                         {sending && selectedBuyer?.id === c.id ? "Sending..." : "Text Now"}
                       </button>
@@ -758,7 +773,7 @@ export function SellFlowClient() {
               {item.expiration ? ` (exp: ${item.expiration})` : ""}
             </span>
             <div className="flex items-center gap-3 shrink-0">
-              <button type="button" onClick={() => setActiveIndex(i)} className="text-xs font-medium text-emerald-700 hover:underline">
+              <button type="button" onClick={() => setActiveIndex(i)} className="text-xs font-medium text-cash hover:underline">
                 Edit
               </button>
               {items.length > 1 && (
@@ -771,15 +786,15 @@ export function SellFlowClient() {
         ) : (
         <div key={i} className="grid grid-cols-1 sm:grid-cols-2 gap-2 border border-gray-100 rounded-lg p-3">
           {item.brand ? (
-            <div className="col-span-2 flex items-center justify-between gap-2 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2">
-              <span className="text-sm text-emerald-800">
+            <div className="col-span-2 flex items-center justify-between gap-2 bg-electric/10 border border-electric/40 rounded-lg px-3 py-2">
+              <span className="text-sm text-ink-deep">
                 Selected: <span className="font-medium">{item.brand}</span>
               </span>
               <div className="flex items-center gap-3 shrink-0">
                 <button
                   type="button"
                   onClick={() => clearProduct(i)}
-                  className="text-xs font-medium text-emerald-700 hover:underline"
+                  className="text-xs font-medium text-cash hover:underline"
                 >
                   Change
                 </button>
@@ -801,7 +816,7 @@ export function SellFlowClient() {
                 <button
                   type="button"
                   onClick={() => goBackToBrands(i)}
-                  className="text-xs font-medium text-gray-500 hover:text-emerald-700 self-start"
+                  className="text-xs font-medium text-gray-500 hover:text-cash self-start"
                 >
                   ← Back
                 </button>
@@ -814,8 +829,8 @@ export function SellFlowClient() {
                       onClick={() => selectLine(i, brand, productLine.label)}
                       className={`flex flex-col items-center gap-1 border rounded-lg p-2 text-center transition-colors ${
                         selectedLines[i] === productLine.label
-                          ? "border-emerald-500 bg-emerald-50"
-                          : "border-gray-200 hover:border-emerald-300"
+                          ? "border-cash ring-2 ring-cash/30"
+                          : "border-gray-200 hover:border-cash"
                       }`}
                     >
                       <div className="bg-gray-50 rounded-md p-1 flex items-center justify-center">
@@ -853,7 +868,7 @@ export function SellFlowClient() {
                         type="button"
                         key={brandIdentity(brand)}
                         onClick={() => selectBrand(i, brand)}
-                        className="flex flex-col items-center gap-1 border border-gray-200 rounded-lg p-2 text-center transition-colors hover:border-emerald-300"
+                        className="flex flex-col items-center gap-1 border border-gray-200 rounded-lg p-2 text-center transition-colors hover:border-cash"
                       >
                         <div className="bg-gray-50 rounded-md p-1.5 flex items-center justify-center">
                           <Image src={brand.image} alt={brand.label} width={64} height={64} className="object-contain h-16 w-16" />
@@ -917,7 +932,7 @@ export function SellFlowClient() {
         type="button"
         onClick={addItem}
         disabled={!items[activeIndex]?.brand}
-        className="text-sm text-emerald-600 self-start disabled:text-gray-300 disabled:cursor-not-allowed"
+        className="text-sm text-cash self-start disabled:text-gray-300 disabled:cursor-not-allowed"
       >
         + Add another item
       </button>
@@ -926,7 +941,7 @@ export function SellFlowClient() {
       <button
         type="submit"
         disabled={loading || authLoading}
-        className="bg-emerald-600 text-white font-semibold px-6 py-3 rounded-full hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:hover:bg-emerald-600"
+        className="bg-cash text-white font-semibold px-6 py-3 rounded-lg hover:bg-cash-hover transition-colors disabled:opacity-50 disabled:hover:bg-cash"
       >
         {loading ? "Finding buyers..." : authLoading ? "Checking your account..." : "Find My Buyer"}
       </button>

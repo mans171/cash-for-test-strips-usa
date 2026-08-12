@@ -6,6 +6,10 @@ import { JsonLd } from "@/app/components/JsonLd";
 import { stripCompanyContact } from "@/lib/company-contact";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { Company } from "@/lib/types";
+import { STATE_LABELS } from "@/lib/states";
+import { BuyerCard } from "@/app/components/BuyerCard";
+import { btnOnDark } from "@/app/components/ui";
+import { COMPANY_COLUMNS } from "@/lib/company-columns";
 
 export const metadata: Metadata = {
   title: "Cash For Test Strips USA — Sell Diabetic Test Strips Near You",
@@ -13,27 +17,21 @@ export const metadata: Metadata = {
     "Find local cash buyers for your unused diabetic test strips. Get paid fast via PayPal, Zelle, or check. Free to use. Free account required.",
 };
 
-const STATE_LABELS: Record<string, string> = {
-  AL: "Alabama", AK: "Alaska", AZ: "Arizona", AR: "Arkansas", CA: "California",
-  CO: "Colorado", CT: "Connecticut", DE: "Delaware", FL: "Florida", GA: "Georgia",
-  HI: "Hawaii", ID: "Idaho", IL: "Illinois", IN: "Indiana", IA: "Iowa",
-  KS: "Kansas", KY: "Kentucky", LA: "Louisiana", ME: "Maine", MD: "Maryland",
-  MA: "Massachusetts", MI: "Michigan", MN: "Minnesota", MS: "Mississippi", MO: "Missouri",
-  MT: "Montana", NE: "Nebraska", NV: "Nevada", NH: "New Hampshire", NJ: "New Jersey",
-  NM: "New Mexico", NY: "New York", NC: "North Carolina", ND: "North Dakota", OH: "Ohio",
-  OK: "Oklahoma", OR: "Oregon", PA: "Pennsylvania", RI: "Rhode Island", SC: "South Carolina",
-  SD: "South Dakota", TN: "Tennessee", TX: "Texas", UT: "Utah", VT: "Vermont",
-  VA: "Virginia", WA: "Washington", WV: "West Virginia", WI: "Wisconsin", WY: "Wyoming",
-};
-
 const POPULAR_STATES = ["NY", "TX", "FL", "CA", "PA", "NC", "OH", "GA", "MA", "NJ"];
 
 export default async function HomePage() {
   const { data: featured } = await supabase
     .from("companies")
-    .select("id, name, slug, url, email, phone, city, owner_name, states, payment_methods, accepted_brands, rating, description, featured")
+    .select(COMPANY_COLUMNS)
+    .eq("mail_in", false)
     .eq("featured", true)
     .limit(6);
+
+  const { count: localBuyerCount } = await supabase
+    .from("companies")
+    .select("id", { count: "exact", head: true })
+    .eq("mail_in", false)
+    .eq("active", true);
 
   const rawCompanies = (featured ?? []) as Company[];
 
@@ -78,40 +76,49 @@ export default async function HomePage() {
       <JsonLd data={websiteSchema} />
       <JsonLd data={serviceSchema} />
       <JsonLd data={faqSchema} />
-      {/* Hero */}
-      <section className="bg-gradient-to-br from-emerald-50 to-white border-b border-emerald-100 py-20 px-4">
+      {/* Hero — dark ink, heavy type, ZIP-first */}
+      <section className="bg-ink text-white py-16 sm:py-24 px-4">
         <div className="max-w-4xl mx-auto text-center">
-          <span className="inline-block bg-emerald-100 text-emerald-800 text-xs font-semibold px-3 py-1 rounded-full mb-4 uppercase tracking-wide">
-            Free to use · Free account required
-          </span>
-          <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-900 leading-tight mb-4">
-            Sell Your Unused Test Strips{" "}
-            <span className="text-emerald-600">for Cash</span>
-          </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-8">
-            We connect people who have extra diabetic test strips with local cash buyers across the USA.
-            Get paid fast — PayPal, Zelle, check, or cash in hand.
+          <p className="inline-block text-[11px] font-extrabold text-electric uppercase tracking-wider mb-5">
+            The national directory of diabetic supply buyers
           </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Link
-              href="/sell"
-              className="bg-emerald-600 text-white px-8 py-4 rounded-full text-base font-semibold hover:bg-emerald-700 transition-colors"
-            >
-              Sell Your Test Strips →
-            </Link>
-            <a
-              href="#how-it-works"
-              className="bg-white text-gray-700 border border-gray-200 px-8 py-4 rounded-full text-base font-semibold hover:border-emerald-400 transition-colors"
-            >
-              How It Works
-            </a>
+          <h1 className="text-4xl sm:text-6xl font-black tracking-tight leading-[1.05] mb-4">
+            Turn extra supplies<br />into <span className="text-electric">cash today.</span>
+          </h1>
+          <p className="text-base sm:text-lg text-white/70 max-w-2xl mx-auto mb-8">
+            Local buyers pay{" "}
+            <Link href="/how-much-are-diabetic-test-strips-worth" className="font-extrabold text-white underline decoration-electric decoration-2 underline-offset-4 hover:text-electric transition-colors">
+              up to $100 a box
+            </Link>{" "}
+            for sealed, unexpired supplies. Cash in hand, same day.
+          </p>
+
+          <form action="/directory" method="get" className="flex items-stretch max-w-md mx-auto bg-white rounded-xl p-1.5 shadow-2xl shadow-black/30">
+            <input
+              name="zip"
+              inputMode="numeric"
+              pattern="[0-9]{5}"
+              maxLength={5}
+              placeholder="Enter your ZIP code"
+              aria-label="ZIP code"
+              className="flex-1 min-w-0 px-4 text-gray-900 text-sm focus:outline-none rounded-l-lg"
+            />
+            <button type="submit" className="bg-cash text-white font-extrabold text-sm px-6 py-3.5 rounded-lg hover:bg-cash-hover transition-colors shrink-0">
+              Find buyers →
+            </button>
+          </form>
+
+          <div className="flex justify-center gap-8 mt-10 text-sm">
+            <span className="text-white/60"><b className="text-electric font-black text-lg">{localBuyerCount ?? 29}</b> local buyers</span>{/* ?? 29: static fallback if the count query errors */}
+            <span className="text-white/60"><b className="text-electric font-black text-lg">24hr</b> payouts</span>
+            <span className="text-white/60"><b className="text-electric font-black text-lg">50</b> states</span>
           </div>
         </div>
       </section>
 
       {/* Trust bar */}
-      <section className="border-b border-gray-100 py-5 bg-white">
-        <div className="max-w-4xl mx-auto px-4 flex flex-wrap justify-center gap-x-10 gap-y-2 text-sm text-gray-500 font-medium">
+      <section className="border-y border-gray-100 bg-white py-5">
+        <div className="max-w-4xl mx-auto px-4 flex flex-wrap justify-center gap-x-10 gap-y-2 text-sm text-gray-600 font-medium">
           <span>✓ No shipping required</span>
           <span>✓ Buyers in 30+ states</span>
           <span>✓ PayPal · Zelle · Check · Cash</span>
@@ -143,7 +150,7 @@ export default async function HomePage() {
               },
             ].map(({ step, title, body }) => (
               <div key={step} className="text-center">
-                <div className="w-12 h-12 bg-emerald-600 text-white rounded-full flex items-center justify-center text-lg font-bold mx-auto mb-4">
+                <div className="w-12 h-12 bg-ink text-electric rounded-full flex items-center justify-center text-lg font-black mx-auto mb-4">
                   {step}
                 </div>
                 <h3 className="font-semibold text-gray-900 mb-2">{title}</h3>
@@ -156,17 +163,17 @@ export default async function HomePage() {
 
       {/* Featured buyers */}
       {companies.length > 0 && (
-        <section className="py-16 px-4 bg-gray-50">
+        <section className="py-16 px-4 bg-ground">
           <div className="max-w-5xl mx-auto">
             <div className="flex items-center justify-between mb-8">
               <h2 className="text-2xl font-bold text-gray-900">Featured Buyers</h2>
-              <Link href="/directory" className="text-sm text-emerald-600 font-medium hover:underline">
+              <Link href="/directory" className="text-sm text-cash font-medium hover:underline">
                 See all buyers →
               </Link>
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {companies.map((c) => (
-                <CompanyCard key={c.id} company={c} isAuthenticated={isAuthenticated} />
+                <BuyerCard key={c.id} company={c} isAuthenticated={isAuthenticated} />
               ))}
             </div>
           </div>
@@ -183,14 +190,14 @@ export default async function HomePage() {
               <Link
                 key={code}
                 href={`/sell-test-strips/${code.toLowerCase()}`}
-                className="bg-white border border-gray-200 text-gray-700 text-sm font-medium px-4 py-2 rounded-full hover:border-emerald-400 hover:text-emerald-700 transition-colors"
+                className="bg-white border border-gray-200 text-gray-700 text-sm font-medium px-4 py-2 rounded-full hover:border-cash hover:text-cash transition-colors"
               >
                 {STATE_LABELS[code]}
               </Link>
             ))}
             <Link
               href="/directory"
-              className="bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium px-4 py-2 rounded-full hover:bg-emerald-100 transition-colors"
+              className="bg-cash/10 border border-cash/30 text-cash text-sm font-medium px-4 py-2 rounded-full hover:bg-cash/20 transition-colors"
             >
               All states →
             </Link>
@@ -199,13 +206,13 @@ export default async function HomePage() {
       </section>
 
       {/* FAQ */}
-      <section className="py-16 px-4 bg-gray-50">
+      <section className="py-16 px-4 bg-ground">
         <div className="max-w-3xl mx-auto">
           <h2 className="text-2xl font-bold text-center text-gray-900 mb-10">Frequently Asked Questions</h2>
           <div className="space-y-6">
             {homeFaqs.map(({ q, a }) => (
               <div key={q}>
-                <h3 className="font-semibold text-gray-900 mb-1 text-sm">{q}</h3>
+                <h3 className="font-bold text-gray-900 mb-1 text-sm">{q}</h3>
                 <p className="text-sm text-gray-500 leading-relaxed">{a}</p>
               </div>
             ))}
@@ -213,103 +220,18 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-16 px-4 bg-emerald-700 text-white text-center">
+      {/* Final CTA */}
+      <section className="py-16 px-4 bg-ink text-white text-center">
         <div className="max-w-2xl mx-auto">
-          <h2 className="text-3xl font-bold mb-3">Ready to turn strips into cash?</h2>
-          <p className="text-emerald-100 mb-6">
+          <h2 className="text-3xl font-black mb-3">Ready to turn supplies into cash?</h2>
+          <p className="text-white/70 mb-6">
             Browse our full directory of buyers — most pay within 24 hours.
           </p>
-          <Link
-            href="/directory"
-            className="inline-block bg-white text-emerald-700 font-semibold px-8 py-4 rounded-full hover:bg-emerald-50 transition-colors"
-          >
+          <Link href="/directory" className={btnOnDark}>
             Find a Buyer →
           </Link>
         </div>
       </section>
     </>
-  );
-}
-
-function CompanyCard({ company, isAuthenticated }: { company: Company; isAuthenticated: boolean }) {
-  const stateLabels = company.states
-    .slice(0, 3)
-    .map((s) => STATE_LABELS[s] ?? s)
-    .join(", ");
-  const moreStates = company.states.length > 3 ? ` +${company.states.length - 3} more` : "";
-
-  return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex flex-col gap-3 hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between gap-2">
-        <h3 className="font-semibold text-gray-900 text-sm leading-snug">{company.name}</h3>
-        {company.rating && (
-          <span className="shrink-0 text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
-            ★ {company.rating}
-          </span>
-        )}
-      </div>
-      {company.description && (
-        <p className="text-xs text-gray-500 leading-relaxed line-clamp-2">{company.description}</p>
-      )}
-      <p className="text-xs text-gray-400">
-        {stateLabels}
-        {moreStates}
-      </p>
-      {company.payment_methods?.length > 0 && (
-        <div className="flex flex-wrap gap-1">
-          {company.payment_methods.map((m) => (
-            <span key={m} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-              {m}
-            </span>
-          ))}
-        </div>
-      )}
-      <div className="flex gap-2 mt-auto pt-1">
-        <Link
-          href={`/company/${company.slug}`}
-          className="flex-1 text-center text-xs font-medium border border-gray-200 text-gray-600 px-3 py-2 rounded-lg hover:border-emerald-400 hover:text-emerald-700 transition-colors"
-        >
-          View details
-        </Link>
-        {company.url || company.phone || company.hasContact ? (
-          isAuthenticated ? (
-            company.url ? (
-              <a
-                href={`/api/track?company=${company.id}&url=${encodeURIComponent(company.url)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 text-center text-xs font-medium bg-emerald-600 text-white px-3 py-2 rounded-lg hover:bg-emerald-700 transition-colors block"
-              >
-                Visit site →
-              </a>
-            ) : (
-              <a
-                href={`tel:${company.phone}`}
-                className="flex-1 text-center text-xs font-medium bg-emerald-600 text-white px-3 py-2 rounded-lg hover:bg-emerald-700 transition-colors block"
-              >
-                Contact
-              </a>
-            )
-          ) : (
-            <div className="flex-1 flex flex-col gap-1">
-              <span className="text-center text-xs font-medium bg-emerald-600 text-white px-3 py-2 rounded-lg opacity-40 pointer-events-none block">
-                Contact
-              </span>
-              <p className="text-xs text-red-600 text-center">
-                <Link href="/signup" className="underline">Create an account</Link> to view
-              </p>
-            </div>
-          )
-        ) : (
-          <a
-            href="tel:5187799751"
-            className="flex-1 text-center text-xs font-medium bg-emerald-600 text-white px-3 py-2 rounded-lg hover:bg-emerald-700 transition-colors block"
-          >
-            Contact
-          </a>
-        )}
-      </div>
-    </div>
   );
 }

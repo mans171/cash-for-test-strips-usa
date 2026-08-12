@@ -7,6 +7,9 @@ import { JsonLd } from "@/app/components/JsonLd";
 import { stripCompanyContact } from "@/lib/company-contact";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { Company } from "@/lib/types";
+import { BuyerCard } from "@/app/components/BuyerCard";
+import { btnPrimary } from "@/app/components/ui";
+import { COMPANY_COLUMNS } from "@/lib/company-columns";
 
 const STATE_LABELS: Record<string, string> = {
   AL: "Alabama", AK: "Alaska", AZ: "Arizona", AR: "Arkansas", CA: "California",
@@ -45,7 +48,8 @@ export default async function StatePage({ params }: Props) {
 
   const { data } = await supabase
     .from("companies")
-    .select("id, name, slug, url, email, phone, city, owner_name, states, payment_methods, accepted_brands, rating, description, featured")
+    .select(COMPANY_COLUMNS)
+    .eq("mail_in", false)
     .contains("states", [code])
     .order("featured", { ascending: false })
     .order("name");
@@ -90,15 +94,15 @@ export default async function StatePage({ params }: Props) {
       <JsonLd data={breadcrumbSchema} />
       {/* Breadcrumb */}
       <nav className="text-sm text-gray-400 mb-6">
-        <Link href="/" className="hover:text-emerald-600">Home</Link>
+        <Link href="/" className="hover:text-cash">Home</Link>
         {" / "}
-        <Link href="/directory" className="hover:text-emerald-600">Directory</Link>
+        <Link href="/directory" className="hover:text-cash">Directory</Link>
         {" / "}
         <span className="text-gray-700">{label}</span>
       </nav>
 
       {/* Hero copy — SEO targeted */}
-      <h1 className="text-3xl font-bold text-gray-900 mb-3">
+      <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-gray-900 mb-3">
         Sell Diabetic Test Strips in {label}
       </h1>
       <p className="text-gray-600 max-w-2xl mb-8 leading-relaxed">
@@ -114,10 +118,7 @@ export default async function StatePage({ params }: Props) {
             We're always adding new buyers. In the meantime, browse our national directory
             — many buyers ship and buy from any state.
           </p>
-          <Link
-            href="/directory"
-            className="inline-block bg-emerald-600 text-white font-semibold px-6 py-3 rounded-full text-sm hover:bg-emerald-700 transition-colors"
-          >
+          <Link href="/directory" className={btnPrimary}>
             Browse all buyers
           </Link>
         </div>
@@ -129,7 +130,7 @@ export default async function StatePage({ params }: Props) {
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
             {companies.map((c) => (
-              <StateCompanyCard key={c.id} company={c} isAuthenticated={isAuthenticated} />
+              <BuyerCard key={c.id} company={c} isAuthenticated={isAuthenticated} />
             ))}
           </div>
         </>
@@ -137,7 +138,7 @@ export default async function StatePage({ params }: Props) {
 
       {/* FAQ — helps SEO */}
       <div className="border-t border-gray-100 pt-12">
-        <h2 className="text-xl font-bold text-gray-900 mb-6">
+        <h2 className="text-xl font-extrabold text-gray-900 mb-6">
           Frequently Asked Questions — Selling Test Strips in {label}
         </h2>
         <div className="space-y-6">
@@ -155,96 +156,12 @@ export default async function StatePage({ params }: Props) {
             <Link
               key={s}
               href={`/sell-test-strips/${s.toLowerCase()}`}
-              className="text-xs bg-white border border-gray-200 text-gray-600 px-3 py-1.5 rounded-full hover:border-emerald-400 hover:text-emerald-700 transition-colors"
+              className="text-xs bg-white border border-gray-200 text-gray-600 px-3 py-1.5 rounded-full hover:border-cash hover:text-cash transition-colors"
             >
               {STATE_LABELS[s]}
             </Link>
           ))}
         </div>
-      </div>
-    </div>
-  );
-}
-
-function StateCompanyCard({
-  company,
-  isAuthenticated,
-}: {
-  company: Company;
-  isAuthenticated: boolean;
-}) {
-  return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex flex-col gap-3 hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between gap-2">
-        <div>
-          <h2 className="font-semibold text-gray-900 text-sm leading-snug">{company.name}</h2>
-          {company.city && <p className="text-xs text-gray-400 mt-0.5">{company.city}</p>}
-        </div>
-        {company.featured && (
-          <span className="shrink-0 text-xs font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full">
-            Featured
-          </span>
-        )}
-      </div>
-
-      {company.description && (
-        <p className="text-xs text-gray-500 leading-relaxed line-clamp-2">{company.description}</p>
-      )}
-
-      {company.payment_methods?.length > 0 && (
-        <div className="flex flex-wrap gap-1">
-          {company.payment_methods.map((m: string) => (
-            <span key={m} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-              {m}
-            </span>
-          ))}
-        </div>
-      )}
-
-      <div className="flex gap-2 mt-auto pt-1">
-        <Link
-          href={`/company/${company.slug}`}
-          className="flex-1 text-center text-xs font-medium border border-gray-200 text-gray-600 px-3 py-2 rounded-lg hover:border-emerald-400 hover:text-emerald-700 transition-colors"
-        >
-          View details
-        </Link>
-        {company.url || company.phone || company.hasContact ? (
-          isAuthenticated ? (
-            company.url ? (
-              <a
-                href={`/api/track?company=${company.id}&url=${encodeURIComponent(company.url)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 text-center text-xs font-medium bg-emerald-600 text-white px-3 py-2 rounded-lg hover:bg-emerald-700 transition-colors block"
-              >
-                Visit site →
-              </a>
-            ) : (
-              <a
-                href={`tel:${company.phone}`}
-                className="flex-1 text-center text-xs font-medium bg-emerald-600 text-white px-3 py-2 rounded-lg hover:bg-emerald-700 transition-colors block"
-              >
-                Contact
-              </a>
-            )
-          ) : (
-            <div className="flex-1 flex flex-col gap-1">
-              <span className="text-center text-xs font-medium bg-emerald-600 text-white px-3 py-2 rounded-lg opacity-40 pointer-events-none block">
-                Contact
-              </span>
-              <p className="text-xs text-red-600 text-center">
-                <Link href="/signup" className="underline">Create an account</Link> to view
-              </p>
-            </div>
-          )
-        ) : (
-          <a
-            href="tel:5187799751"
-            className="flex-1 text-center text-xs font-medium bg-emerald-600 text-white px-3 py-2 rounded-lg hover:bg-emerald-700 transition-colors block"
-          >
-            Contact
-          </a>
-        )}
       </div>
     </div>
   );

@@ -40,7 +40,7 @@ export function AccountModal({
             <SignupForm onSuccess={onSuccess} />
             <p className="text-center text-sm text-gray-500 pb-6 -mt-4">
               Already have an account?{" "}
-              <button type="button" onClick={() => setMode("login")} className="text-emerald-700 underline">
+              <button type="button" onClick={() => setMode("login")} className="text-cash underline">
                 Log in
               </button>
             </p>
@@ -50,7 +50,7 @@ export function AccountModal({
             <LoginForm onSuccess={onSuccess} />
             <p className="text-center text-sm text-gray-500 pb-6 -mt-4">
               Need an account?{" "}
-              <button type="button" onClick={() => setMode("signup")} className="text-emerald-700 underline">
+              <button type="button" onClick={() => setMode("signup")} className="text-cash underline">
                 Sign up
               </button>
             </p>
