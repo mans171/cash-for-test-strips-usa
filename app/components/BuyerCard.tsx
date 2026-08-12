@@ -2,7 +2,8 @@ import Link from "next/link"
 import type { Company } from "@/lib/types"
 import { STATE_LABELS } from "@/lib/states"
 import { Chip, VerifiedBadge, FeaturedBadge, MonogramAvatar, PinIcon, btnSecondary } from "./ui"
-import { UnlockContact, hasAnyContact } from "./UnlockContact"
+import { UnlockContact } from "./UnlockContact"
+import { hasAnyContact } from "@/lib/company-contact"
 
 export function BuyerCard({
   company,

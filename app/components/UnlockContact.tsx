@@ -4,11 +4,8 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { AccountModal } from "./AccountModal"
 import { btnPrimary, LockIcon } from "./ui"
+import { hasAnyContact } from "@/lib/company-contact"
 import type { Company } from "@/lib/types"
-
-export function hasAnyContact(company: Company): boolean {
-  return !!(company.url || company.phone || company.hasContact)
-}
 
 export function UnlockContact({
   company,
