@@ -351,9 +351,13 @@ export default async function BlogPostPage({ params }: Props) {
         <section>
           <h2 className="text-xl font-bold text-gray-900 mb-3">How Much Can I Get for My Test Strips?</h2>
           <p>
-            Payout depends on brand, quantity, and expiration date. Here&apos;s how brands compare:
+            Payout depends on brand, quantity, and expiration date. Here&apos;s how brands compare.
+            Tiers rank brands against others in their own category — a Mid Tier CGM sensor can
+            still pay more per box than a Top Tier test strip.
           </p>
-          <div className="mt-4 overflow-x-auto">
+
+          <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wide mt-6 mb-2">Test Strips</h3>
+          <div className="overflow-x-auto">
             <table className="w-full text-sm border-collapse">
               <thead>
                 <tr className="bg-gray-50">
@@ -362,7 +366,27 @@ export default async function BlogPostPage({ params }: Props) {
                 </tr>
               </thead>
               <tbody>
-                {[...TEST_STRIP_TIERS, ...CGM_TIERS].map((row) => (
+                {TEST_STRIP_TIERS.map((row) => (
+                  <tr key={row.brand} className="border border-gray-100">
+                    <td className="px-4 py-2 text-gray-600">{row.brand}</td>
+                    <td className="px-4 py-2"><TierBadge tier={row.tier} /></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wide mt-6 mb-2">CGM Sensors &amp; Pods</h3>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm border-collapse">
+              <thead>
+                <tr className="bg-gray-50">
+                  <th className="text-left px-4 py-2 font-semibold text-gray-700 border border-gray-100">Item</th>
+                  <th className="text-left px-4 py-2 font-semibold text-gray-700 border border-gray-100">Payout Tier</th>
+                </tr>
+              </thead>
+              <tbody>
+                {CGM_TIERS.map((row) => (
                   <tr key={row.brand} className="border border-gray-100">
                     <td className="px-4 py-2 text-gray-600">{row.brand}</td>
                     <td className="px-4 py-2"><TierBadge tier={row.tier} /></td>
@@ -375,6 +399,7 @@ export default async function BlogPostPage({ params }: Props) {
               </tbody>
             </table>
           </div>
+
           <p className="mt-3 text-sm text-gray-400">
             Bulk lots of 10+ boxes typically receive a higher per-box rate. Call{" "}
             <a href="tel:5187799751" className="text-emerald-600 hover:underline">518-779-9751</a>{" "}

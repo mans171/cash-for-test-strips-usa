@@ -51,7 +51,7 @@ export default function PriceGuidePage() {
         typically receive a higher per-box rate than individual boxes.
       </p>
 
-      <h2 className="text-xl font-bold text-gray-900 mt-10 mb-3">Test Strips — Price by Brand</h2>
+      <h2 className="text-xl font-bold text-gray-900 mt-10 mb-3">Test Strips — Payout Tier by Brand</h2>
       <div className="not-prose overflow-x-auto">
         <table className="w-full text-sm border-collapse">
           <thead>
@@ -73,7 +73,11 @@ export default function PriceGuidePage() {
         </table>
       </div>
 
-      <h2 className="text-xl font-bold text-gray-900 mt-10 mb-3">CGM Sensors and Supplies — Price by Product</h2>
+      <h2 className="text-xl font-bold text-gray-900 mt-10 mb-3">CGM Sensors and Supplies — Payout Tier by Product</h2>
+      <p className="text-sm text-gray-500 mb-4">
+        Ranked against other CGM/pod brands — not against test strips above; a Mid Tier sensor can
+        still out-earn a Top Tier test strip.
+      </p>
       <div className="not-prose overflow-x-auto">
         <table className="w-full text-sm border-collapse">
           <thead>

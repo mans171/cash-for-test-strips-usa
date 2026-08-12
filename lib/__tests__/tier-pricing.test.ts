@@ -24,6 +24,11 @@ describe('tier-pricing data', () => {
     expect(new Set(cgmNames).size).toBe(cgmNames.length)
   })
 
+  it('has no duplicate brand names across both lists combined', () => {
+    const names = allRows.map((r) => r.brand)
+    expect(new Set(names).size).toBe(names.length)
+  })
+
   it('no row text mentions a dollar sign — the whole point of this data', () => {
     for (const row of allRows) {
       expect(row.brand).not.toMatch(/\$/)

@@ -98,7 +98,7 @@ This replaces the "Price" column header/cells in both Price Guide tables. Brand 
 - Accu-Chek row splits into "Accu-Chek Aviva / SmartView" and "Accu-Chek Guide" as two table rows.
 - Add a Lancets row to the test-strips table (not present today, but named explicitly in the tier data and in Feldon's original framing).
 - `FAQS` array answers rewritten to remove $ ranges and correct the factual claim that "OneTouch Verio and Ultra typically pay the most" (they don't, on Mercury specifically — Accu-Chek Aviva/SmartView does; all four Top-tier brands are now roughly comparable). New answers describe relative tiers in words, not numbers. This also updates the FAQPage JSON-LD content, since it's built directly from this array.
-- Page `metadata.description` currently says "See what OneTouch, FreeStyle, Accu-Chek, Contour, Dexcom, and more pay" — stays accurate without changes needed (doesn't cite figures).
+- Page `metadata.description` was rewritten (see the implementation plan) from "...cash prices..." framing to "...payout tiers..." framing, matching the rest of the page.
 
 **Blog template (`app/blog/[slug]/page.tsx`):**
 - Hardcoded price array (lines ~364–370) replaced with the same `TierBadge` rendering, sourced from the shared module. Same visual treatment as the Price Guide page, rendered on all 50 posts.
