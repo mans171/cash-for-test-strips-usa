@@ -13,6 +13,12 @@ export type Company = {
   description: string | null
   featured: boolean
   phone: string | null
+  lat: number | null
+  lng: number | null
+  verified: boolean
+  transaction_modes: string[]
+  response_time: string | null
+  est_year: number | null
   // Set only by lib/company-contact.ts's stripCompanyContact() for anonymous requests:
   // true when the underlying buyer has real email/phone on file, even though
   // those fields are nulled out here. Lets the client render the account-gate

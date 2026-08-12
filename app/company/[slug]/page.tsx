@@ -35,7 +35,7 @@ export default async function CompanyPage({ params }: Props) {
 
   const { data: rawCompany } = await supabase
     .from("companies")
-    .select("id, name, slug, url, email, city, owner_name, states, payment_methods, accepted_brands, rating, description, featured, phone, mail_in")
+    .select("id, name, slug, url, email, city, owner_name, states, payment_methods, accepted_brands, rating, description, featured, phone, mail_in, lat, lng, verified, transaction_modes, response_time, est_year")
     .eq("slug", slug)
     .single();
 
