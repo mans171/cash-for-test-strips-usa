@@ -13,7 +13,7 @@ describe('monogramFromName', () => {
       .toBe(monogramFromName('864 Medex - Greenville, SC').tintClass)
   })
   it('tintClass is one of the known tints', () => {
-    const known = ['bg-emerald-100 text-emerald-800','bg-sky-100 text-sky-800','bg-amber-100 text-amber-800','bg-violet-100 text-violet-800','bg-rose-100 text-rose-800']
+    const known = ['bg-teal-100 text-teal-800','bg-sky-100 text-sky-800','bg-amber-100 text-amber-800','bg-violet-100 text-violet-800','bg-rose-100 text-rose-800']
     expect(known).toContain(monogramFromName('Jerome Jones').tintClass)
   })
 })

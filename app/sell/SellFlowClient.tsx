@@ -42,7 +42,7 @@ function StepIndicator({ current }: { current: 1 | 2 | 3 }) {
                 {label}
               </span>
             </div>
-            {step < 3 && <div className={`h-px flex-1 mx-2 ${isDone ? "bg-emerald-300" : "bg-gray-200"}`} />}
+            {step < 3 && <div className={`h-px flex-1 mx-2 ${isDone ? "bg-electric/40" : "bg-gray-200"}`} />}
           </div>
         );
       })}
@@ -733,7 +733,7 @@ export function SellFlowClient() {
                         onClick={() => handleSend(c, "sms")}
                         disabled={sending || nameMissing}
                         title={nameMissing ? "Enter your name first" : undefined}
-                        className="text-xs font-medium border border-emerald-600 text-cash px-3 py-2 rounded-lg disabled:opacity-50"
+                        className="text-xs font-medium border border-cash text-cash px-3 py-2 rounded-lg disabled:opacity-50"
                       >
                         {sending && selectedBuyer?.id === c.id ? "Sending..." : "Text Now"}
                       </button>
@@ -786,8 +786,8 @@ export function SellFlowClient() {
         ) : (
         <div key={i} className="grid grid-cols-1 sm:grid-cols-2 gap-2 border border-gray-100 rounded-lg p-3">
           {item.brand ? (
-            <div className="col-span-2 flex items-center justify-between gap-2 bg-electric/10 border border-emerald-200 rounded-lg px-3 py-2">
-              <span className="text-sm text-emerald-800">
+            <div className="col-span-2 flex items-center justify-between gap-2 bg-electric/10 border border-electric/40 rounded-lg px-3 py-2">
+              <span className="text-sm text-ink-deep">
                 Selected: <span className="font-medium">{item.brand}</span>
               </span>
               <div className="flex items-center gap-3 shrink-0">

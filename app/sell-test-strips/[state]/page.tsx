@@ -93,9 +93,9 @@ export default async function StatePage({ params }: Props) {
       <JsonLd data={breadcrumbSchema} />
       {/* Breadcrumb */}
       <nav className="text-sm text-gray-400 mb-6">
-        <Link href="/" className="hover:text-emerald-600">Home</Link>
+        <Link href="/" className="hover:text-cash">Home</Link>
         {" / "}
-        <Link href="/directory" className="hover:text-emerald-600">Directory</Link>
+        <Link href="/directory" className="hover:text-cash">Directory</Link>
         {" / "}
         <span className="text-gray-700">{label}</span>
       </nav>
@@ -155,7 +155,7 @@ export default async function StatePage({ params }: Props) {
             <Link
               key={s}
               href={`/sell-test-strips/${s.toLowerCase()}`}
-              className="text-xs bg-white border border-gray-200 text-gray-600 px-3 py-1.5 rounded-full hover:border-emerald-400 hover:text-emerald-700 transition-colors"
+              className="text-xs bg-white border border-gray-200 text-gray-600 px-3 py-1.5 rounded-full hover:border-cash hover:text-cash transition-colors"
             >
               {STATE_LABELS[s]}
             </Link>
