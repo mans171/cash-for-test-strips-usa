@@ -23,6 +23,7 @@ export default async function HomePage() {
   const { data: featured } = await supabase
     .from("companies")
     .select(COMPANY_COLUMNS)
+    .eq("mail_in", false)
     .eq("featured", true)
     .limit(6);
 

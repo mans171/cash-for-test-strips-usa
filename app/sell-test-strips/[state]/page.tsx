@@ -49,6 +49,7 @@ export default async function StatePage({ params }: Props) {
   const { data } = await supabase
     .from("companies")
     .select(COMPANY_COLUMNS)
+    .eq("mail_in", false)
     .contains("states", [code])
     .order("featured", { ascending: false })
     .order("name");
