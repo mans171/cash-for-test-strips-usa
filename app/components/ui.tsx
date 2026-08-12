@@ -1,4 +1,5 @@
 import { monogramFromName } from "@/lib/monogram"
+import type { Tier } from "@/lib/tier-pricing"
 
 export const btnPrimary =
   "inline-flex items-center justify-center gap-1.5 bg-cash text-white font-bold text-sm px-5 py-3 rounded-lg hover:bg-cash-hover transition-colors"
@@ -29,6 +30,20 @@ export function FeaturedBadge() {
       Featured
     </span>
   )
+}
+
+export function TierBadge({ tier }: { tier: Tier }) {
+  const styles: Record<Tier, string> = {
+    top: "text-green-800 bg-green-100",
+    mid: "text-amber-700 bg-amber-50",
+    lower: "text-gray-600 bg-gray-100",
+  };
+  const labels: Record<Tier, string> = { top: "Top Tier", mid: "Mid Tier", lower: "Lower Tier" };
+  return (
+    <span className={`inline-flex text-[11px] font-extrabold px-1.5 py-0.5 rounded-md uppercase tracking-wide ${styles[tier]}`}>
+      {labels[tier]}
+    </span>
+  );
 }
 
 export function MonogramAvatar({ name }: { name: string }) {
