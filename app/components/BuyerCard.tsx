@@ -2,7 +2,7 @@ import Link from "next/link"
 import type { Company } from "@/lib/types"
 import { STATE_LABELS } from "@/lib/states"
 import { Chip, VerifiedBadge, FeaturedBadge, MonogramAvatar, PinIcon, btnSecondary } from "./ui"
-import { UnlockContact } from "./UnlockContact"
+import { UnlockContact, hasAnyContact } from "./UnlockContact"
 
 export function BuyerCard({
   company,
@@ -17,6 +17,7 @@ export function BuyerCard({
     .join(", ")
   const moreStates = company.states.length > 2 ? ` +${company.states.length - 2}` : ""
   const brands = company.accepted_brands ?? []
+  const showContact = hasAnyContact(company)
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-5 flex flex-col gap-3 shadow-sm hover:shadow-lg hover:border-gray-300 transition-all">
@@ -74,9 +75,11 @@ export function BuyerCard({
         <Link href={`/company/${company.slug}`} className={`${btnSecondary} flex-1 !px-3 !py-2 !text-xs`}>
           View profile
         </Link>
-        <div className="flex-1">
-          <UnlockContact company={company} isAuthenticated={isAuthenticated} />
-        </div>
+        {showContact && (
+          <div className="flex-1">
+            <UnlockContact company={company} isAuthenticated={isAuthenticated} />
+          </div>
+        )}
       </div>
     </div>
   )

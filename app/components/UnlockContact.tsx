@@ -6,6 +6,10 @@ import { AccountModal } from "./AccountModal"
 import { btnPrimary, LockIcon } from "./ui"
 import type { Company } from "@/lib/types"
 
+export function hasAnyContact(company: Company): boolean {
+  return !!(company.url || company.phone || company.hasContact)
+}
+
 export function UnlockContact({
   company,
   isAuthenticated,
@@ -18,8 +22,7 @@ export function UnlockContact({
   const router = useRouter()
   const [open, setOpen] = useState(false)
 
-  const hasAnyContact = !!(company.url || company.phone || company.hasContact)
-  if (!hasAnyContact) return null
+  if (!hasAnyContact(company)) return null
 
   const sizing =
     size === "page" ? "px-6 py-3 text-sm w-auto" : "px-3 py-2 text-xs w-full"
