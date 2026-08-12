@@ -28,33 +28,38 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${geist.variable} h-full`}>
-      <body className="min-h-full flex flex-col font-sans antialiased bg-white text-gray-900">
-        <header className="border-b border-gray-100 bg-white sticky top-0 z-50">
+      <body className="min-h-full flex flex-col font-sans antialiased bg-ground text-gray-900">
+        <header className="bg-ink sticky top-0 z-50">
           <SiteNav />
         </header>
 
         <main className="flex-1">{children}</main>
 
-        <footer className="border-t border-gray-100 mt-16 py-10 text-sm text-gray-500">
-          <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row justify-between gap-4">
-            <p className="font-medium text-gray-700">Cash For Test Strips USA</p>
-            <div className="flex gap-6">
-              <Link href="/directory" className="hover:text-emerald-700 transition-colors">
+        <footer className="bg-ink mt-16 py-12 text-sm text-white/60">
+          <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row justify-between gap-8">
+            <div className="font-black text-white">
+              Cash For Test Strips <span className="text-electric">USA</span>
+            </div>
+            <div className="flex flex-wrap gap-6">
+              <Link href="/directory" className="hover:text-white transition-colors">
                 Directory
               </Link>
-              <Link href="/about" className="hover:text-emerald-700 transition-colors">
-                About
-              </Link>
-              <Link href="/is-it-legal-to-sell-diabetic-test-strips" className="hover:text-emerald-700 transition-colors">
-                Is It Legal?
-              </Link>
-              <Link href="/how-much-are-diabetic-test-strips-worth" className="hover:text-emerald-700 transition-colors">
+              <Link href="/how-much-are-diabetic-test-strips-worth" className="hover:text-white transition-colors">
                 Price Guide
               </Link>
-              <Link href="/buyer" className="hover:text-emerald-700 transition-colors">
+              <Link href="/is-it-legal-to-sell-diabetic-test-strips" className="hover:text-white transition-colors">
+                Is It Legal?
+              </Link>
+              <Link href="/about" className="hover:text-white transition-colors">
+                About
+              </Link>
+              <Link href="/blog" className="hover:text-white transition-colors">
+                Blog
+              </Link>
+              <Link href="/buyer" className="hover:text-white transition-colors">
                 Manage Your Listing
               </Link>
-              <a href="mailto:feldon.richards@gmail.com" className="hover:text-emerald-700 transition-colors">
+              <a href="mailto:feldon.richards@gmail.com" className="hover:text-white transition-colors">
                 Contact
               </a>
             </div>

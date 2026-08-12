@@ -7,8 +7,9 @@ import { useUser, signOut } from "@/lib/auth-client";
 
 const NAV_LINKS = [
   { href: "/directory", label: "Find a Buyer" },
+  { href: "/how-much-are-diabetic-test-strips-worth", label: "Price Guide" },
   { href: "/blog", label: "Blog" },
-  { href: "/", label: "How It Works" },
+  { href: "/#how-it-works", label: "How It Works" },
 ];
 
 export default function SiteNav() {
@@ -25,37 +26,37 @@ export default function SiteNav() {
   return (
     <nav className="max-w-6xl mx-auto px-4 relative">
       <div className="h-16 flex items-center justify-between">
-        <Link href="/" className="font-bold text-lg text-emerald-700 tracking-tight">
-          CashForTestStrips<span className="text-gray-900">USA</span>
+        <Link href="/" className="font-black text-lg tracking-tight text-white">
+          Cash For Test Strips <span className="text-electric">USA</span>
         </Link>
 
-        <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
+        <div className="hidden md:flex items-center gap-6 text-sm font-medium text-white/70">
           {NAV_LINKS.map((link) => (
-            <Link key={link.label} href={link.href} className="hover:text-emerald-700 transition-colors">
+            <Link key={link.label} href={link.href} className="hover:text-white transition-colors">
               {link.label}
             </Link>
           ))}
           {!loading && (
             user ? (
               <div className="flex items-center gap-3">
-                <span className="text-xs text-gray-400">{user.email}</span>
+                <span className="text-xs text-white/40">{user.email}</span>
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="hover:text-emerald-700 transition-colors"
+                  className="text-white/70 hover:text-white transition-colors"
                 >
                   Log out
                 </button>
               </div>
             ) : (
-              <Link href="/login" className="hover:text-emerald-700 transition-colors">
+              <Link href="/login" className="text-white/70 hover:text-white transition-colors">
                 Login
               </Link>
             )
           )}
           <Link
             href="/sell"
-            className="bg-emerald-600 text-white px-4 py-2 rounded-full hover:bg-emerald-700 transition-colors"
+            className="bg-electric text-ink-deep font-extrabold px-4 py-2 rounded-lg hover:bg-white transition-colors"
           >
             Get Cash Now
           </Link>
@@ -64,7 +65,7 @@ export default function SiteNav() {
         <div className="flex md:hidden items-center gap-3">
           <Link
             href="/sell"
-            className="bg-emerald-600 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-emerald-700 transition-colors"
+            className="bg-electric text-ink-deep font-extrabold px-4 py-2 rounded-lg text-sm hover:bg-white transition-colors"
           >
             Get Cash Now
           </Link>
@@ -73,7 +74,7 @@ export default function SiteNav() {
             aria-label={open ? "Close menu" : "Open menu"}
             aria-expanded={open}
             onClick={() => setOpen((prev) => !prev)}
-            className="p-2 -mr-2 text-gray-700"
+            className="p-2 -mr-2 text-white"
           >
             {open ? (
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -92,13 +93,13 @@ export default function SiteNav() {
       </div>
 
       {open && (
-        <div className="md:hidden absolute left-0 right-0 top-16 bg-white border-b border-gray-100 shadow-lg flex flex-col px-4 py-3 gap-1">
+        <div className="md:hidden absolute left-0 right-0 top-16 bg-ink border-b border-white/10 shadow-lg flex flex-col px-4 py-3 gap-1">
           {NAV_LINKS.map((link) => (
             <Link
               key={link.label}
               href={link.href}
               onClick={() => setOpen(false)}
-              className="py-2 text-sm font-medium text-gray-600 hover:text-emerald-700 transition-colors"
+              className="py-2 text-sm font-medium text-white/80 hover:text-white transition-colors"
             >
               {link.label}
             </Link>
@@ -108,7 +109,7 @@ export default function SiteNav() {
               <button
                 type="button"
                 onClick={handleLogout}
-                className="py-2 text-sm font-medium text-gray-600 hover:text-emerald-700 transition-colors text-left"
+                className="py-2 text-sm font-medium text-white/80 hover:text-white transition-colors text-left"
               >
                 Log out ({user.email})
               </button>
@@ -116,7 +117,7 @@ export default function SiteNav() {
               <Link
                 href="/login"
                 onClick={() => setOpen(false)}
-                className="py-2 text-sm font-medium text-gray-600 hover:text-emerald-700 transition-colors"
+                className="py-2 text-sm font-medium text-white/80 hover:text-white transition-colors"
               >
                 Login
               </Link>
