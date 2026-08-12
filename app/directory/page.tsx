@@ -1,40 +1,45 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { supabase } from "@/lib/supabase";
 import type { Metadata } from "next";
-import { DirectoryFilters } from "./filters";
+import { DirectorySearch } from "./filters";
 import { STATE_LABELS } from "@/lib/states";
 import type { Company } from "@/lib/types";
 import { stripCompanyContact } from "@/lib/company-contact";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { buildItemListSchema } from "@/lib/schema";
 import { JsonLd } from "@/app/components/JsonLd";
+import { BuyerCard } from "@/app/components/BuyerCard";
+import { UnlockContact } from "@/app/components/UnlockContact";
+import { ZipCookieSync } from "@/app/components/ZipCookieSync";
+import { isValidZip } from "@/lib/geo";
+import { getZipCentroid, tierCompanies, type CompanyWithMiles } from "@/lib/zip-lookup";
+import { COMPANY_COLUMNS } from "@/lib/company-columns";
 
 export const metadata: Metadata = {
   title: "Directory — Find Test Strip Buyers Near You",
   description:
-    "Browse our full directory of cash buyers for diabetic test strips. Filter by state, payment method, and brand accepted.",
-  // All ?state= filtered views canonicalize to the unfiltered directory —
-  // they're the same content with a subset applied, not distinct pages.
+    "Browse our full directory of cash buyers for diabetic test strips. Search by ZIP code to find buyers near you.",
+  // All ?state=/?zip= filtered views canonicalize to the unfiltered directory —
+  // same content with a subset applied, not distinct pages.
   alternates: { canonical: "https://cash4teststripsusa.com/directory" },
 };
 
 export default async function DirectoryPage({
   searchParams,
 }: {
-  searchParams: Promise<{ state?: string }>;
+  searchParams: Promise<{ state?: string; zip?: string }>;
 }) {
-  const { state } = await searchParams;
+  const { state, zip } = await searchParams;
 
   let query = supabase
     .from("companies")
-    .select("id, name, slug, url, phone, email, city, owner_name, states, payment_methods, accepted_brands, rating, description, featured")
+    .select(COMPANY_COLUMNS)
     .eq("mail_in", false)
     .order("featured", { ascending: false })
     .order("name");
 
-  if (state) {
-    query = query.contains("states", [state.toUpperCase()]);
-  }
+  if (state) query = query.contains("states", [state.toUpperCase()]);
 
   const { data } = await query;
   const rawCompanies = (data ?? []) as Company[];
@@ -44,39 +49,104 @@ export default async function DirectoryPage({
   const isAuthenticated = !!user;
   const companies = isAuthenticated ? rawCompanies : rawCompanies.map(stripCompanyContact);
 
+  // ZIP proximity mode
+  const zipValid = !!zip && isValidZip(zip);
+  const centroid = zipValid ? await getZipCentroid(supabase, zip) : null;
+  const tiers = centroid ? tierCompanies(companies, centroid) : null;
+
+  // Search-input cookie prefill: pre-fill from ?zip= or the last searched ZIP
+  // cookie, but never auto-run a proximity search from the cookie alone —
+  // tiers above are computed only from the ?zip= query param.
+  const cookieZip = (await cookies()).get("c4ts_zip")?.value;
+  const prefillZip = zipValid ? zip : cookieZip && isValidZip(cookieZip) ? cookieZip : undefined;
+
+  // Mail-in fallback card data (Feldon's own operation) — only in ZIP mode
+  let mailIn: Company | null = null;
+  if (tiers) {
+    const { data: mailInRow } = await supabase
+      .from("companies")
+      .select(COMPANY_COLUMNS)
+      .eq("mail_in", true)
+      .limit(1)
+      .maybeSingle();
+    if (mailInRow) {
+      const row = mailInRow as Company;
+      mailIn = isAuthenticated ? row : stripCompanyContact(row);
+    }
+  }
+
   const itemListSchema = buildItemListSchema(
     companies.map((c) => ({ name: c.name, url: `https://cash4teststripsusa.com/company/${c.slug}` }))
   );
 
   const stateCode = state?.toUpperCase();
   const stateLabel = stateCode ? (STATE_LABELS[stateCode] ?? stateCode) : null;
+  const zipStateLabel = centroid?.state ? (STATE_LABELS[centroid.state] ?? centroid.state) : null;
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-12">
       <JsonLd data={itemListSchema} />
+      {zipValid && centroid && <ZipCookieSync zip={zip!} />}
+
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          {stateLabel ? `Test Strip Buyers in ${stateLabel}` : "Find a Test Strip Buyer"}
+        <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-gray-900 mb-2">
+          {centroid
+            ? `Buyers near ${zip}`
+            : stateLabel
+              ? `Test Strip Buyers in ${stateLabel}`
+              : "Find a Test Strip Buyer"}
         </h1>
         <p className="text-gray-500">
-          {companies.length} buyer{companies.length !== 1 ? "s" : ""} found
-          {stateLabel ? ` in ${stateLabel}` : ""}
+          {centroid
+            ? "Sorted by distance from your ZIP — contact info unlocks with a free account."
+            : `${companies.length} buyer${companies.length !== 1 ? "s" : ""} found${stateLabel ? ` in ${stateLabel}` : ""}`}
         </p>
+        {zip && !zipValid && (
+          <p className="text-sm text-amber-700 bg-amber-50 rounded-lg px-3 py-2 mt-3 inline-block">
+            "{zip}" isn't a valid 5-digit ZIP — showing all buyers instead.
+          </p>
+        )}
+        {zip && zipValid && !centroid && (
+          <p className="text-sm text-amber-700 bg-amber-50 rounded-lg px-3 py-2 mt-3 inline-block">
+            We couldn't locate ZIP {zip} — showing all buyers instead.
+          </p>
+        )}
       </div>
 
-      <DirectoryFilters currentState={state} stateLabels={STATE_LABELS} />
+      <DirectorySearch currentState={state} currentZip={prefillZip} stateLabels={STATE_LABELS} />
 
-      {companies.length === 0 ? (
+      {tiers ? (
+        <div className="space-y-10">
+          <TierSection title="Near you" subtitle="Within 25 miles" companies={tiers.near} isAuthenticated={isAuthenticated} />
+          <TierSection title="Within driving distance" subtitle="25–100 miles" companies={tiers.driving} isAuthenticated={isAuthenticated} />
+          <TierSection
+            title={zipStateLabel ? `Serving ${zipStateLabel}` : "Serving your state"}
+            subtitle="Statewide buyers"
+            companies={tiers.inState}
+            isAuthenticated={isAuthenticated}
+          />
+          {tiers.near.length === 0 && tiers.driving.length === 0 && tiers.inState.length === 0 && (
+            <p className="text-gray-500">
+              No local buyers near {zip} yet — but you're covered:
+            </p>
+          )}
+          {mailIn && <MailInFallback company={mailIn} isAuthenticated={isAuthenticated} />}
+          <p className="text-sm text-gray-400">
+            Not what you're looking for? <Link href="/directory" className="underline hover:text-ink">Browse all buyers</Link>
+          </p>
+        </div>
+      ) : companies.length === 0 ? (
         <div className="text-center py-20 text-gray-400">
           <p className="text-lg font-medium mb-2">No buyers found</p>
-          <p className="text-sm">Try clearing the state filter or{" "}
-            <a href="mailto:feldon.richards@gmail.com" className="text-emerald-600 hover:underline">contact us</a> to add your area.
+          <p className="text-sm">
+            Try clearing the state filter or{" "}
+            <a href="mailto:feldon.richards@gmail.com" className="text-cash hover:underline">contact us</a> to add your area.
           </p>
         </div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {companies.map((c) => (
-            <DirectoryCard key={c.id} company={c} isAuthenticated={isAuthenticated} />
+            <BuyerCard key={c.id} company={c} isAuthenticated={isAuthenticated} />
           ))}
         </div>
       )}
@@ -84,99 +154,50 @@ export default async function DirectoryPage({
   );
 }
 
-function DirectoryCard({ company, isAuthenticated }: { company: Company; isAuthenticated: boolean }) {
-  const stateLabels = company.states
-    .slice(0, 2)
-    .map((s) => STATE_LABELS[s] ?? s)
-    .join(", ");
-  const moreStates = company.states.length > 2 ? ` +${company.states.length - 2} more` : "";
-
+function TierSection({
+  title,
+  subtitle,
+  companies,
+  isAuthenticated,
+}: {
+  title: string;
+  subtitle: string;
+  companies: CompanyWithMiles[];
+  isAuthenticated: boolean;
+}) {
+  if (companies.length === 0) return null;
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex flex-col gap-3 hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between gap-2">
+    <section>
+      <div className="flex items-baseline gap-2 mb-4">
+        <h2 className="text-xl font-extrabold text-gray-900">{title}</h2>
+        <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{subtitle}</span>
+      </div>
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {companies.map((c) => (
+          <BuyerCard key={c.id} company={c} isAuthenticated={isAuthenticated} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function MailInFallback({ company, isAuthenticated }: { company: Company; isAuthenticated: boolean }) {
+  return (
+    <section className="bg-ink rounded-2xl p-6 sm:p-8 text-white">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
         <div>
-          <h2 className="font-semibold text-gray-900 text-sm leading-snug">{company.name}</h2>
-          {company.city && (
-            <p className="text-xs text-gray-400 mt-0.5">{company.city}</p>
-          )}
+          <p className="text-[11px] font-extrabold text-electric uppercase tracking-wider mb-1">
+            Mail-in — serves all 50 states
+          </p>
+          <h2 className="text-xl font-black mb-1">No local buyer? We buy by mail.</h2>
+          <p className="text-sm text-white/70">
+            Free prepaid shipping label, payment within 24 hours of verification. Run by Cash For Test Strips USA.
+          </p>
         </div>
-        <div className="flex flex-col items-end gap-1 shrink-0">
-          {company.featured && (
-            <span className="text-xs font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full">
-              Featured
-            </span>
-          )}
-          {company.rating && (
-            <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
-              ★ {company.rating}
-            </span>
-          )}
+        <div className="shrink-0">
+          <UnlockContact company={company} isAuthenticated={isAuthenticated} size="page" />
         </div>
       </div>
-
-      {company.description && (
-        <p className="text-xs text-gray-500 leading-relaxed line-clamp-2">{company.description}</p>
-      )}
-
-      <p className="text-xs text-gray-400">
-        {stateLabels}{moreStates}
-      </p>
-
-      {company.payment_methods?.length > 0 && (
-        <div className="flex flex-wrap gap-1">
-          {company.payment_methods.map((m) => (
-            <span key={m} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-              {m}
-            </span>
-          ))}
-        </div>
-      )}
-
-      <div className="flex gap-2 mt-auto pt-1">
-        <Link
-          href={`/company/${company.slug}`}
-          className="flex-1 text-center text-xs font-medium border border-gray-200 text-gray-600 px-3 py-2 rounded-lg hover:border-emerald-400 hover:text-emerald-700 transition-colors"
-        >
-          View details
-        </Link>
-        {company.url || company.phone || company.hasContact ? (
-          isAuthenticated ? (
-            company.url ? (
-              <a
-                href={`/api/track?company=${company.id}&url=${encodeURIComponent(company.url)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 text-center text-xs font-medium bg-emerald-600 text-white px-3 py-2 rounded-lg hover:bg-emerald-700 transition-colors block"
-              >
-                Visit site →
-              </a>
-            ) : (
-              <a
-                href={`tel:${company.phone}`}
-                className="flex-1 text-center text-xs font-medium bg-emerald-600 text-white px-3 py-2 rounded-lg hover:bg-emerald-700 transition-colors block"
-              >
-                Contact
-              </a>
-            )
-          ) : (
-            <div className="flex-1 flex flex-col gap-1">
-              <span className="text-center text-xs font-medium bg-emerald-600 text-white px-3 py-2 rounded-lg opacity-40 pointer-events-none block">
-                Contact
-              </span>
-              <p className="text-xs text-red-600 text-center">
-                <Link href="/signup" className="underline">Create an account</Link> to view
-              </p>
-            </div>
-          )
-        ) : (
-          <a
-            href="tel:5187799751"
-            className="flex-1 text-center text-xs font-medium bg-emerald-600 text-white px-3 py-2 rounded-lg hover:bg-emerald-700 transition-colors block"
-          >
-            Contact
-          </a>
-        )}
-      </div>
-    </div>
+    </section>
   );
 }
