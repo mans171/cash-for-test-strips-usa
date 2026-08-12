@@ -5,6 +5,8 @@ import { STATE_BLOG_POSTS, getPostBySlug } from "@/lib/blog-posts";
 import { supabase } from "@/lib/supabase";
 import { buildFaqPageSchema, buildArticleSchema, buildBreadcrumbSchema } from "@/lib/schema";
 import { JsonLd } from "@/app/components/JsonLd";
+import { TEST_STRIP_TIERS, CGM_TIERS } from "@/lib/tier-pricing";
+import { TierBadge } from "@/app/components/ui";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -349,32 +351,27 @@ export default async function BlogPostPage({ params }: Props) {
         <section>
           <h2 className="text-xl font-bold text-gray-900 mb-3">How Much Can I Get for My Test Strips?</h2>
           <p>
-            Prices vary depending on brand, quantity, and expiration date. As a general guide:
+            Payout depends on brand, quantity, and expiration date. Here&apos;s how brands compare:
           </p>
           <div className="mt-4 overflow-x-auto">
             <table className="w-full text-sm border-collapse">
               <thead>
                 <tr className="bg-gray-50">
                   <th className="text-left px-4 py-2 font-semibold text-gray-700 border border-gray-100">Item</th>
-                  <th className="text-left px-4 py-2 font-semibold text-gray-700 border border-gray-100">Typical Price</th>
+                  <th className="text-left px-4 py-2 font-semibold text-gray-700 border border-gray-100">Payout Tier</th>
                 </tr>
               </thead>
               <tbody>
-                {[
-                  ["OneTouch Verio / Ultra (test strips)", "$15 – $30/box"],
-                  ["FreeStyle Lite (test strips)", "$10 – $25/box"],
-                  ["Accu-Chek Guide / Aviva (test strips)", "$10 – $20/box"],
-                  ["Contour Next (test strips)", "$8 – $18/box"],
-                  ["Dexcom G6 / G7 Sensors", "Starting at $30/box — call for quote"],
-                  ["FreeStyle Libre 1 / 2 / 3 Sensors", "$30 – $60/box"],
-                  ["Omnipod 5 / DASH / Classic Pods", "Starting at $50/box — call for quote"],
-                  ["Other brands / items", "Call for quote"],
-                ].map(([brand, price]) => (
-                  <tr key={brand} className="border border-gray-100">
-                    <td className="px-4 py-2 text-gray-600">{brand}</td>
-                    <td className="px-4 py-2 text-gray-600">{price}</td>
+                {[...TEST_STRIP_TIERS, ...CGM_TIERS].map((row) => (
+                  <tr key={row.brand} className="border border-gray-100">
+                    <td className="px-4 py-2 text-gray-600">{row.brand}</td>
+                    <td className="px-4 py-2"><TierBadge tier={row.tier} /></td>
                   </tr>
                 ))}
+                <tr className="border border-gray-100">
+                  <td className="px-4 py-2 text-gray-600">Other brands / items</td>
+                  <td className="px-4 py-2 text-gray-500 text-xs">Call for a quote</td>
+                </tr>
               </tbody>
             </table>
           </div>
