@@ -88,9 +88,9 @@ export default async function HomePage() {
           <p className="text-base sm:text-lg text-white/70 max-w-2xl mx-auto mb-8">
             Local buyers pay{" "}
             <Link href="/how-much-are-diabetic-test-strips-worth" className="font-extrabold text-white underline decoration-electric decoration-2 underline-offset-4 hover:text-electric transition-colors">
-              up to $100 a box
+              up to $100+ a box
             </Link>{" "}
-            for sealed, unexpired supplies. Cash in hand, same day.
+            for qualifying, sealed, unexpired supplies. Cash in hand, same day.
           </p>
 
           <form action="/directory" method="get" className="flex items-stretch max-w-md mx-auto bg-white rounded-xl p-1.5 shadow-2xl shadow-black/30">
