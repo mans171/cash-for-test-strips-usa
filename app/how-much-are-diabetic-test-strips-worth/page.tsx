@@ -1,18 +1,20 @@
 import type { Metadata } from 'next'
 import { buildFaqPageSchema } from '@/lib/schema'
+import { TEST_STRIP_TIERS, CGM_TIERS } from '@/lib/tier-pricing'
+import { TierBadge } from '@/app/components/ui'
 import { JsonLd } from '@/app/components/JsonLd'
 
 export const metadata: Metadata = {
   title: 'How Much Are Diabetic Test Strips Worth? 2026 Guide',
   description:
-    'Brand-by-brand cash prices for diabetic test strips and CGM supplies in 2026. See what OneTouch, FreeStyle, Accu-Chek, Contour, Dexcom, and more pay.',
+    'Brand-by-brand payout tiers for diabetic test strips and CGM supplies in 2026. See how OneTouch, FreeStyle, Accu-Chek, Contour, Dexcom, and more compare.',
   alternates: { canonical: 'https://cash4teststripsusa.com/how-much-are-diabetic-test-strips-worth' },
 }
 
 const FAQS = [
   {
     q: "What's the highest-paying brand of test strips?",
-    a: 'OneTouch Verio and Ultra typically pay the most per box among standard test strips, ranging from $15 to $30. FreeStyle Lite runs close behind at $10 to $25. CGM sensors (Libre, Dexcom, Omnipod) pay more per box but serve a narrower buyer market.',
+    a: 'Accu-Chek Aviva/SmartView, FreeStyle Lite, OneTouch Verio/Ultra, and True Metrix are all top-tier — real payouts are close enough between them that brand alone rarely decides your offer. Contour Next and the standard Accu-Chek Guide line are solid mid-tier performers. CGM sensors and pods (Omnipod, Dexcom, Libre) pay more per box than test strips but serve a narrower buyer market.',
   },
   {
     q: 'Do I get more for buying a larger quantity?',
@@ -32,21 +34,6 @@ const FAQS = [
   },
 ]
 
-const TEST_STRIP_PRICES = [
-  { brand: 'OneTouch Verio / Ultra', price: '$15 – $30 per box', note: 'One of the most widely accepted brands, consistently at the higher end.' },
-  { brand: 'FreeStyle Lite', price: '$10 – $25 per box', note: 'Large, consistent buyer base.' },
-  { brand: 'Accu-Chek Guide / Aviva / SmartView', price: '$10 – $20 per box', note: 'Widely accepted; box condition and count matter.' },
-  { brand: 'Contour Next (all versions)', price: '$8 – $18 per box', note: 'Lower end of major brands but moves well in bulk.' },
-  { brand: 'True Metrix', price: 'Call for a quote', note: 'Accepted by select buyers — pricing varies by region.' },
-]
-
-const CGM_PRICES = [
-  { brand: 'Dexcom G6 Sensors', price: 'Starting at $30 per box', note: 'High-demand product — call for a current quote.' },
-  { brand: 'Dexcom G7 Sensors (10-Day and 15-Day)', price: 'Starting at $30 per box', note: 'Expired G7 sensors are also accepted by some buyers.' },
-  { brand: 'FreeStyle Libre Sensors (1, 2, 2 Plus, 3, 3 Plus)', price: '$30 – $60 per box', note: 'Libre 3 commands the upper end. U.S. retail versions only.' },
-  { brand: 'Omnipod Pods (5, DASH, Classic)', price: 'Starting at $50 per box', note: 'Expired pods also accepted — call for pricing.' },
-]
-
 export default function PriceGuidePage() {
   const faqSchema = buildFaqPageSchema(FAQS.map((f) => ({ question: f.q, answer: f.a })))
 
@@ -58,9 +45,10 @@ export default function PriceGuidePage() {
 
       <p className="text-gray-600 leading-relaxed mb-6">
         What you get for unused diabetic test strips depends on the brand, the quantity, how much time
-        is left before expiration, and whether the box is sealed. The price ranges below reflect what
-        buyers in our network are currently paying for standard retail boxes in good condition. Bulk
-        lots of 10 or more boxes typically receive a higher per-box rate than individual boxes.
+        is left before expiration, and whether the box is sealed. The tiers below reflect how brands
+        rank against each other based on what buyers in our network are currently paying for standard
+        retail boxes in good condition — call for your exact quote. Bulk lots of 10 or more boxes
+        typically receive a higher per-box rate than individual boxes.
       </p>
 
       <h2 className="text-xl font-bold text-gray-900 mt-10 mb-3">Test Strips — Price by Brand</h2>
@@ -69,15 +57,15 @@ export default function PriceGuidePage() {
           <thead>
             <tr className="bg-gray-50">
               <th className="text-left px-4 py-2 font-semibold text-gray-700 border border-gray-100">Brand</th>
-              <th className="text-left px-4 py-2 font-semibold text-gray-700 border border-gray-100">Price</th>
+              <th className="text-left px-4 py-2 font-semibold text-gray-700 border border-gray-100">Payout Tier</th>
               <th className="text-left px-4 py-2 font-semibold text-gray-700 border border-gray-100">Notes</th>
             </tr>
           </thead>
           <tbody>
-            {TEST_STRIP_PRICES.map((row) => (
+            {TEST_STRIP_TIERS.map((row) => (
               <tr key={row.brand} className="border border-gray-100">
                 <td className="px-4 py-2 text-gray-600">{row.brand}</td>
-                <td className="px-4 py-2 text-gray-600">{row.price}</td>
+                <td className="px-4 py-2"><TierBadge tier={row.tier} /></td>
                 <td className="px-4 py-2 text-gray-500 text-xs">{row.note}</td>
               </tr>
             ))}
@@ -91,15 +79,15 @@ export default function PriceGuidePage() {
           <thead>
             <tr className="bg-gray-50">
               <th className="text-left px-4 py-2 font-semibold text-gray-700 border border-gray-100">Product</th>
-              <th className="text-left px-4 py-2 font-semibold text-gray-700 border border-gray-100">Price</th>
+              <th className="text-left px-4 py-2 font-semibold text-gray-700 border border-gray-100">Payout Tier</th>
               <th className="text-left px-4 py-2 font-semibold text-gray-700 border border-gray-100">Notes</th>
             </tr>
           </thead>
           <tbody>
-            {CGM_PRICES.map((row) => (
+            {CGM_TIERS.map((row) => (
               <tr key={row.brand} className="border border-gray-100">
                 <td className="px-4 py-2 text-gray-600">{row.brand}</td>
-                <td className="px-4 py-2 text-gray-600">{row.price}</td>
+                <td className="px-4 py-2"><TierBadge tier={row.tier} /></td>
                 <td className="px-4 py-2 text-gray-500 text-xs">{row.note}</td>
               </tr>
             ))}
@@ -127,9 +115,8 @@ export default function PriceGuidePage() {
       </p>
 
       <p className="text-gray-600 leading-relaxed mb-6">
-        The ranges above are what buyers in our network pay for standard-condition, single-box
-        transactions. Your actual offer may be higher or lower depending on lot size, expiration
-        dates, and demand. Call{' '}
+        The tiers above reflect how buyers in our network currently value each brand relative to the
+        others. Your actual offer depends on lot size, expiration dates, and demand. Call{' '}
         <a href="tel:5187799751" className="text-emerald-600 hover:underline">518-779-9751</a> — we&apos;ll
         give you a number on the spot.
       </p>
