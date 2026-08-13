@@ -32,6 +32,26 @@ export default function BlogIndexPage() {
         </p>
       </div>
 
+      {/* Featured city guides — hand-written, outside the state-guide set */}
+      <Link
+        href="/blog/sell-test-strips-albany-ny"
+        className="group block bg-white border border-emerald-100 rounded-xl p-6 shadow-sm hover:shadow-md hover:border-emerald-300 transition-all mb-10"
+      >
+        <div className="flex items-center gap-3 mb-2">
+          <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
+            City guide
+          </span>
+          <span className="text-xs text-gray-400">Albany, NY</span>
+        </div>
+        <h2 className="text-lg font-bold text-gray-900 leading-snug group-hover:text-emerald-700 transition-colors">
+          Where to Sell Diabetic Test Strips in Albany, NY
+        </h2>
+        <p className="text-sm text-gray-500 mt-1 leading-relaxed">
+          Who buys unused strips, CGM sensors and Omnipod pods across the Capital Region, what they
+          pay for, and how same-day local pickup works.
+        </p>
+      </Link>
+
       {/* State grid */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {STATE_BLOG_POSTS.map((post) => (

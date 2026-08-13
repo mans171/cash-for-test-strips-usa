@@ -15,6 +15,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE_URL}/about`, changeFrequency: 'monthly', priority: 0.6 },
     { url: `${BASE_URL}/is-it-legal-to-sell-diabetic-test-strips`, changeFrequency: 'monthly', priority: 0.8 },
     { url: `${BASE_URL}/how-much-are-diabetic-test-strips-worth`, changeFrequency: 'monthly', priority: 0.8 },
+    // Hand-written feature post; not in STATE_BLOG_POSTS, so not covered by blogRoutes below.
+    {
+      url: `${BASE_URL}/blog/sell-test-strips-albany-ny`,
+      lastModified: '2026-08-13',
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    },
   ]
 
   const blogRoutes: MetadataRoute.Sitemap = STATE_BLOG_POSTS.map((post) => ({
