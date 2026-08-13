@@ -10,19 +10,14 @@ import type { Company } from "@/lib/types";
 import { BuyerCard } from "@/app/components/BuyerCard";
 import { btnPrimary } from "@/app/components/ui";
 import { COMPANY_COLUMNS } from "@/lib/company-columns";
+import { STATE_LABELS as ALL_STATE_LABELS } from "@/lib/states";
+import { buildStateFaqs, joinList, nearestBuyers, siblingStates } from "@/lib/state-page-content";
 
-const STATE_LABELS: Record<string, string> = {
-  AL: "Alabama", AK: "Alaska", AZ: "Arizona", AR: "Arkansas", CA: "California",
-  CO: "Colorado", CT: "Connecticut", DE: "Delaware", FL: "Florida", GA: "Georgia",
-  HI: "Hawaii", ID: "Idaho", IL: "Illinois", IN: "Indiana", IA: "Iowa",
-  KS: "Kansas", KY: "Kentucky", LA: "Louisiana", ME: "Maine", MD: "Maryland",
-  MA: "Massachusetts", MI: "Michigan", MN: "Minnesota", MS: "Mississippi", MO: "Missouri",
-  MT: "Montana", NE: "Nebraska", NV: "Nevada", NH: "New Hampshire", NJ: "New Jersey",
-  NM: "New Mexico", NY: "New York", NC: "North Carolina", ND: "North Dakota", OH: "Ohio",
-  OK: "Oklahoma", OR: "Oregon", PA: "Pennsylvania", RI: "Rhode Island", SC: "South Carolina",
-  SD: "South Dakota", TN: "Tennessee", TX: "Texas", UT: "Utah", VT: "Vermont",
-  VA: "Virginia", WA: "Washington", WV: "West Virginia", WI: "Wisconsin", WY: "Wyoming",
-};
+// Canada is excluded here on purpose: this route is the US state directory and
+// is enumerated as such in app/sitemap.ts.
+const STATE_LABELS: Record<string, string> = Object.fromEntries(
+  Object.entries(ALL_STATE_LABELS).filter(([code]) => code !== "CANADA")
+);
 
 type Props = { params: Promise<{ state: string }> };
 
@@ -46,39 +41,78 @@ export default async function StatePage({ params }: Props) {
 
   if (!label) notFound();
 
-  const { data } = await supabase
-    .from("companies")
-    .select(COMPANY_COLUMNS)
-    .eq("mail_in", false)
-    .contains("states", [code])
-    .order("featured", { ascending: false })
-    .order("name");
+  // All in-person buyers, not just this state's: the out-of-state ones are what
+  // give a no-buyer state real "nearest option" content instead of boilerplate.
+  const [{ data: inPersonData }, { data: mailInData }] = await Promise.all([
+    supabase
+      .from("companies")
+      .select(COMPANY_COLUMNS)
+      .eq("mail_in", false)
+      .order("featured", { ascending: false })
+      .order("name"),
+    supabase
+      .from("companies")
+      .select(COMPANY_COLUMNS)
+      .eq("mail_in", true)
+      .limit(1),
+  ]);
 
-  const rawCompanies = (data ?? []) as Company[];
+  const allInPerson = (inPersonData ?? []) as Company[];
+  const rawCompanies = allInPerson.filter((c) => c.states.includes(code));
+  const rawMailIn = ((mailInData ?? []) as Company[])[0] ?? null;
+  const rawNearby = rawCompanies.length === 0 ? nearestBuyers(code, allInPerson, 3) : [];
 
   const supabaseServer = await createServerSupabaseClient();
   const { data: { user } } = await supabaseServer.auth.getUser();
   const isAuthenticated = !!user;
-  const companies = isAuthenticated ? rawCompanies : rawCompanies.map(stripCompanyContact);
 
-  const faqs = [
-    {
-      q: `Is it legal to sell test strips in ${label}?`,
-      a: `Yes. Selling unused, unexpired, unopened diabetic test strips is legal in ${label} and across the US. Strips must be in their original packaging and not have been paid for by Medicare or Medicaid.`,
-    },
-    {
-      q: "What brands do buyers typically accept?",
-      a: "Most buyers accept OneTouch, Freestyle, Accu-Chek, Contour, Bayer, and Walmart ReliOn. Contact the specific buyer to confirm they accept your brand.",
-    },
-    {
-      q: "How do I get paid?",
-      a: "Payment methods vary by buyer — most offer PayPal, Zelle, Venmo, check, or cash in person. Check each buyer's listing for details.",
-    },
-    {
-      q: "Do the strips need to be unopened?",
-      a: "Yes. Buyers require strips to be in their original, unopened packaging with at least 6 months before the expiration date.",
-    },
-  ];
+  // Contact details stay gated behind an account for every card on this page,
+  // exactly as on /directory and /company/[slug].
+  const companies = isAuthenticated ? rawCompanies : rawCompanies.map(stripCompanyContact);
+  const nearby = isAuthenticated
+    ? rawNearby
+    : rawNearby.map((c) => ({ ...stripCompanyContact(c), miles: c.miles }));
+  const mailIn = rawMailIn
+    ? isAuthenticated
+      ? rawMailIn
+      : stripCompanyContact(rawMailIn)
+    : null;
+
+  const faqs = buildStateFaqs({
+    stateCode: code,
+    buyers: rawCompanies,
+    nearby: rawNearby,
+    hasMailIn: !!rawMailIn,
+  });
+
+  const siblings = siblingStates(code, 8);
+
+  // Intro copy is derived too — the old fixed line promised "trusted local
+  // buyers" and "no shipping required" on all 50 pages, which was simply untrue
+  // on the 31 states that have no local buyer at all.
+  const introCities = joinList(
+    [...new Set(rawCompanies.map((c) => c.city).filter((c): c is string => !!c))].sort()
+  );
+  const nearestMiles = rawNearby.length > 0 ? Math.round(rawNearby[0].miles) : null;
+
+  // Assembled as a string rather than JSX fragments so punctuation does not end
+  // up with stray whitespace in front of it.
+  const noBuyerIntro = (() => {
+    const options: string[] = [];
+    if (mailIn) options.push("mail your sealed boxes to a national mail-in buyer from anywhere in the state");
+    if (nearestMiles !== null) {
+      options.push(
+        `drive to the nearest in-person buyer, about ${nearestMiles} miles from the centre of ${label}`
+      );
+    }
+    if (options.length === 0) return `No buyer is based in ${label} yet — we are adding buyers state by state.`;
+    return `No buyer is based in ${label} yet, and you do not need one. You can ${joinList(options, "or")}.`;
+  })();
+
+  const buyerIntro =
+    `${rawCompanies.length} verified ${rawCompanies.length === 1 ? "buyer pays" : "buyers pay"} cash for ` +
+    `unused diabetic test strips in ${label}${introCities ? `, based in ${introCities}` : ""}. ` +
+    `Compare them below, then contact one directly — most pay the same day you meet.`;
 
   const pageUrl = `https://cash4teststripsusa.com/sell-test-strips/${state.toLowerCase()}`;
   const faqSchema = buildFaqPageSchema(faqs.map((f) => ({ question: f.q, answer: f.a })));
@@ -106,22 +140,56 @@ export default async function StatePage({ params }: Props) {
         Sell Diabetic Test Strips in {label}
       </h1>
       <p className="text-gray-600 max-w-2xl mb-8 leading-relaxed">
-        Looking to sell unused diabetic test strips in {label}? We've compiled a list of
-        trusted local buyers who pay cash — via PayPal, Zelle, check, or in person.
-        No shipping required in most cases.
+        {companies.length > 0 ? buyerIntro : noBuyerIntro}
       </p>
 
       {companies.length === 0 ? (
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-8 text-center">
-          <p className="font-semibold text-gray-800 mb-2">No buyers listed in {label} yet</p>
-          <p className="text-sm text-gray-500 mb-4">
-            We're always adding new buyers. In the meantime, browse our national directory
-            — many buyers ship and buy from any state.
-          </p>
-          <Link href="/directory" className={btnPrimary}>
-            Browse all buyers
-          </Link>
-        </div>
+        <>
+          {mailIn && (
+            <div className="mb-12">
+              <h2 className="text-xl font-extrabold text-gray-900 mb-2">
+                Mail your strips in from anywhere in {label}
+              </h2>
+              <p className="text-gray-600 max-w-2xl mb-5 text-sm leading-relaxed">
+                Mail-in buyers accept sealed, unexpired boxes from any US state. You ship the
+                strips and get paid once they arrive and are checked — no local buyer needed.
+              </p>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <BuyerCard company={mailIn} isAuthenticated={isAuthenticated} />
+              </div>
+            </div>
+          )}
+
+          {nearby.length > 0 && (
+            <div className="mb-12">
+              <h2 className="text-xl font-extrabold text-gray-900 mb-2">
+                Closest in-person buyers to {label}
+              </h2>
+              <p className="text-gray-600 max-w-2xl mb-5 text-sm leading-relaxed">
+                If you would rather be paid on the spot, these are the nearest buyers who meet
+                sellers in person. Distances are measured from the centre of {label}, so your own
+                drive may be shorter or longer.
+              </p>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {nearby.map((c) => (
+                  <BuyerCard key={c.id} company={c} isAuthenticated={isAuthenticated} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {!mailIn && nearby.length === 0 && (
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-8 text-center">
+              <p className="font-semibold text-gray-800 mb-2">No buyers listed in {label} yet</p>
+              <p className="text-sm text-gray-500 mb-4">
+                We&apos;re always adding new buyers. In the meantime, browse our national directory.
+              </p>
+              <Link href="/directory" className={btnPrimary}>
+                Browse all buyers
+              </Link>
+            </div>
+          )}
+        </>
       ) : (
         <>
           <p className="text-sm text-gray-400 mb-6">
@@ -150,9 +218,9 @@ export default async function StatePage({ params }: Props) {
 
       {/* Other states */}
       <div className="mt-12 pt-8 border-t border-gray-100">
-        <p className="text-sm text-gray-400 mb-3">Looking in a different state?</p>
+        <p className="text-sm text-gray-400 mb-3">States near {label}</p>
         <div className="flex flex-wrap gap-2">
-          {["NY", "TX", "FL", "CA", "PA", "NC", "OH", "GA", "MA", "NJ", "IN", "SC"].map((s) => (
+          {siblings.map((s) => (
             <Link
               key={s}
               href={`/sell-test-strips/${s.toLowerCase()}`}
