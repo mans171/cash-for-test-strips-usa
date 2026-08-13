@@ -34,6 +34,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description:
       data.description ??
       `${data.name} buys unused diabetic test strips for cash${stateLabel ? ` in ${stateLabel}` : ""}.`,
+    alternates: { canonical: `https://cash4teststripsusa.com/company/${slug}` },
   };
 }
 

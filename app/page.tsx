@@ -15,6 +15,7 @@ export const metadata: Metadata = {
   title: "Cash For Test Strips USA — Sell Diabetic Test Strips Near You",
   description:
     "Find local cash buyers for your unused diabetic test strips. Get paid fast via PayPal, Zelle, or check. Free to use. Free account required.",
+  alternates: { canonical: 'https://cash4teststripsusa.com' },
 };
 
 const POPULAR_STATES = ["NY", "TX", "FL", "CA", "PA", "NC", "OH", "GA", "MA", "NJ"];

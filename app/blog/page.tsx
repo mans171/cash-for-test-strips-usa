@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: "Blog — How to Sell Diabetic Test Strips for Cash by State",
   description:
     "State-by-state guides on how to sell unused diabetic test strips for cash. Find local buyers, learn what's accepted, and get paid fast via PayPal, Zelle, or check.",
+  alternates: { canonical: 'https://cash4teststripsusa.com/blog' },
 };
 
 export default function BlogIndexPage() {
