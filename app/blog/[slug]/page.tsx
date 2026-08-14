@@ -7,6 +7,24 @@ import { buildFaqPageSchema, buildArticleSchema, buildBreadcrumbSchema } from "@
 import { JsonLd } from "@/app/components/JsonLd";
 import { TEST_STRIP_TIERS, CGM_TIERS } from "@/lib/tier-pricing";
 import { TierBadge } from "@/app/components/ui";
+import { STATE_LABELS } from "@/lib/states";
+import { siblingStates } from "@/lib/state-page-content";
+import {
+  angleFor,
+  healthFor,
+  topCities,
+  postTitle,
+  postHeading,
+  postMetaDescription,
+  postLead,
+  angleSection,
+  postFaqs,
+  PRODUCT_CATEGORIES,
+  emphasisCategories,
+  emphasisTierTables,
+  requirements,
+  stateContext,
+} from "@/lib/blog-post-content";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -19,15 +37,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const post = getPostBySlug(slug);
   if (!post) return { title: "Post Not Found" };
 
+  const title = postTitle(post.stateCode, post.stateName);
+  const description = postMetaDescription(post.stateCode, post.stateName);
+
   return {
-    title: post.title,
-    description: post.metaDescription,
+    title,
+    description,
     alternates: { canonical: `https://cash4teststripsusa.com/blog/${slug}` },
-    openGraph: {
-      title: post.title,
-      description: post.metaDescription,
-      type: "article",
-    },
+    openGraph: { title, description, type: "article" },
   };
 }
 
@@ -36,45 +53,52 @@ export default async function BlogPostPage({ params }: Props) {
   const post = getPostBySlug(slug);
   if (!post) notFound();
 
-  const { stateName, stateCode, intro } = post;
+  const { stateName, stateCode } = post;
 
-  const { data: localBuyers } = await supabase
+  // Contact fields are deliberately not selected here. This page renders for
+  // anonymous visitors, and selecting url/phone/email would reintroduce the
+  // contact-exposure bug class that was cleared out of the homepage and the
+  // state landing pages. Buyers are linked through to their gated profile.
+  const { data: stateBuyers } = await supabase
     .from("companies")
-    .select("id")
+    .select("id, name, slug, city")
     .contains("states", [stateCode])
-    .not("url", "is", null)
-    .limit(1);
+    .eq("active", true)
+    .eq("mail_in", false);
 
-  const hasLocalBuyers = (localBuyers ?? []).length > 0;
+  const buyers = stateBuyers ?? [];
+  const hasLocalBuyers = buyers.length > 0;
 
-  const faqs = [
-    {
-      q: `How fast will I get paid in ${stateName}?`,
-      a: "Most payments are sent within 24 hours of us receiving and verifying your strips. For local transactions in some areas, same-day cash is possible.",
-    },
-    {
-      q: "Do you accept partial boxes or opened packaging?",
-      a: "No — we only accept strips in their original, unopened, sealed packaging. Partial or damaged boxes cannot be resold.",
-    },
-    {
-      q: "What if my strips are close to expiring?",
-      a: "We generally require at least 6 months before expiration for test strips and most supplies. Exception: we accept expired Omnipod pods and expired Dexcom G7 sensors. Call 518-779-9751 and we'll let you know if we can make an offer.",
-    },
-    {
-      q: "Can I sell strips if I'm an estate liquidator or caregiver?",
-      a: "Absolutely. Estate liquidators and caregivers are some of our most frequent customers. We handle bulk lots regularly and make the process as smooth as possible.",
-    },
-    {
-      q: `Do I have to ship the strips, or can you pick them up in ${stateName}?`,
-      a: "For most transactions, we provide a prepaid shipping label at no cost to you. For very large bulk lots, local pickup in parts of the country may be available — ask us when you call.",
-    },
-  ];
+  const angle = angleFor(stateCode);
+  const health = healthFor(stateCode);
+  const cities = topCities(stateCode, 8);
+  const lead = postLead(stateCode, stateName);
+  const section = angleSection(stateCode, stateName);
+  const faqs = postFaqs(stateCode, stateName, hasLocalBuyers);
+  const heading = postHeading(stateCode, stateName);
+
+  const expanded = new Set(emphasisCategories(angle, stateCode));
+  const shownCategories = PRODUCT_CATEGORIES.filter((c) => expanded.has(c.key));
+  const summarisedCategories = PRODUCT_CATEGORIES.filter((c) => !expanded.has(c.key));
+  const tierTables = emphasisTierTables(angle);
+  const reqs = requirements(angle);
+  const context = stateContext(stateCode, stateName);
+
+  // Land neighbours padded by nearest-state distance, so every state is
+  // reachable from some other state's post. The previous hardcoded slice of the
+  // first 12 posts left 38 states with no inbound link from the blog at all.
+  const siblings = siblingStates(stateCode, 10)
+    .map((code) => STATE_BLOG_POSTS.find((p) => p.stateCode === code))
+    .filter((p): p is (typeof STATE_BLOG_POSTS)[number] => Boolean(p));
 
   const pageUrl = `https://cash4teststripsusa.com/blog/${slug}`;
+  const title = postTitle(stateCode, stateName);
+  const description = postMetaDescription(stateCode, stateName);
+
   const faqSchema = buildFaqPageSchema(faqs.map((f) => ({ question: f.q, answer: f.a })));
   const articleSchema = buildArticleSchema({
-    headline: post.title,
-    description: post.metaDescription,
+    headline: title,
+    description,
     datePublished: post.datePublished,
     url: pageUrl,
   });
@@ -89,6 +113,7 @@ export default async function BlogPostPage({ params }: Props) {
       <JsonLd data={faqSchema} />
       <JsonLd data={articleSchema} />
       <JsonLd data={breadcrumbSchema} />
+
       {/* Breadcrumb */}
       <nav className="text-sm text-gray-400 mb-6">
         <Link href="/" className="hover:text-emerald-600">Home</Link>
@@ -104,13 +129,24 @@ export default async function BlogPostPage({ params }: Props) {
           {stateName} · {stateCode}
         </span>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-tight mb-4">
-          Sell Diabetic Test Strips in {stateName} for Cash
+          {heading}
         </h1>
-        <p className="text-lg text-gray-600 leading-relaxed">{intro}</p>
+        {lead.map((para, i) => (
+          <p
+            key={i}
+            className={
+              i === 0
+                ? "text-lg text-gray-600 leading-relaxed"
+                : "text-base text-gray-600 leading-relaxed mt-4"
+            }
+          >
+            {para}
+          </p>
+        ))}
       </header>
 
       {/* Inline CTA */}
-      <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-6 mb-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+      <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-6 mb-10 flex flex-col sm:flex-row items-start sm:items-center gap-4">
         <div className="flex-1">
           <p className="font-semibold text-gray-900 text-sm">Ready to sell?</p>
           <p className="text-sm text-gray-500 mt-0.5">Call or text us — we respond within hours.</p>
@@ -123,198 +159,150 @@ export default async function BlogPostPage({ params }: Props) {
         </a>
       </div>
 
-      {/* Bulk CTA */}
-      <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 mb-10 flex flex-col sm:flex-row items-start sm:items-center gap-4">
-        <div className="flex-1">
-          <p className="font-semibold text-gray-900 text-sm">Selling a large lot?</p>
-          <p className="text-sm text-gray-500 mt-0.5">We specialize in bulk — 10 boxes to 500+. One call, one price, fast payment.</p>
-        </div>
-        <a
-          href="tel:5187799751"
-          className="shrink-0 bg-amber-500 text-white font-semibold px-6 py-3 rounded-full hover:bg-amber-600 transition-colors text-sm"
-        >
-          Sell in Bulk →
-        </a>
-      </div>
-
-      {/* Content sections */}
       <div className="prose prose-gray max-w-none space-y-10 text-gray-700 leading-relaxed">
 
+        {/* Angle-specific section — the part that differs most between posts */}
+        <section>
+          <h2 className="text-xl font-bold text-gray-900 mb-3">{section.heading}</h2>
+          {section.paragraphs.map((para, i) => (
+            <p key={i} className={i === 0 ? "" : "mt-3"}>{para}</p>
+          ))}
+        </section>
+
+        {/* Local figures — every state's table holds different numbers */}
+        {cities.length > 0 && health?.brfssYear && (
+          <section>
+            <h2 className="text-xl font-bold text-gray-900 mb-3">
+              Diabetes Across {stateName}
+            </h2>
+            <p className="text-sm text-gray-500 mb-4">
+              Diagnosed diabetes among adults in the largest cities in {stateName}.
+              Crude prevalence, CDC PLACES, {health.brfssYear} BRFSS data.
+            </p>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm border-collapse">
+                <thead>
+                  <tr className="bg-gray-50">
+                    <th className="text-left px-4 py-2 font-semibold text-gray-700 border border-gray-100">City</th>
+                    <th className="text-left px-4 py-2 font-semibold text-gray-700 border border-gray-100">Adults with diagnosed diabetes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {cities.map((c) => (
+                    <tr key={c.name} className="border border-gray-100">
+                      <td className="px-4 py-2 text-gray-600">{c.name}</td>
+                      <td className="px-4 py-2 text-gray-600">{c.diabetes}%</td>
+                    </tr>
+                  ))}
+                  {health.diabetesPrevalence != null && (
+                    <tr className="border border-gray-100 bg-gray-50">
+                      <td className="px-4 py-2 font-semibold text-gray-700">{stateName} overall</td>
+                      <td className="px-4 py-2 font-semibold text-gray-700">
+                        {health.diabetesPrevalence}%
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+            {context && <p className="mt-4">{context}</p>}
+          </section>
+        )}
+
+        {/* What we buy — expanded only for the categories this post is about */}
         <section>
           <h2 className="text-xl font-bold text-gray-900 mb-3">What We Buy in {stateName}</h2>
           <p>
-            We buy sealed, unexpired, U.S. retail diabetic supplies from individuals, caregivers,
-            pharmacies, and estate liquidators across {stateName}. Whether you have one box or
-            hundreds, we want to hear from you —{" "}
-            <strong>we specialize in bulk lots</strong> and pay competitively for large quantities.
+            We buy sealed, unexpired, U.S. retail diabetic supplies from individuals,
+            caregivers, pharmacies and estate liquidators across {stateName} — one box
+            or hundreds.
           </p>
 
           <div className="mt-5 space-y-5">
-            {/* Test Strips */}
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wide text-gray-500 mb-2">🩸 Test Strips</p>
-              <ul className="space-y-1.5 list-none pl-0">
-                {[
-                  "FreeStyle Lite",
-                  "Contour Next (all versions)",
-                  "Accu-Chek Guide / Aviva / SmartView",
-                  "OneTouch Verio / Ultra",
-                  "True Metrix",
-                ].map((item) => (
-                  <li key={item} className="flex items-start gap-2 text-sm text-gray-600">
-                    <span className="text-emerald-500 mt-0.5 shrink-0">✓</span>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* CGM */}
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wide text-gray-500 mb-2">📡 CGM Sensors &amp; Transmitters</p>
-              <ul className="space-y-1.5 list-none pl-0">
-                {[
-                  "Dexcom G6 Sensors",
-                  "Dexcom G6 Transmitters",
-                  "Dexcom G7 Sensors",
-                  "Dexcom G7 Receivers",
-                  "FreeStyle Libre 1 / 2 / 3 Sensors (U.S. retail versions only)",
-                ].map((item) => (
-                  <li key={item} className="flex items-start gap-2 text-sm text-gray-600">
-                    <span className="text-emerald-500 mt-0.5 shrink-0">✓</span>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Pods */}
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wide text-gray-500 mb-2">💉 Insulin Delivery Pods (Pods Only)</p>
-              <ul className="space-y-1.5 list-none pl-0">
-                {[
-                  "Omnipod 5 Pods (Box of 5)",
-                  "Omnipod DASH Pods (Box of 5)",
-                  "Omnipod Classic Pods (Box of 10)",
-                ].map((item) => (
-                  <li key={item} className="flex items-start gap-2 text-sm text-gray-600">
-                    <span className="text-emerald-500 mt-0.5 shrink-0">✓</span>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Infusion Sets */}
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wide text-gray-500 mb-2">🧷 Infusion Sets</p>
-              <ul className="space-y-1.5 list-none pl-0">
-                {[
-                  "AutoSoft 90",
-                  "AutoSoft XC 6mm",
-                  "AutoSoft XC 9mm",
-                ].map((item) => (
-                  <li key={item} className="flex items-start gap-2 text-sm text-gray-600">
-                    <span className="text-emerald-500 mt-0.5 shrink-0">✓</span>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Medtronic */}
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wide text-gray-500 mb-2">🧩 Medtronic / MiniMed (Select Sealed Components)</p>
-              <ul className="space-y-1.5 list-none pl-0">
-                {[
-                  "MiniMed Pump MMT-780G",
-                  "MiniMed Mio Advance MMT-242A",
-                  "Medtronic Quick-set (Pack of 10) — 396 / 397 / 399",
-                  "Medtronic Guardian Sensor 5-pack (all versions except \"B\")",
-                ].map((item) => (
-                  <li key={item} className="flex items-start gap-2 text-sm text-gray-600">
-                    <span className="text-emerald-500 mt-0.5 shrink-0">✓</span>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Tandem */}
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wide text-gray-500 mb-2">⚙️ Tandem / t:slim</p>
-              <ul className="space-y-1.5 list-none pl-0">
-                <li className="flex items-start gap-2 text-sm text-gray-600">
-                  <span className="text-emerald-500 mt-0.5 shrink-0">✓</span>
-                  t:slim X2 Insulin Pump + Control-IQ (must be sent together — Software Version 7.8 only)
-                </li>
-              </ul>
-            </div>
+            {shownCategories.map((cat) => (
+              <div key={cat.key}>
+                <p className="text-xs font-bold uppercase tracking-wide text-gray-500 mb-2">
+                  {cat.icon} {cat.label}
+                </p>
+                <ul className="space-y-1.5 list-none pl-0">
+                  {cat.items.map((item) => (
+                    <li key={item} className="flex items-start gap-2 text-sm text-gray-600">
+                      <span className="text-emerald-500 mt-0.5 shrink-0">✓</span>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
 
-          {/* Expired exception callout */}
+          {summarisedCategories.length > 0 && (
+            <p className="mt-5 text-sm text-gray-500">
+              We also buy{" "}
+              {summarisedCategories.map((c, i) => (
+                <span key={c.key}>
+                  {i > 0 && (i === summarisedCategories.length - 1 ? " and " : ", ")}
+                  {c.label.replace(/ \(.*\)$/, "").toLowerCase()}
+                </span>
+              ))}
+              . See the{" "}
+              <Link href="/price-guide" className="text-emerald-600 font-semibold hover:underline">
+                full price guide
+              </Link>{" "}
+              for the complete list.
+            </p>
+          )}
+
           <div className="mt-6 bg-blue-50 border border-blue-100 rounded-xl p-4">
             <p className="text-sm font-semibold text-blue-900 mb-1">⚠️ Exception — We Accept Expired Items</p>
             <p className="text-sm text-blue-800 leading-relaxed">
-              We accept <strong>expired Omnipod pods</strong> (5, DASH, and Classic) and{" "}
-              <strong>expired Dexcom G7 sensors</strong>. These are the only items we take past
-              expiration — all other supplies must be unexpired. Call{" "}
-              <a href="tel:5187799751" className="font-semibold underline">518-779-9751</a> for
-              pricing on expired stock.
+              We accept <strong>expired Omnipod pods</strong> (5, DASH and Classic) and{" "}
+              <strong>expired Dexcom G7 sensors</strong>. These are the only items we take
+              past expiration — everything else must be unexpired. Call{" "}
+              <a href="tel:5187799751" className="font-semibold underline">518-779-9751</a>{" "}
+              for pricing on expired stock.
             </p>
           </div>
 
           <p className="mt-5 text-sm text-gray-500">
-            All other items must be sealed and unexpired. We do <strong>not</strong> accept supplies
-            purchased through Medicare or Medicaid.
+            All other items must be sealed and unexpired. We do <strong>not</strong> accept
+            supplies purchased through Medicare or Medicaid.
           </p>
         </section>
 
+        {/* How to sell — the middle step reflects this state's actual coverage */}
         <section>
-          <h2 className="text-xl font-bold text-gray-900 mb-3">We Pay Top Dollar for Bulk Lots</h2>
-          <p>
-            Have a large quantity of test strips? That's our sweet spot. Many of our customers are
-            estate liquidators, pharmacy buyers, and caregivers who end up with dozens — sometimes
-            hundreds — of boxes at a time. We offer <strong>premium pricing for bulk lots</strong>{" "}
-            and make the process simple: one call, one price, one fast payment.
-          </p>
-          <p className="mt-3">
-            Whether it's 5 boxes or 500, call or text us at{" "}
-            <a href="tel:5187799751" className="text-emerald-600 font-semibold hover:underline">
-              518-779-9751
-            </a>{" "}
-            and we'll give you a price on the spot.
-          </p>
-        </section>
-
-        <section>
-          <h2 className="text-xl font-bold text-gray-900 mb-3">How to Sell Your Test Strips in {stateName}</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-3">
+            How to Sell Your Supplies in {stateName}
+          </h2>
           <ol className="space-y-4 list-none pl-0">
             {[
               {
                 step: "1",
                 title: "Call or text us",
-                body: `Reach out at 518-779-9751. Tell us the brand, quantity, and expiration dates. We'll give you a price immediately — no waiting.`,
+                body: "Reach out at 518-779-9751. Tell us the brand, quantity and expiration dates. We'll give you a price immediately — no waiting.",
               },
               {
                 step: "2",
-                title: "Ship or meet locally",
+                title: hasLocalBuyers ? "Meet locally or ship" : "Ship with a prepaid label",
                 body: hasLocalBuyers
-                  ? `We have local buyers in ${stateName} — local pickup is available. For smaller quantities anywhere in the state, we'll send a prepaid shipping label at no cost.`
-                  : `We'll send you a prepaid shipping label at no cost. For large bulk lots, local pickup may be available — ask us when you call.`,
+                  ? `${buyers.length === 1 ? "A buyer" : `${buyers.length} buyers`} on this directory ${buyers.length === 1 ? "covers" : "cover"} ${stateName} in person, so a same-day handover is possible. For anywhere else in the state, we'll send a prepaid shipping label at no cost.`
+                  : `There is no buyer listed in ${stateName} yet, so we'll send you a prepaid shipping label at no cost. For very large bulk lots, ask about pickup when you call.`,
               },
               {
                 step: "3",
-                title: "Get paid fast",
-                body: "Once we receive and verify your strips, we pay via PayPal, Zelle, Venmo, check, or cash. Most payments are sent within 24 hours.",
+                title: "Get paid",
+                body: hasLocalBuyers
+                  ? "In person, you're paid on the spot. By post, payment goes out within 24 hours of your parcel being received and verified — PayPal, Zelle, Venmo, check or cash."
+                  : "Payment goes out within 24 hours of your parcel being received and verified — PayPal, Zelle, Venmo or check.",
               },
-            ].map(({ step, title, body }) => (
+            ].map(({ step, title: stepTitle, body }) => (
               <li key={step} className="flex gap-4">
                 <span className="shrink-0 w-8 h-8 bg-emerald-600 text-white rounded-full flex items-center justify-center text-sm font-bold mt-0.5">
                   {step}
                 </span>
                 <div>
-                  <p className="font-semibold text-gray-900">{title}</p>
+                  <p className="font-semibold text-gray-900">{stepTitle}</p>
                   <p className="text-sm text-gray-500 mt-0.5">{body}</p>
                 </div>
               </li>
@@ -322,20 +310,13 @@ export default async function BlogPostPage({ params }: Props) {
           </ol>
         </section>
 
+        {/* Requirements — wording varies by angle; see lib/blog-post-content.ts
+            for why this is never phrased as a legal assurance. */}
         <section>
-          <h2 className="text-xl font-bold text-gray-900 mb-3">
-            Is It Legal to Sell Test Strips in {stateName}?
-          </h2>
-          <p>
-            Yes — selling unused, unexpired, unopened diabetic test strips is <strong>legal</strong> in{" "}
-            {stateName} and throughout the United States. The key requirements are:
-          </p>
+          <h2 className="text-xl font-bold text-gray-900 mb-3">{reqs.heading}</h2>
+          <p>{reqs.intro}</p>
           <ul className="mt-3 space-y-2 list-none pl-0">
-            {[
-              "Strips must be in their original, sealed packaging",
-              "Strips must not have been purchased using Medicare or Medicaid",
-              "Strips should have at least 6 months before expiration",
-            ].map((item) => (
+            {reqs.items.map((item) => (
               <li key={item} className="flex items-start gap-2 text-sm text-gray-600">
                 <span className="text-emerald-500 mt-0.5 shrink-0">✓</span>
                 {item}
@@ -343,74 +324,109 @@ export default async function BlogPostPage({ params }: Props) {
             ))}
           </ul>
           <p className="mt-4 text-sm text-gray-500">
-            If your strips were covered by Medicare or Medicaid, they cannot legally be resold. When
-            in doubt, ask us — we're happy to help you determine whether your strips qualify.
+            Supplies covered by Medicare or Medicaid cannot be resold. If you are not
+            sure which applies to yours, ask us — and see our{" "}
+            <Link
+              href="/is-it-legal-to-sell-diabetic-test-strips"
+              className="text-emerald-600 font-semibold hover:underline"
+            >
+              guide to the rules around selling
+            </Link>
+            , which covers this properly.
           </p>
         </section>
 
+        {/* Payout — the tables appear only on posts that are actually about
+            pricing. Everywhere else they were twenty identical rows. */}
         <section>
-          <h2 className="text-xl font-bold text-gray-900 mb-3">How Much Can I Get for My Test Strips?</h2>
-          <p>
-            Payout depends on brand, quantity, and expiration date. Here&apos;s how brands compare.
-            Tiers rank brands against others in their own category — a Mid Tier CGM sensor can
-            still pay more per box than a Top Tier test strip.
-          </p>
+          <h2 className="text-xl font-bold text-gray-900 mb-3">What It Pays</h2>
+          {tierTables.length === 0 ? (
+            <p>
+              Payout depends on brand, quantity and expiration date, and bulk lots of
+              10+ boxes earn a higher per-box rate. The{" "}
+              <Link href="/price-guide" className="text-emerald-600 font-semibold hover:underline">
+                price guide
+              </Link>{" "}
+              lists every brand we buy by payout tier. For an exact number on what you
+              have, call{" "}
+              <a href="tel:5187799751" className="text-emerald-600 font-semibold hover:underline">
+                518-779-9751
+              </a>
+              .
+            </p>
+          ) : (
+            <p>
+              Payout depends on brand, quantity and expiration date. Tiers rank brands
+              against others in their own category — a mid-tier CGM sensor can still pay
+              more per box than a top-tier test strip.
+            </p>
+          )}
 
-          <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wide mt-6 mb-2">Test Strips</h3>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm border-collapse">
-              <thead>
-                <tr className="bg-gray-50">
-                  <th className="text-left px-4 py-2 font-semibold text-gray-700 border border-gray-100">Item</th>
-                  <th className="text-left px-4 py-2 font-semibold text-gray-700 border border-gray-100">Payout Tier</th>
-                </tr>
-              </thead>
-              <tbody>
-                {TEST_STRIP_TIERS.map((row) => (
-                  <tr key={row.brand} className="border border-gray-100">
-                    <td className="px-4 py-2 text-gray-600">{row.brand}</td>
-                    <td className="px-4 py-2"><TierBadge tier={row.tier} /></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          {tierTables.includes("strips") && (
+            <>
+              <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wide mt-6 mb-2">Test Strips</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm border-collapse">
+                  <thead>
+                    <tr className="bg-gray-50">
+                      <th className="text-left px-4 py-2 font-semibold text-gray-700 border border-gray-100">Item</th>
+                      <th className="text-left px-4 py-2 font-semibold text-gray-700 border border-gray-100">Payout Tier</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {TEST_STRIP_TIERS.map((row) => (
+                      <tr key={row.brand} className="border border-gray-100">
+                        <td className="px-4 py-2 text-gray-600">{row.brand}</td>
+                        <td className="px-4 py-2"><TierBadge tier={row.tier} /></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
 
-          <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wide mt-6 mb-2">CGM Sensors &amp; Pods</h3>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm border-collapse">
-              <thead>
-                <tr className="bg-gray-50">
-                  <th className="text-left px-4 py-2 font-semibold text-gray-700 border border-gray-100">Item</th>
-                  <th className="text-left px-4 py-2 font-semibold text-gray-700 border border-gray-100">Payout Tier</th>
-                </tr>
-              </thead>
-              <tbody>
-                {CGM_TIERS.map((row) => (
-                  <tr key={row.brand} className="border border-gray-100">
-                    <td className="px-4 py-2 text-gray-600">{row.brand}</td>
-                    <td className="px-4 py-2"><TierBadge tier={row.tier} /></td>
-                  </tr>
-                ))}
-                <tr className="border border-gray-100">
-                  <td className="px-4 py-2 text-gray-600">Other brands / items</td>
-                  <td className="px-4 py-2 text-gray-500 text-xs">Call for a quote</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+          {tierTables.includes("cgm") && (
+            <>
+              <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wide mt-6 mb-2">CGM Sensors &amp; Pods</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm border-collapse">
+                  <thead>
+                    <tr className="bg-gray-50">
+                      <th className="text-left px-4 py-2 font-semibold text-gray-700 border border-gray-100">Item</th>
+                      <th className="text-left px-4 py-2 font-semibold text-gray-700 border border-gray-100">Payout Tier</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {CGM_TIERS.map((row) => (
+                      <tr key={row.brand} className="border border-gray-100">
+                        <td className="px-4 py-2 text-gray-600">{row.brand}</td>
+                        <td className="px-4 py-2"><TierBadge tier={row.tier} /></td>
+                      </tr>
+                    ))}
+                    <tr className="border border-gray-100">
+                      <td className="px-4 py-2 text-gray-600">Other brands / items</td>
+                      <td className="px-4 py-2 text-gray-500 text-xs">Call for a quote</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
 
-          <p className="mt-3 text-sm text-gray-400">
-            Bulk lots of 10+ boxes typically receive a higher per-box rate. Call{" "}
-            <a href="tel:5187799751" className="text-emerald-600 hover:underline">518-779-9751</a>{" "}
-            for an exact quote.
-          </p>
+          {tierTables.length > 0 && (
+            <p className="mt-3 text-sm text-gray-400">
+              Bulk lots of 10+ boxes typically receive a higher per-box rate. Call{" "}
+              <a href="tel:5187799751" className="text-emerald-600 hover:underline">518-779-9751</a>{" "}
+              for an exact quote.
+            </p>
+          )}
         </section>
 
         {/* FAQ */}
         <section>
           <h2 className="text-xl font-bold text-gray-900 mb-6">
-            Frequently Asked Questions — Selling Test Strips in {stateName}
+            Questions From {stateName} Sellers
           </h2>
           <div className="space-y-6">
             {faqs.map(({ q, a }) => (
@@ -425,9 +441,11 @@ export default async function BlogPostPage({ params }: Props) {
 
       {/* Bottom CTA */}
       <div className="mt-14 bg-emerald-700 rounded-2xl p-8 text-center text-white">
-        <h2 className="text-2xl font-bold mb-2">Turn Your Test Strips Into Cash Today</h2>
+        <h2 className="text-2xl font-bold mb-2">Turn Your Supplies Into Cash</h2>
         <p className="text-emerald-100 text-sm mb-6">
-          We buy all brands, single boxes, and bulk lots across {stateName}. PayPal, Zelle, check, or cash.
+          {hasLocalBuyers
+            ? `Local buyers cover ${stateName}, and a prepaid label reaches everywhere else.`
+            : `A prepaid label reaches every ZIP code in ${stateName}, and it costs you nothing.`}
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <a
@@ -440,26 +458,24 @@ export default async function BlogPostPage({ params }: Props) {
             href={`/sell-test-strips/${stateCode.toLowerCase()}`}
             className="border border-emerald-400 text-white font-semibold px-8 py-3 rounded-full hover:bg-emerald-600 transition-colors"
           >
-            Find Local Buyers in {stateName} →
+            {hasLocalBuyers ? `Find Buyers in ${stateName} →` : `See ${stateName} Options →`}
           </Link>
         </div>
       </div>
 
-      {/* Internal links to other states */}
+      {/* Internal links — nearest states, so every post is reachable */}
       <div className="mt-10 pt-8 border-t border-gray-100">
-        <p className="text-sm text-gray-400 mb-3">Read guides for other states</p>
+        <p className="text-sm text-gray-400 mb-3">Guides for nearby states</p>
         <div className="flex flex-wrap gap-2">
-          {STATE_BLOG_POSTS.filter((p) => p.stateCode !== stateCode)
-            .slice(0, 12)
-            .map((p) => (
-              <Link
-                key={p.slug}
-                href={`/blog/${p.slug}`}
-                className="text-xs bg-white border border-gray-200 text-gray-600 px-3 py-1.5 rounded-full hover:border-emerald-400 hover:text-emerald-700 transition-colors"
-              >
-                {p.stateName}
-              </Link>
-            ))}
+          {siblings.map((p) => (
+            <Link
+              key={p.slug}
+              href={`/blog/${p.slug}`}
+              className="text-xs bg-white border border-gray-200 text-gray-600 px-3 py-1.5 rounded-full hover:border-emerald-400 hover:text-emerald-700 transition-colors"
+            >
+              {STATE_LABELS[p.stateCode] ?? p.stateName}
+            </Link>
+          ))}
           <Link
             href="/blog"
             className="text-xs bg-emerald-50 border border-emerald-200 text-emerald-700 px-3 py-1.5 rounded-full hover:bg-emerald-100 transition-colors"

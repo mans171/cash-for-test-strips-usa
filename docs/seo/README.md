@@ -13,6 +13,7 @@
 | `2026-08-12-city-page-spec.md` | URL structure, anti-duplicate content rules (the hard publish gate), required page sections, schema builders needed, title/meta patterns, internal linking map, and rollout cadence by wave |
 | `2026-08-12-link-plan.md` | Six link-building tactics with named target sites, pitch angles, effort/timeline per tactic, and anchor text strategy. 50–150 domain target over 12 months. |
 | `2026-08-12-supply-recruitment.md` | Where to find buyers, 3-step outreach sequence, priority recruitment states, volume targets (29→250 buyers), and the interim fallback content standard for zero-coverage state pages |
+| `state-health-data-sources.md` | Sources, vintages and regeneration steps for the generated per-state datasets that the blog and state pages derive their content from |
 
 ---
 
@@ -20,53 +21,87 @@
 
 1. ~~Fix www redirect + homepage canonical~~ — **DONE 2026-08-13, commit `91cfdbe`**
 2. ~~State-page differentiation pass~~ — **DONE 2026-08-13, commit `f2edddd`** (see status below)
-3. **← WE ARE HERE: measurement gate.** Wait 2–3 weeks, then check whether GSC indexed pages climb past ~5. Nothing else should start until that reads out — see "Open Workstreams" below for why.
-4. Buyer recruitment in T2 priority states — run in parallel with everything; it is the real ceiling
-5. Wave 1 city pages (T1 metros with verified buyers)
-6. Link building tactics B and F (buyer backlinks + directory listings)
-7. Wave 2 city pages + link tactics C, D, E
-8. Payout Data PR product + outreach
+3. ~~Blog near-duplicate pass (50 posts)~~ — **DONE 2026-08-14** (see status below). The
+   measurement gate was lifted deliberately: near-duplicate collapse is a known defect
+   independent of what GSC eventually reports, and holding 38% of the site's URLs for three
+   weeks to confirm what the state-page measurement already demonstrated was the worse trade.
+4. **← WE ARE HERE: measurement gate.** Both differentiation passes have now shipped.
+   Check whether GSC indexed pages climb past ~5.
+5. Buyer recruitment in T2 priority states — run in parallel with everything; it is the real ceiling
+6. Wave 1 city pages (T1 metros with verified buyers)
+7. Link building tactics B and F (buyer backlinks + directory listings)
+8. Wave 2 city pages + link tactics C, D, E
+9. Payout Data PR product + outreach
 
 ---
 
 ## Open Workstreams
 
-### QUEUED — Blog near-duplicate pass (52 posts)
+### DONE 2026-08-14 — Blog differentiation pass (50 posts)
 
-**Not started. Deliberately gated on the step 3 measurement, do not begin early.**
+**Note the count.** This was recorded as "52 posts" throughout the earlier planning. It is
+**50** — there is no DC post and no Canada post, and `STATE_LABELS` carries a `CANADA`
+pseudo-code with no post behind it. Corrected here so the URL arithmetic downstream is right.
 
-The 52 state blog posts (`lib/blog-posts.ts` + `app/blog/[slug]/page.tsx`) have the same
-defect the state pages had, and worse. Measured 2026-08-13 against the live site, comparing
-visible page text with the state name normalised out:
+**The defect, measured before the fix** (live site, same method as the state pages — fetch,
+strip tags, normalise the state name out, `difflib.SequenceMatcher` over visible text):
 
 | Pair | Identical |
 |------|-----------|
-| Alabama vs Texas | 93.0% |
-| Alabama vs Montana | 94.8% |
-| Montana vs California | 95.4% |
+| Alabama vs Texas | 93.2% |
+| New York vs Pennsylvania | 97.1% |
+| Wyoming vs North Dakota | 96.0% |
 
-Each post carries ~5,900 characters of visible text. Alabama vs Texas share 5,509 of those
-characters — about **395 characters unique per post**, which is exactly the one `intro` field
-in `lib/blog-posts.ts`. Everything else is one shared 473-line template with the state name
-substituted through it.
+Mean across ten sampled pairs: **95.5%**. Each post carried ~6,080 visible characters, of
+which about 395 were unique — the single `intro` field. Everything else was one 473-line
+template with the state name substituted through it.
 
-Scale matters here: these 52 posts are **38% of the site's 137 URLs**. A block of
-near-identical pages that large is a domain-level drag, not just 52 pages that fail to rank.
+**What shipped:**
 
-**The fix** is the same playbook that worked on the state pages: derive the body from real
-per-state data rather than substituting a noun. The inputs already exist — buyer rosters,
-haversine distances from `lib/state-geo.ts`, cities served, `lib/tier-pricing.ts`, and the
-`accepted_brands`/`payment_methods`/`response_time` fields backfilled on 2026-08-13.
+- `lib/state-health-data.ts` — generated per-state dataset: diagnosed-diabetes prevalence at
+  city and state level, uninsured rate, 65+ share, population, ZIP count, each with its own
+  vintage. Sources and regeneration in `state-health-data-sources.md`. Every figure traces to
+  CDC PLACES (BRFSS) or Census; nothing modelled.
+- `lib/blog-angles.ts` — generated, frozen angle per state across ten angles. `estate`,
+  `safe-mail-in` and `local-buyers` are earned from data by rank; the rest are product and
+  format angles by rotation. `ANGLE_RATIONALE` records why each state got its angle.
+- `lib/blog-post-content.ts` — pure derivation: titles, descriptions, leads, angle sections,
+  a per-state context paragraph, requirements wording and FAQs, all from real figures, with
+  every data-dependent sentence omitted rather than padded when its figure is absent.
+- `app/blog/[slug]/page.tsx` rewritten to consume it. Titles and descriptions now derive
+  through `lib/blog-posts.ts`, so index, sitemap and post cannot drift apart.
+- **Two live bugs closed while in there**, both the same ones the state-page pass removed:
+  the sibling-link block hardcoded `.slice(0, 12)`, linking the same 12 states from all 50
+  posts and leaving 38 with no inbound blog link; and the legality section asserted selling
+  "is legal in {state} and throughout the United States", unqualified, inside a page carrying
+  FAQPage schema. Both gone. A test now fails on any bare legality claim.
+- 39 new tests, 230 passing overall.
 
-**Why it is gated rather than queued for immediate work:** the state-page differentiation
-shipped the same day and has not been re-crawled yet, so there is no evidence yet that this
-class of fix moves indexing on this domain. Running it across 52 posts before that reads out
-risks repeating an ineffective fix at scale. Re-measure with the same method after the
-indexing check and decide then.
+**Measured result, all 1,225 post pairs:**
 
-**Also true, and the reason not to expect too much:** with 29 buyers across 20 states there
-is a real limit to how much genuinely distinct material exists to build 52 different posts
-from. Supply constrains this the same way it constrains everything else here.
+| | Before | After |
+|---|---|---|
+| Mean, all pairs | ~95.5% | **55.5%** |
+| Different-angle pairs | — | 52.9% (max 72.5%) |
+| Same-angle pairs | — | 83.4% (max 93.2%) |
+
+**Be honest about the residual.** Twelve pairs still measure ≥90%, and every one of them is
+two states sharing an angle — GA/TN (both `worth`), IA/NM and IA/UT (both `dexcom`), MO/OK
+(`omnipod`), CT/RI (`expired`). Within an angle group the prose skeleton is shared and only
+the figures differ. The structural shape has changed a lot regardless: it was previously one
+block of 50 mutually near-identical pages, and it is now ten clusters of five, with
+cross-cluster similarity at 53%.
+
+Closing that last gap needs per-state variants of each angle's prose — roughly ten angles ×
+five variants of genuine writing. That is a scope decision, not a technical one, and it is
+not started.
+
+**What was tried and did not work, so nobody repeats it:** separating same-angle states
+geographically does nothing for text similarity — two far-apart states sharing an angle still
+share the same skeleton. The levers that did move the number were structural: expanding one
+product-catalogue category per post instead of six (that block alone was a single 2,573-char
+identical run, ~46% of the page), showing payout tables only on posts actually about pricing,
+and rotating both the expanded category and the context paragraph *within* an angle group.
 
 ### Sparse buyer data on third-party listings
 

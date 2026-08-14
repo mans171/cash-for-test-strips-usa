@@ -1,3 +1,5 @@
+import { postTitle, postMetaDescription } from "./blog-post-content";
+
 export type StateBlogPost = {
   stateCode: string;
   stateName: string;
@@ -423,8 +425,17 @@ function datePublishedForIndex(index: number): string {
   return new Date(ms).toISOString().slice(0, 10)
 }
 
+/**
+ * Title and description are derived rather than stored, so the index, the
+ * sitemap and the post itself cannot drift apart. The literals still sitting in
+ * RAW_POSTS above are superseded and no longer rendered anywhere — every one of
+ * them was the same sentence with the state name swapped, which is the defect
+ * this replaces. See lib/blog-post-content.ts.
+ */
 export const STATE_BLOG_POSTS: StateBlogPost[] = RAW_POSTS.map((post, index) => ({
   ...post,
+  title: postTitle(post.stateCode, post.stateName),
+  metaDescription: postMetaDescription(post.stateCode, post.stateName),
   datePublished: datePublishedForIndex(index),
 }))
 
