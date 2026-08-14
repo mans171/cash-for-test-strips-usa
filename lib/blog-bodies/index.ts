@@ -1,5 +1,9 @@
 import type { PostBody } from "./types"
+import { CA } from "./ca"
+import { FL } from "./fl"
 import { MT } from "./mt"
+import { NY } from "./ny"
+import { TX } from "./tx"
 
 export type { PostBody, BodySection } from "./types"
 
@@ -19,7 +23,11 @@ export type { PostBody, BodySection } from "./types"
  *      assert that selling "is legal" anywhere, full stop.
  */
 export const POST_BODIES: Record<string, PostBody> = {
+  CA,
+  FL,
   MT,
+  NY,
+  TX,
 }
 
 export function bodyFor(stateCode: string): PostBody | null {
