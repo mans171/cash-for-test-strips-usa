@@ -9,6 +9,7 @@ import { TEST_STRIP_TIERS, CGM_TIERS } from "@/lib/tier-pricing";
 import { TierBadge } from "@/app/components/ui";
 import { STATE_LABELS } from "@/lib/states";
 import { siblingStates } from "@/lib/state-page-content";
+import { bodyFor } from "@/lib/blog-bodies";
 import {
   angleFor,
   healthFor,
@@ -37,8 +38,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const post = getPostBySlug(slug);
   if (!post) return { title: "Post Not Found" };
 
-  const title = postTitle(post.stateCode, post.stateName);
-  const description = postMetaDescription(post.stateCode, post.stateName);
+  const written = bodyFor(post.stateCode);
+  const title = written?.title ?? postTitle(post.stateCode, post.stateName);
+  const description =
+    written?.metaDescription ?? postMetaDescription(post.stateCode, post.stateName);
 
   return {
     title,
@@ -72,10 +75,15 @@ export default async function BlogPostPage({ params }: Props) {
   const angle = angleFor(stateCode);
   const health = healthFor(stateCode);
   const cities = topCities(stateCode, 8);
-  const lead = postLead(stateCode, stateName);
-  const section = angleSection(stateCode, stateName);
-  const faqs = postFaqs(stateCode, stateName, hasLocalBuyers);
-  const heading = postHeading(stateCode, stateName);
+
+  // A hand-written body wins wherever one exists. States without one fall back
+  // to the derived content, so the site is never half-finished while these are
+  // written out one at a time. See lib/blog-bodies/index.ts.
+  const written = bodyFor(stateCode);
+  const lead = written?.lead ?? postLead(stateCode, stateName);
+  const sections = written?.sections ?? [angleSection(stateCode, stateName)];
+  const faqs = written?.faqs ?? postFaqs(stateCode, stateName, hasLocalBuyers);
+  const heading = written?.heading ?? postHeading(stateCode, stateName);
 
   const expanded = new Set(emphasisCategories(angle, stateCode));
   const shownCategories = PRODUCT_CATEGORIES.filter((c) => expanded.has(c.key));
@@ -92,8 +100,9 @@ export default async function BlogPostPage({ params }: Props) {
     .filter((p): p is (typeof STATE_BLOG_POSTS)[number] => Boolean(p));
 
   const pageUrl = `https://cash4teststripsusa.com/blog/${slug}`;
-  const title = postTitle(stateCode, stateName);
-  const description = postMetaDescription(stateCode, stateName);
+  const title = written?.title ?? postTitle(stateCode, stateName);
+  const description =
+    written?.metaDescription ?? postMetaDescription(stateCode, stateName);
 
   const faqSchema = buildFaqPageSchema(faqs.map((f) => ({ question: f.q, answer: f.a })));
   const articleSchema = buildArticleSchema({
@@ -161,13 +170,16 @@ export default async function BlogPostPage({ params }: Props) {
 
       <div className="prose prose-gray max-w-none space-y-10 text-gray-700 leading-relaxed">
 
-        {/* Angle-specific section — the part that differs most between posts */}
-        <section>
-          <h2 className="text-xl font-bold text-gray-900 mb-3">{section.heading}</h2>
-          {section.paragraphs.map((para, i) => (
-            <p key={i} className={i === 0 ? "" : "mt-3"}>{para}</p>
-          ))}
-        </section>
+        {/* Body sections. A written body supplies several; the derived
+            fallback supplies one. */}
+        {sections.map((sec) => (
+          <section key={sec.heading}>
+            <h2 className="text-xl font-bold text-gray-900 mb-3">{sec.heading}</h2>
+            {sec.paragraphs.map((para, i) => (
+              <p key={i} className={i === 0 ? "" : "mt-3"}>{para}</p>
+            ))}
+          </section>
+        ))}
 
         {/* Local figures — every state's table holds different numbers */}
         {cities.length > 0 && health?.brfssYear && (
@@ -209,7 +221,8 @@ export default async function BlogPostPage({ params }: Props) {
           </section>
         )}
 
-        {/* What we buy — expanded only for the categories this post is about */}
+        {/* What we buy — skipped when a written body already covers it. */}
+        {!written && (
         <section>
           <h2 className="text-xl font-bold text-gray-900 mb-3">What We Buy in {stateName}</h2>
           <p>
@@ -269,6 +282,7 @@ export default async function BlogPostPage({ params }: Props) {
             supplies purchased through Medicare or Medicaid.
           </p>
         </section>
+        )}
 
         {/* How to sell — the middle step reflects this state's actual coverage */}
         <section>
@@ -312,6 +326,7 @@ export default async function BlogPostPage({ params }: Props) {
 
         {/* Requirements — wording varies by angle; see lib/blog-post-content.ts
             for why this is never phrased as a legal assurance. */}
+        {!written && (
         <section>
           <h2 className="text-xl font-bold text-gray-900 mb-3">{reqs.heading}</h2>
           <p>{reqs.intro}</p>
@@ -335,6 +350,7 @@ export default async function BlogPostPage({ params }: Props) {
             , which covers this properly.
           </p>
         </section>
+        )}
 
         {/* Payout — the tables appear only on posts that are actually about
             pricing. Everywhere else they were twenty identical rows. */}
