@@ -1,5 +1,7 @@
 import type { PostBody } from "./types"
 import { AK } from "./ak"
+import { AL } from "./al"
+import { AR } from "./ar"
 import { AZ } from "./az"
 import { CA } from "./ca"
 import { CO } from "./co"
@@ -11,7 +13,12 @@ import { HI } from "./hi"
 import { IA } from "./ia"
 import { ID } from "./id"
 import { IL } from "./il"
+import { IN } from "./in"
 import { KS } from "./ks"
+import { KY } from "./ky"
+import { LA } from "./la"
+import { MA } from "./ma"
+import { MD } from "./md"
 import { ME } from "./me"
 import { MI } from "./mi"
 import { MN } from "./mn"
@@ -20,20 +27,28 @@ import { MS } from "./ms"
 import { MT } from "./mt"
 import { NC } from "./nc"
 import { ND } from "./nd"
+import { NE } from "./ne"
+import { NH } from "./nh"
 import { NJ } from "./nj"
+import { NM } from "./nm"
+import { NV } from "./nv"
 import { NY } from "./ny"
 import { OH } from "./oh"
 import { OK } from "./ok"
 import { OR } from "./or"
 import { PA } from "./pa"
 import { RI } from "./ri"
+import { SC } from "./sc"
 import { SD } from "./sd"
+import { TN } from "./tn"
 import { TX } from "./tx"
 import { UT } from "./ut"
+import { VA } from "./va"
 import { VT } from "./vt"
 import { WA } from "./wa"
 import { WI } from "./wi"
 import { WV } from "./wv"
+import { WY } from "./wy"
 
 export type { PostBody, BodySection } from "./types"
 
@@ -54,6 +69,8 @@ export type { PostBody, BodySection } from "./types"
  */
 export const POST_BODIES: Record<string, PostBody> = {
   AK,
+  AL,
+  AR,
   AZ,
   CA,
   CO,
@@ -65,7 +82,12 @@ export const POST_BODIES: Record<string, PostBody> = {
   IA,
   ID,
   IL,
+  IN,
   KS,
+  KY,
+  LA,
+  MA,
+  MD,
   ME,
   MI,
   MN,
@@ -74,20 +96,28 @@ export const POST_BODIES: Record<string, PostBody> = {
   MT,
   NC,
   ND,
+  NE,
+  NH,
   NJ,
+  NM,
+  NV,
   NY,
   OH,
   OK,
   OR,
   PA,
   RI,
+  SC,
   SD,
+  TN,
   TX,
   UT,
+  VA,
   VT,
   WA,
   WI,
   WV,
+  WY,
 }
 
 export function bodyFor(stateCode: string): PostBody | null {
