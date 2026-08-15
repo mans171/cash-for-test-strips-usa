@@ -27,7 +27,7 @@
    weeks to confirm what the state-page measurement already demonstrated was the worse trade.
 4. **← WE ARE HERE: measurement gate.** Both differentiation passes have now shipped.
    Check whether GSC indexed pages climb past ~5.
-5. Buyer recruitment in T2 priority states — run in parallel with everything; it is the real ceiling
+5. Buyer recruitment in T2 priority states — worth doing for conversion, NOT the ceiling (see correction below)
 6. Wave 1 city pages (T1 metros with verified buyers)
 7. Link building tactics B and F (buyer backlinks + directory listings)
 8. Wave 2 city pages + link tactics C, D, E
@@ -116,6 +116,36 @@ Cardoso (Charlotte NC), PGH Phone Buyer (Pittsburgh PA), Vancouver Test Strips B
 GSC average position blends all locations into one number and will mislead on a "near me"
 query. Per-metro rank tracking (~$50–150/mo) is needed before anyone can honestly say whether
 this is working.
+
+---
+
+## Correction — buyer coverage is not the SEO ceiling
+
+**Added 2026-08-15, supersedes the supply-recruitment framing in
+`2026-08-12-metro-target-map.md` and `2026-08-12-supply-recruitment.md`.**
+
+Those documents assert that a state page showing no local buyer cannot hold #1
+for a "near me" query, and that buyer recruitment therefore gates the whole
+effort. That is wrong, and the evidence against it came from checking who
+actually ranks.
+
+Page 1 for "sell diabetic test strips [state]" is Two Moms Buy Test Strips,
+More Cash For Test Strips, Diabetic Exchange USA and Strips USA. **Every one of
+them is a mail-in-only operation with no local buyers anywhere in the country**,
+and they rank nationally regardless. Local presence is demonstrably not a
+prerequisite for these queries.
+
+It is also not a limit on the business: CFTS accepts mail-in from every state,
+with a prepaid label and payment within 24 hours of receipt and verification. A
+state with no listed buyer is a different page, not a lesser one — the 31 such
+pages are written on mail-in mechanics, shipping protections and what to settle
+before a parcel leaves, which is genuinely useful material the incumbents do not
+cover.
+
+What local buyers *do* help: conversion (same-day cash, no shipping-trust
+barrier), and giving each page concrete local specifics to write about. Both are
+real. Neither makes recruitment a blocker for ranking, and it should not be
+prioritised on SEO grounds.
 
 ---
 
