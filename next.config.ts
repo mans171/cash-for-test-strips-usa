@@ -11,6 +11,15 @@ const nextConfig: NextConfig = {
         destination: "https://cash4teststripsusa.com/:path*",
         permanent: true,
       },
+      // The Keyport listing was originally slugged with its previous operator's
+      // first name. It has been reassigned and the slug now follows the CFTS
+      // convention; this keeps the old URL from 404ing for anything that
+      // already links to or has indexed it.
+      {
+        source: "/company/nichole-keyport-nj",
+        destination: "/company/cash-for-test-strips-keyport-nj",
+        permanent: true,
+      },
     ];
   },
 };
