@@ -1,8 +1,12 @@
 import type { PostBody } from "./types"
 import { CA } from "./ca"
 import { FL } from "./fl"
+import { GA } from "./ga"
 import { IL } from "./il"
+import { MI } from "./mi"
 import { MT } from "./mt"
+import { NC } from "./nc"
+import { NJ } from "./nj"
 import { NY } from "./ny"
 import { OH } from "./oh"
 import { PA } from "./pa"
@@ -28,8 +32,12 @@ export type { PostBody, BodySection } from "./types"
 export const POST_BODIES: Record<string, PostBody> = {
   CA,
   FL,
+  GA,
   IL,
+  MI,
   MT,
+  NC,
+  NJ,
   NY,
   OH,
   PA,
