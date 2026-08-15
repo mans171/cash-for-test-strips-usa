@@ -1,7 +1,9 @@
 import type { PostBody } from "./types"
 import { CA } from "./ca"
+import { CT } from "./ct"
 import { FL } from "./fl"
 import { GA } from "./ga"
+import { IA } from "./ia"
 import { IL } from "./il"
 import { MI } from "./mi"
 import { MT } from "./mt"
@@ -10,7 +12,9 @@ import { NJ } from "./nj"
 import { NY } from "./ny"
 import { OH } from "./oh"
 import { PA } from "./pa"
+import { RI } from "./ri"
 import { TX } from "./tx"
+import { UT } from "./ut"
 
 export type { PostBody, BodySection } from "./types"
 
@@ -31,8 +35,10 @@ export type { PostBody, BodySection } from "./types"
  */
 export const POST_BODIES: Record<string, PostBody> = {
   CA,
+  CT,
   FL,
   GA,
+  IA,
   IL,
   MI,
   MT,
@@ -41,7 +47,9 @@ export const POST_BODIES: Record<string, PostBody> = {
   NY,
   OH,
   PA,
+  RI,
   TX,
+  UT,
 }
 
 export function bodyFor(stateCode: string): PostBody | null {
