@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { STATE_BLOG_POSTS } from "@/lib/blog-posts";
 import { angleFor, angleLabel } from "@/lib/blog-post-content";
+import { bodyFor } from "@/lib/blog-bodies";
 
 export const metadata: Metadata = {
   title: "Blog — How to Sell Diabetic Test Strips for Cash by State",
@@ -65,7 +66,7 @@ export default function BlogIndexPage() {
               <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
                 {post.stateCode}
               </span>
-              <span className="text-xs text-gray-400">{angleLabel(angleFor(post.stateCode))}</span>
+              <span className="text-xs text-gray-400">{bodyFor(post.stateCode)?.label ?? angleLabel(angleFor(post.stateCode))}</span>
             </div>
             <h2 className="text-sm font-semibold text-gray-900 leading-snug group-hover:text-emerald-700 transition-colors">
               {post.stateName}

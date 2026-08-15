@@ -24,6 +24,13 @@ export type BodySection = {
 }
 
 export type PostBody = {
+  /**
+   * Short caption for the blog index. Overrides the generated angle label,
+   * which can be misleading once a body is written: Illinois is assigned the
+   * "libre" angle by the generator, but its written post is about there being
+   * no buyer in the state at all.
+   */
+  label?: string
   /** Overrides the derived title. Keep stable once live. */
   title: string
   /** Overrides the derived H1. */
