@@ -28,7 +28,18 @@
 4. **← WE ARE HERE: measurement gate.** Both differentiation passes have now shipped.
    Check whether GSC indexed pages climb past ~5.
 5. Buyer recruitment in T2 priority states — worth doing for conversion, NOT the ceiling (see correction below)
-6. Wave 1 city pages (T1 metros with verified buyers)
+6. ~~Wave 1 city pages (T1 metros with verified buyers)~~ — **BUILT 2026-08-15**, not yet
+   committed/deployed. 27 city pages at `/sell-test-strips/[state]/[city]` (Washington DC
+   excluded — no STATE_LABELS/state-page destination for it to link back to; the spec's
+   original DC-inclusive count assumed one existed). Buyer coverage re-verified against live
+   Supabase data rather than trusted from the 2026-08-12 doc: 28 metros within 50mi (27 after
+   dropping DC), matching the spec's 25-30 target. New: `lib/city-geo.ts` (static target list),
+   `lib/city-page-content.ts` (pure derivation, mirrors `lib/state-page-content.ts`'s
+   omit-when-empty discipline), `zipsNearPoint()` added to `lib/zip-lookup.ts`, sitemap and
+   state-page "Browse cities" section updated. Payout-tier table scoped down to a plain
+   accepted-brands list — no existing mapping between free-text `accepted_brands` values and
+   `TEST_STRIP_TIERS` brand strings, and building fuzzy matching wasn't worth it for Wave 1.
+   17 new tests, 255 passing overall.
 7. Link building tactics B and F (buyer backlinks + directory listings)
 8. Wave 2 city pages + link tactics C, D, E
 9. Payout Data PR product + outreach

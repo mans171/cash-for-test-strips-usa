@@ -1,4 +1,4 @@
-import { withDistance, NEAR_MI, DRIVE_MI, type LatLng } from './geo'
+import { withDistance, haversineMiles, NEAR_MI, DRIVE_MI, type LatLng } from './geo'
 import type { Company } from './types'
 
 export type ZipCentroid = LatLng & { state: string | null }
@@ -29,6 +29,37 @@ export async function getZipCentroid(
   }
   if (!data) return null
   return { lat: data.lat, lng: data.lng, state: data.state ?? null }
+}
+
+// ZIP codes within `radiusMi` of a point, for a city page's "we serve these
+// ZIPs" block. Scoped to a single state via the indexed `state` column
+// (zip_centroids has no spatial index, so a radius query filters and
+// haversine-sorts in JS the same way nearestBuyers() does for buyers —
+// state-scoped result sets are small enough that this is fine).
+export async function zipsNearPoint(
+  supabase: SupabaseLike,
+  origin: LatLng,
+  state: string,
+  radiusMi = 30,
+  limit = 20
+): Promise<string[]> {
+  const { data, error } = await supabase
+    .from('zip_centroids')
+    .select('zip, lat, lng')
+    .eq('state', state)
+  if (error) {
+    console.error('zip_centroids radius lookup failed:', error.message)
+    return []
+  }
+  return (data ?? [])
+    .map((z: { zip: string; lat: number; lng: number }) => ({
+      zip: z.zip,
+      miles: haversineMiles(origin, { lat: z.lat, lng: z.lng }),
+    }))
+    .filter((z: { miles: number }) => z.miles <= radiusMi)
+    .sort((a: { miles: number }, b: { miles: number }) => a.miles - b.miles)
+    .slice(0, limit)
+    .map((z: { zip: string }) => z.zip)
 }
 
 const byFeaturedThenName = (a: CompanyWithMiles, b: CompanyWithMiles) => {

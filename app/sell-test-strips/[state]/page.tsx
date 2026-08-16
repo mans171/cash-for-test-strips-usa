@@ -12,6 +12,7 @@ import { btnPrimary } from "@/app/components/ui";
 import { COMPANY_COLUMNS } from "@/lib/company-columns";
 import { STATE_LABELS as ALL_STATE_LABELS } from "@/lib/states";
 import { buildStateFaqs, joinList, nearestBuyers, siblingStates } from "@/lib/state-page-content";
+import { CITY_TARGETS } from "@/lib/city-geo";
 
 // Canada is excluded here on purpose: this route is the US state directory and
 // is enumerated as such in app/sitemap.ts.
@@ -86,6 +87,7 @@ export default async function StatePage({ params }: Props) {
   });
 
   const siblings = siblingStates(code, 8);
+  const cities = CITY_TARGETS.filter((c) => c.state === code);
 
   // Intro copy is derived too — the old fixed line promised "trusted local
   // buyers" and "no shipping required" on all 50 pages, which was simply untrue
@@ -202,6 +204,23 @@ export default async function StatePage({ params }: Props) {
             ))}
           </div>
         </>
+      )}
+
+      {cities.length > 0 && (
+        <div className="mb-12 pt-8 border-t border-gray-100">
+          <h2 className="text-xl font-extrabold text-gray-900 mb-4">Browse cities in {label}</h2>
+          <div className="flex flex-wrap gap-2">
+            {cities.map((c) => (
+              <Link
+                key={c.slug}
+                href={`/sell-test-strips/${c.state.toLowerCase()}/${c.slug}`}
+                className="text-xs bg-white border border-gray-200 text-gray-600 px-3 py-1.5 rounded-full hover:border-cash hover:text-cash transition-colors"
+              >
+                {c.name}
+              </Link>
+            ))}
+          </div>
+        </div>
       )}
 
       {/* FAQ — helps SEO */}

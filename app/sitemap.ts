@@ -2,6 +2,7 @@ import type { MetadataRoute } from 'next'
 import { supabase } from '@/lib/supabase'
 import { STATE_BLOG_POSTS } from '@/lib/blog-posts'
 import { STATE_LABELS } from '@/lib/states'
+import { CITY_TARGETS } from '@/lib/city-geo'
 
 const BASE_URL = 'https://cash4teststripsusa.com'
 
@@ -39,6 +40,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     }))
 
+  const cityRoutes: MetadataRoute.Sitemap = CITY_TARGETS.map((c) => ({
+    url: `${BASE_URL}/sell-test-strips/${c.state.toLowerCase()}/${c.slug}`,
+    changeFrequency: 'monthly',
+    priority: 0.7,
+  }))
+
   const { data: companies } = await supabase
     .from('companies')
     .select('slug')
@@ -50,5 +57,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }))
 
-  return [...staticRoutes, ...blogRoutes, ...stateRoutes, ...companyRoutes]
+  return [...staticRoutes, ...blogRoutes, ...stateRoutes, ...cityRoutes, ...companyRoutes]
 }
