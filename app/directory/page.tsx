@@ -16,6 +16,9 @@ import { btnOnDark } from "@/app/components/ui";
 import { isValidZip } from "@/lib/geo";
 import { getZipCentroid, tierCompanies, type CompanyWithMiles } from "@/lib/zip-lookup";
 import { COMPANY_COLUMNS } from "@/lib/company-columns";
+import { hubStateCodes } from "@/lib/hub-page-content";
+
+const HUB_STATE_CODES = hubStateCodes();
 
 export const metadata: Metadata = {
   title: "Directory — Find Test Strip Buyers Near You",
@@ -156,7 +159,46 @@ export default async function DirectoryPage({
           ))}
         </div>
       )}
+
+      <StateLinks />
     </div>
+  );
+}
+
+/**
+ * Real links to all 50 state pages.
+ *
+ * The state <select> in DirectorySearch only produces `?state=XX` views, and
+ * those canonicalize back to /directory (see metadata above) — so before this
+ * section existed, /directory passed no crawlable signal to any state page
+ * despite being one of the site's few indexed URLs.
+ */
+function StateLinks() {
+  const states = HUB_STATE_CODES.map((code) => ({ code, label: STATE_LABELS[code] ?? code })).sort(
+    (a, b) => a.label.localeCompare(b.label)
+  );
+
+  return (
+    <section className="mt-16 pt-10 border-t border-gray-100">
+      <h2 className="text-xl font-extrabold text-gray-900 mb-1">Browse buyers by state</h2>
+      <p className="text-sm text-gray-500 mb-5">
+        Each state page lists the buyers serving it, what they accept, and how they pay.{" "}
+        <Link href="/sell-test-strips" className="text-cash font-medium hover:underline">
+          See all states and cities →
+        </Link>
+      </p>
+      <div className="flex flex-wrap gap-2">
+        {states.map(({ code, label }) => (
+          <Link
+            key={code}
+            href={`/sell-test-strips/${code.toLowerCase()}`}
+            className="text-xs bg-white border border-gray-200 text-gray-600 px-3 py-1.5 rounded-full hover:border-cash hover:text-cash transition-colors"
+          >
+            {label}
+          </Link>
+        ))}
+      </div>
+    </section>
   );
 }
 

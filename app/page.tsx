@@ -10,6 +10,7 @@ import { STATE_LABELS } from "@/lib/states";
 import { BuyerCard } from "@/app/components/BuyerCard";
 import { btnOnDark } from "@/app/components/ui";
 import { COMPANY_COLUMNS } from "@/lib/company-columns";
+import { REGIONS, REGION_ORDER } from "@/lib/hub-page-content";
 
 export const metadata: Metadata = {
   title: "Cash For Test Strips USA — Sell Diabetic Test Strips Near You",
@@ -181,12 +182,24 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* Browse by state */}
+      {/* Browse by state.
+
+          All 50 states are linked from here, not the 10 they used to be. The
+          homepage is the strongest internal-link source on the site, and the 40
+          states it skipped were reachable only via other states' neighbour
+          links — which is why most of them sat in Google's "Discovered —
+          currently not indexed" bucket with no referring page detected.
+
+          Laid out as four regional columns rather than 50 chips: a flat wall of
+          50 pills is a link dump, while the columns stay scannable and keep the
+          section roughly the height it was. The most-searched states keep a
+          fast-path row above so the common case is still one glance. */}
       <section className="py-16 px-4">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-5xl mx-auto">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Browse by State</h2>
-          <p className="text-gray-500 text-sm mb-8">Find buyers in your state</p>
-          <div className="flex flex-wrap gap-2">
+          <p className="text-gray-500 text-sm mb-6">Find buyers in your state</p>
+
+          <div className="flex flex-wrap gap-2 mb-10">
             {POPULAR_STATES.map((code) => (
               <Link
                 key={code}
@@ -197,11 +210,33 @@ export default async function HomePage() {
               </Link>
             ))}
             <Link
-              href="/directory"
+              href="/sell-test-strips"
               className="bg-cash/10 border border-cash/30 text-cash text-sm font-medium px-4 py-2 rounded-full hover:bg-cash/20 transition-colors"
             >
-              All states →
+              All 50 states →
             </Link>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-8 border-t border-gray-100 pt-8">
+            {REGION_ORDER.map((region) => (
+              <div key={region}>
+                <h3 className="text-[11px] font-extrabold text-gray-400 uppercase tracking-wider mb-3">
+                  {region}
+                </h3>
+                <ul className="space-y-1.5">
+                  {REGIONS[region].map((code) => (
+                    <li key={code}>
+                      <Link
+                        href={`/sell-test-strips/${code.toLowerCase()}`}
+                        className="text-sm text-gray-600 hover:text-cash transition-colors"
+                      >
+                        {STATE_LABELS[code]}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
         </div>
       </section>

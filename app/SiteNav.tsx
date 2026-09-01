@@ -7,6 +7,9 @@ import { useUser, signOut } from "@/lib/auth-client";
 
 const NAV_LINKS = [
   { href: "/directory", label: "Find a Buyer" },
+  // Sitewide link to the state/city hub: every geo page hangs off this, so it
+  // needs an inbound link from every page rather than just the homepage.
+  { href: "/sell-test-strips", label: "By State" },
   { href: "/how-much-are-diabetic-test-strips-worth", label: "Price Guide" },
   { href: "/blog", label: "Blog" },
   { href: "/#how-it-works", label: "How It Works" },

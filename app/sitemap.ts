@@ -10,6 +10,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: BASE_URL, changeFrequency: 'weekly', priority: 1 },
     { url: `${BASE_URL}/directory`, changeFrequency: 'daily', priority: 0.9 },
+    // Hub above the 50 state pages and 27 city pages. High priority on purpose:
+    // it is the parent that gives those 77 URLs an inbound path (see
+    // lib/hub-page-content.ts for why it exists).
+    { url: `${BASE_URL}/sell-test-strips`, changeFrequency: 'weekly', priority: 0.9 },
     { url: `${BASE_URL}/blog`, changeFrequency: 'weekly', priority: 0.8 },
     { url: `${BASE_URL}/sell`, changeFrequency: 'monthly', priority: 0.7 },
     { url: `${BASE_URL}/buyer`, changeFrequency: 'monthly', priority: 0.5 },

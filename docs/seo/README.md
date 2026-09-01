@@ -25,8 +25,14 @@
    measurement gate was lifted deliberately: near-duplicate collapse is a known defect
    independent of what GSC eventually reports, and holding 38% of the site's URLs for three
    weeks to confirm what the state-page measurement already demonstrated was the worse trade.
-4. **← WE ARE HERE: measurement gate.** Both differentiation passes have now shipped.
-   Check whether GSC indexed pages climb past ~5.
+4. ~~Measurement gate~~ — **PASSED 2026-08-23.** GSC (live check, not inferred): **125 indexed
+   of 164 sitemap URLs (76%)**, up from ~5. All 39 non-indexed carry the single reason
+   "Discovered - currently not indexed"; **zero** are "Crawled - currently not indexed", which is
+   the signature near-duplicate collapse would have left. Both differentiation passes worked.
+   Trailing 28d: 294 impressions / 2 clicks / avg position 43.1, 51 pages earning impressions,
+   Wave 1 city pages live in results (Dallas 17, Boston 16, Miami 13, Arlington 11).
+   Caveat: 107 of the 294 impressions come from three quoted-operator scraper queries
+   (`"omnipod" +"accu-chek"` etc.) — treat real impressions as ~187.
 5. Buyer recruitment in T2 priority states — worth doing for conversion, NOT the ceiling (see correction below)
 6. ~~Wave 1 city pages (T1 metros with verified buyers)~~ — **BUILT 2026-08-15**, not yet
    committed/deployed. 27 city pages at `/sell-test-strips/[state]/[city]` (Washington DC
