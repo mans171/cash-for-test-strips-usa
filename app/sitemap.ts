@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase'
 import { STATE_BLOG_POSTS } from '@/lib/blog-posts'
 import { STATE_LABELS } from '@/lib/states'
 import { CITY_TARGETS } from '@/lib/city-geo'
+import { POST_REGISTRY } from '@/lib/posts'
 
 const BASE_URL = 'https://cash4teststripsusa.com'
 
@@ -16,7 +17,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE_URL}/sell-test-strips`, changeFrequency: 'weekly', priority: 0.9 },
     { url: `${BASE_URL}/blog`, changeFrequency: 'weekly', priority: 0.8 },
     { url: `${BASE_URL}/sell`, changeFrequency: 'monthly', priority: 0.7 },
-    { url: `${BASE_URL}/buyer`, changeFrequency: 'monthly', priority: 0.5 },
+    // /buyer is login-gated; Google rejected it on 2026-09-01 and it must not
+    // appear in the sitemap. Add noindex robots metadata to the page itself.
     { url: `${BASE_URL}/about`, changeFrequency: 'monthly', priority: 0.6 },
     { url: `${BASE_URL}/is-it-legal-to-sell-diabetic-test-strips`, changeFrequency: 'monthly', priority: 0.8 },
     { url: `${BASE_URL}/how-much-are-diabetic-test-strips-worth`, changeFrequency: 'monthly', priority: 0.8 },
@@ -33,6 +35,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     url: `${BASE_URL}/blog/${post.slug}`,
     lastModified: post.datePublished,
     changeFrequency: 'monthly',
+    priority: 0.7,
+  }))
+
+  // Non-state posts registered in lib/posts/index.ts.
+  const registryRoutes: MetadataRoute.Sitemap = POST_REGISTRY.map((post) => ({
+    url: `${BASE_URL}/blog/${post.slug}`,
+    lastModified: post.dateModified,
+    changeFrequency: 'monthly' as const,
     priority: 0.7,
   }))
 
@@ -61,5 +71,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }))
 
-  return [...staticRoutes, ...blogRoutes, ...stateRoutes, ...cityRoutes, ...companyRoutes]
+  return [...staticRoutes, ...blogRoutes, ...registryRoutes, ...stateRoutes, ...cityRoutes, ...companyRoutes]
 }
