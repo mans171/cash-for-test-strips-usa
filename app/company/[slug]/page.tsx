@@ -160,7 +160,7 @@ function buildFAQ(
       },
     ];
     candidates.push({
-      sortKey: (h >> 2) & 0xff,
+      sortKey: (h >>> 2) & 0xff,
       item: brandPhrasings[h % brandPhrasings.length],
     });
   }
@@ -188,8 +188,8 @@ function buildFAQ(
     },
   ];
   candidates.push({
-    sortKey: (h >> 10) & 0xff,
-    item: modePhrasings[(h >> 4) % modePhrasings.length],
+    sortKey: (h >>> 10) & 0xff,
+    item: modePhrasings[(h >>> 4) % modePhrasings.length],
   });
 
   // ── Payment ──────────────────────────────────────────────────────────────
@@ -213,8 +213,8 @@ function buildFAQ(
       },
     ];
     candidates.push({
-      sortKey: (h >> 18) & 0xff,
-      item: payPhrasings[(h >> 12) % payPhrasings.length],
+      sortKey: (h >>> 18) & 0xff,
+      item: payPhrasings[(h >>> 12) % payPhrasings.length],
     });
   }
 
@@ -235,8 +235,8 @@ function buildFAQ(
       },
     ];
     candidates.push({
-      sortKey: (h >> 24) & 0xff,
-      item: geoPhrasings[(h >> 20) % geoPhrasings.length],
+      sortKey: (h >>> 24) & 0xff,
+      item: geoPhrasings[(h >>> 20) % geoPhrasings.length],
     });
   }
 
