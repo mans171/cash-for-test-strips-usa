@@ -16,7 +16,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE_URL}/sell-test-strips`, changeFrequency: 'weekly', priority: 0.9 },
     { url: `${BASE_URL}/blog`, changeFrequency: 'weekly', priority: 0.8 },
     { url: `${BASE_URL}/sell`, changeFrequency: 'monthly', priority: 0.7 },
-    { url: `${BASE_URL}/buyer`, changeFrequency: 'monthly', priority: 0.5 },
+    // /buyer is login-gated; Google rejected it on 2026-09-01 and it must not
+    // appear in the sitemap. The page itself carries robots noindex.
     { url: `${BASE_URL}/about`, changeFrequency: 'monthly', priority: 0.6 },
     { url: `${BASE_URL}/is-it-legal-to-sell-diabetic-test-strips`, changeFrequency: 'monthly', priority: 0.8 },
     { url: `${BASE_URL}/how-much-are-diabetic-test-strips-worth`, changeFrequency: 'monthly', priority: 0.8 },

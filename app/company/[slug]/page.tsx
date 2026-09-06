@@ -14,7 +14,7 @@ import { getZipCentroid } from "@/lib/zip-lookup";
 import { COMPANY_COLUMNS } from "@/lib/company-columns";
 import { BuyerCard } from "@/app/components/BuyerCard";
 import { UnlockContact } from "@/app/components/UnlockContact";
-import { MonogramAvatar, VerifiedBadge, FeaturedBadge, PinIcon, Chip } from "@/app/components/ui";
+import { MonogramAvatar, VerifiedBadge, FeaturedBadge, PinIcon } from "@/app/components/ui";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -37,6 +37,121 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     alternates: { canonical: `https://cash4teststripsusa.com/company/${slug}` },
   };
 }
+
+// ─── helpers ─────────────────────────────────────────────────────────────────
+
+/** Join a list of strings naturally: "A, B and C" (no Oxford comma). */
+function joinNatural(items: string[]): string {
+  if (items.length === 0) return "";
+  if (items.length === 1) return items[0];
+  const last = items[items.length - 1];
+  return `${items.slice(0, -1).join(", ")} and ${last}`;
+}
+
+/** One-sentence intro built entirely from database fields. */
+function buildIntro(company: Company, stateNames: string[]): string {
+  const location = company.city
+    ? `based in ${company.city}`
+    : stateNames.length > 0
+    ? `serving ${stateNames[0]}`
+    : "operating nationwide";
+
+  const modes = company.transaction_modes ?? ["meetup"];
+  let modePhrase: string;
+  if (modes.includes("mail_in") && (modes.includes("meetup") || modes.includes("pickup"))) {
+    modePhrase = "through local meetups and a mail-in program";
+  } else if (modes.includes("mail_in")) {
+    modePhrase = "through a mail-in program";
+  } else if (modes.includes("pickup")) {
+    modePhrase = "by arranging direct pickups";
+  } else {
+    modePhrase = "through local meetups";
+  }
+
+  const since = company.est_year ? ` and has been buying since ${company.est_year}` : "";
+
+  return `${company.name} is a diabetic test strip buyer ${location}${since}. They purchase unused, sealed, unexpired strips ${modePhrase}.`;
+}
+
+/** Prose sentence for accepted brands. */
+function buildBrandsText(company: Company, brands: string[]): string {
+  if (brands.length === 0) return "";
+  const listed = joinNatural(brands);
+  return `${company.name} accepts test strips from ${listed}. Strips must be factory-sealed and unexpired — opened boxes are not purchased.`;
+}
+
+/** Prose sentence for payment methods and response time. */
+function buildPaymentText(company: Company): string {
+  const methods = company.payment_methods ?? [];
+  const payPart = methods.length > 0
+    ? `Payment is made via ${joinNatural(methods)}.`
+    : "Contact the buyer for payment details.";
+
+  const speedPart = company.response_time
+    ? ` Most sellers hear back within ${company.response_time}.`
+    : "";
+
+  const sincePart = company.est_year
+    ? ` ${company.name} has been buying test strips since ${company.est_year}.`
+    : "";
+
+  return `${payPart}${speedPart}${sincePart}`.trim();
+}
+
+/** FAQ items built from verified database fields only — no invented facts. */
+function buildFAQ(
+  company: Company,
+  stateNames: string[],
+): { q: string; a: string }[] {
+  const name = company.name;
+  const items: { q: string; a: string }[] = [];
+
+  // Brands
+  const brands = company.accepted_brands ?? [];
+  if (brands.length > 0) {
+    items.push({
+      q: `What test strip brands does ${name} accept?`,
+      a: `${name} buys ${joinNatural(brands)} test strips. Boxes must be factory-sealed and unexpired.`,
+    });
+  }
+
+  // Transaction modes
+  const modes = company.transaction_modes ?? ["meetup"];
+  const modeLabels: Record<string, string> = {
+    meetup: "local meetup",
+    pickup: "direct pickup",
+    mail_in: "mail-in",
+  };
+  const modeWords = modes.map((m) => modeLabels[m] ?? m);
+  items.push({
+    q: `How does selling to ${name} work?`,
+    a: `${name} buys strips via ${joinNatural(modeWords)}. Unlock the contact details on this page to reach them and arrange a transaction.`,
+  });
+
+  // Payment
+  const methods = company.payment_methods ?? [];
+  if (methods.length > 0) {
+    items.push({
+      q: `How does ${name} pay for test strips?`,
+      a: `${name} pays via ${joinNatural(methods)}.${company.response_time ? ` Most sellers receive a response within ${company.response_time}.` : ""}`,
+    });
+  }
+
+  // Geography
+  if (stateNames.length > 0) {
+    const stateList = stateNames.length <= 3
+      ? joinNatural(stateNames)
+      : `${stateNames.slice(0, 3).join(", ")} and ${stateNames.length - 3} more state${stateNames.length - 3 > 1 ? "s" : ""}`;
+    items.push({
+      q: `What areas does ${name} serve?`,
+      a: `${name} buys test strips${company.city ? ` in the ${company.city} area` : ""} and serves ${stateList}. Sellers from those areas can contact them directly through this listing.`,
+    });
+  }
+
+  return items;
+}
+
+// ─── page ─────────────────────────────────────────────────────────────────────
 
 export default async function CompanyPage({ params }: Props) {
   const { slug } = await params;
@@ -94,6 +209,12 @@ export default async function CompanyPage({ params }: Props) {
           .map((c) => ({ ...c, miles: null as number | null }))
   ).slice(0, 3);
 
+  // Build prose content from existing database fields
+  const introText = buildIntro(company, stateNames);
+  const brandsText = buildBrandsText(company, company.accepted_brands ?? []);
+  const paymentText = buildPaymentText(company);
+  const faqItems = buildFAQ(company, stateNames);
+
   return (
     <div className="max-w-3xl mx-auto px-4 py-12">
       <JsonLd data={localBusinessSchema} />
@@ -124,43 +245,82 @@ export default async function CompanyPage({ params }: Props) {
           </div>
         </div>
 
-        {company.description && <p className="text-gray-600 leading-relaxed mb-8">{company.description}</p>}
+        {/* Intro paragraph — data-driven, unique per buyer */}
+        <p className="text-gray-700 leading-relaxed mb-6">{introText}</p>
 
-        {/* What they buy */}
-        {company.accepted_brands?.length > 0 && (
+        {/* Buyer's own description (optional) */}
+        {company.description && (
+          <p className="text-gray-600 leading-relaxed mb-6">{company.description}</p>
+        )}
+
+        {/* Brands — prose sentence rather than chip list */}
+        {brandsText && (
           <ProfileSection label="What they buy">
-            <div className="flex flex-wrap gap-1.5">
-              {company.accepted_brands.map((b) => <Chip key={b}>{b}</Chip>)}
-            </div>
+            <p className="text-sm text-gray-700 leading-relaxed">{brandsText}</p>
           </ProfileSection>
         )}
 
-        {/* How this buyer works */}
+        {/* How they work — prose */}
         <ProfileSection label="How this buyer works">
-          <div className="flex flex-wrap gap-1.5">
-            {(company.transaction_modes ?? ["meetup"]).map((m) => (
-              <Chip key={m}>{{ meetup: "Local meetup", pickup: "Pickup", mail_in: "Mail-in" }[m] ?? m}</Chip>
-            ))}
-          </div>
-        </ProfileSection>
-
-        {/* Payment & speed */}
-        <ProfileSection label="Payment & speed">
-          <p className="text-sm text-gray-700">
-            {company.payment_methods?.length ? company.payment_methods.join(" · ") : "Ask the buyer"}
-            {company.response_time && <span className="font-semibold"> · Responds in {company.response_time}</span>}
-            {company.est_year && <span className="text-gray-400"> · Buying since {company.est_year}</span>}
+          <p className="text-sm text-gray-700 leading-relaxed">
+            {(company.transaction_modes ?? ["meetup"]).includes("mail_in") &&
+            (company.transaction_modes ?? []).some((m) => m !== "mail_in")
+              ? `${company.name} offers two options: sellers can arrange a local meetup or use the mail-in program — whichever is more convenient.`
+              : (company.transaction_modes ?? ["meetup"]).includes("mail_in")
+              ? `${company.name} accepts strips by mail. Once you reach out, they will provide mailing instructions.`
+              : (company.transaction_modes ?? []).includes("pickup")
+              ? `${company.name} can arrange a direct pickup at your location. Contact them to set up a time.`
+              : `${company.name} meets locally to complete transactions. Contact them to agree on a convenient location.`}
           </p>
         </ProfileSection>
 
+        {/* Payment & speed — prose */}
+        <ProfileSection label="Payment &amp; speed">
+          <p className="text-sm text-gray-700 leading-relaxed">{paymentText}</p>
+        </ProfileSection>
+
+        {/* States served — with internal links to state pages */}
         <ProfileSection label="States served">
-          <p className="text-sm text-gray-700">{stateNames.length > 0 ? stateNames.join(", ") : "Contact for availability"}</p>
+          {company.states.length > 0 ? (
+            <p className="text-sm text-gray-700">
+              {company.states.map((code, i) => (
+                <span key={code}>
+                  {i > 0 && <span className="text-gray-400">, </span>}
+                  <Link
+                    href={`/sell-test-strips/${code.toLowerCase()}`}
+                    className="text-ink-deep underline underline-offset-2 hover:no-underline"
+                  >
+                    {STATE_LABELS[code] ?? code}
+                  </Link>
+                </span>
+              ))}
+            </p>
+          ) : (
+            <p className="text-sm text-gray-700">Contact for availability</p>
+          )}
         </ProfileSection>
 
         {company.owner_name && (
           <ProfileSection label="Contact person">
             <p className="text-sm text-gray-700">{company.owner_name}</p>
           </ProfileSection>
+        )}
+
+        {/* Per-buyer FAQ — Q&A built from database fields only, no invented facts */}
+        {faqItems.length > 0 && (
+          <div className="mt-8 pt-6 border-t border-gray-100">
+            <h2 className="text-base font-extrabold text-gray-900 mb-4">
+              Frequently asked about {company.name}
+            </h2>
+            <div className="space-y-4">
+              {faqItems.map(({ q, a }) => (
+                <div key={q}>
+                  <p className="text-sm font-semibold text-gray-800">{q}</p>
+                  <p className="text-sm text-gray-600 mt-0.5 leading-relaxed">{a}</p>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
 
         {/* CTA */}
@@ -171,13 +331,33 @@ export default async function CompanyPage({ params }: Props) {
         </div>
       </div>
 
-      {/* Nearby */}
+      {/* Nearby buyers */}
       {nearby.length > 0 && (
         <div className="mt-10">
           <h2 className="text-xl font-extrabold text-gray-900 mb-4">Other buyers nearby</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {nearby.map(({ miles: _m, ...c }) => (
               <BuyerCard key={c.id} company={c as Company} isAuthenticated={isAuthenticated} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Internal navigation to related state pages */}
+      {company.states.length > 0 && (
+        <div className="mt-8 pt-6 border-t border-gray-200">
+          <p className="text-xs font-extrabold text-gray-400 uppercase tracking-wider mb-3">
+            Sell test strips by state
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {company.states.map((code) => (
+              <Link
+                key={code}
+                href={`/sell-test-strips/${code.toLowerCase()}`}
+                className="text-sm text-ink-deep underline underline-offset-2 hover:no-underline"
+              >
+                {STATE_LABELS[code] ?? code}
+              </Link>
             ))}
           </div>
         </div>
