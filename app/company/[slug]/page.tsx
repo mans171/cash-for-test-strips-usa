@@ -7,7 +7,8 @@ import { STATE_LABELS } from "@/lib/states";
 import type { Company } from "@/lib/types";
 import { stripCompanyContact } from "@/lib/company-contact";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { buildLocalBusinessSchema } from "@/lib/schema";
+import { buildLocalBusinessSchema, buildFaqPageSchema } from "@/lib/schema";
+import type { FaqItem } from "@/lib/schema";
 import { JsonLd } from "@/app/components/JsonLd";
 import { isValidZip, haversineMiles, withDistance } from "@/lib/geo";
 import { getZipCentroid } from "@/lib/zip-lookup";
@@ -46,6 +47,21 @@ function joinNatural(items: string[]): string {
   if (items.length === 1) return items[0];
   const last = items[items.length - 1];
   return `${items.slice(0, -1).join(", ")} and ${last}`;
+}
+
+/**
+ * Stable integer hash derived from a slug string.
+ * Pure function — identical on every call with the same input.
+ * Used to deterministically vary FAQ phrasing and ordering per buyer
+ * without any runtime randomness (which would break caching and confuse
+ * the crawler by producing different structured-data text on each render).
+ */
+function slugHash(slug: string): number {
+  let h = 0;
+  for (let i = 0; i < slug.length; i++) {
+    h = ((h * 31) + slug.charCodeAt(i)) >>> 0;
+  }
+  return h;
 }
 
 /** One-sentence intro built entirely from database fields. */
@@ -98,24 +114,58 @@ function buildPaymentText(company: Company): string {
   return `${payPart}${speedPart}${sincePart}`.trim();
 }
 
-/** FAQ items built from verified database fields only — no invented facts. */
+/**
+ * Build FAQ items as FaqItem[] (matching lib/schema.ts) so the same array
+ * feeds both the visible Q&A block and the FAQPage JSON-LD.
+ *
+ * Google requires that visible text and structured data match exactly — using
+ * one source array guarantees this. If a profile has zero eligible items
+ * (e.g. no brands, no payment data, no states) an empty array is returned
+ * and no JSON-LD script is emitted.
+ *
+ * Phrasing and ordering vary deterministically per slug via slugHash() so
+ * profiles with similar field values still look distinct to a crawler. The
+ * output is identical on every render for a given slug — no Math.random,
+ * no Date.now — so server-side caching and crawler consistency are preserved.
+ */
 function buildFAQ(
   company: Company,
   stateNames: string[],
-): { q: string; a: string }[] {
+  slug: string,
+): FaqItem[] {
   const name = company.name;
-  const items: { q: string; a: string }[] = [];
+  const h = slugHash(slug);
 
-  // Brands
+  // Each candidate gets a sort key derived from non-overlapping bit windows
+  // of h so phrasing selection (low bits) and ordering (high bits) are
+  // independent from each other and across question types.
+  const candidates: Array<{ sortKey: number; item: FaqItem }> = [];
+
+  // ── Brands ──────────────────────────────────────────────────────────────
   const brands = company.accepted_brands ?? [];
   if (brands.length > 0) {
-    items.push({
-      q: `What test strip brands does ${name} accept?`,
-      a: `${name} buys ${joinNatural(brands)} test strips. Boxes must be factory-sealed and unexpired.`,
+    const listed = joinNatural(brands);
+    const brandPhrasings: FaqItem[] = [
+      {
+        question: `What test strip brands does ${name} accept?`,
+        answer: `${name} buys ${listed} test strips. Boxes must be factory-sealed and unexpired.`,
+      },
+      {
+        question: `Which diabetic test strip brands does ${name} purchase?`,
+        answer: `Accepted brands include ${listed}. Strips must arrive in the original sealed packaging and must not be expired.`,
+      },
+      {
+        question: `Does ${name} buy all test strip brands?`,
+        answer: `${name} accepts ${listed}. Only factory-sealed, unexpired boxes are purchased.`,
+      },
+    ];
+    candidates.push({
+      sortKey: (h >> 2) & 0xff,
+      item: brandPhrasings[h % brandPhrasings.length],
     });
   }
 
-  // Transaction modes
+  // ── Transaction modes ────────────────────────────────────────────────────
   const modes = company.transaction_modes ?? ["meetup"];
   const modeLabels: Record<string, string> = {
     meetup: "local meetup",
@@ -123,32 +173,75 @@ function buildFAQ(
     mail_in: "mail-in",
   };
   const modeWords = modes.map((m) => modeLabels[m] ?? m);
-  items.push({
-    q: `How does selling to ${name} work?`,
-    a: `${name} buys strips via ${joinNatural(modeWords)}. Unlock the contact details on this page to reach them and arrange a transaction.`,
+  const modePhrasings: FaqItem[] = [
+    {
+      question: `How does selling to ${name} work?`,
+      answer: `${name} buys strips via ${joinNatural(modeWords)}. Unlock the contact details on this page to reach them and arrange a transaction.`,
+    },
+    {
+      question: `What is the process for selling test strips to ${name}?`,
+      answer: `Contact ${name} to get started. They purchase strips via ${joinNatural(modeWords)}.`,
+    },
+    {
+      question: `How do I contact ${name} to sell my test strips?`,
+      answer: `Unlock the contact details on this page, then reach out to ${name} directly. Transactions are done via ${joinNatural(modeWords)}.`,
+    },
+  ];
+  candidates.push({
+    sortKey: (h >> 10) & 0xff,
+    item: modePhrasings[(h >> 4) % modePhrasings.length],
   });
 
-  // Payment
+  // ── Payment ──────────────────────────────────────────────────────────────
   const methods = company.payment_methods ?? [];
   if (methods.length > 0) {
-    items.push({
-      q: `How does ${name} pay for test strips?`,
-      a: `${name} pays via ${joinNatural(methods)}.${company.response_time ? ` Most sellers receive a response within ${company.response_time}.` : ""}`,
+    const speedNote = company.response_time
+      ? ` Most sellers receive a response within ${company.response_time}.`
+      : "";
+    const payPhrasings: FaqItem[] = [
+      {
+        question: `How does ${name} pay for test strips?`,
+        answer: `${name} pays via ${joinNatural(methods)}.${speedNote}`,
+      },
+      {
+        question: `What payment methods does ${name} use?`,
+        answer: `Payment is made via ${joinNatural(methods)}.${speedNote}`,
+      },
+      {
+        question: `When and how does ${name} pay sellers?`,
+        answer: `${name} uses ${joinNatural(methods)} to pay sellers.${speedNote}`,
+      },
+    ];
+    candidates.push({
+      sortKey: (h >> 18) & 0xff,
+      item: payPhrasings[(h >> 12) % payPhrasings.length],
     });
   }
 
-  // Geography
+  // ── Geography ────────────────────────────────────────────────────────────
   if (stateNames.length > 0) {
-    const stateList = stateNames.length <= 3
-      ? joinNatural(stateNames)
-      : `${stateNames.slice(0, 3).join(", ")} and ${stateNames.length - 3} more state${stateNames.length - 3 > 1 ? "s" : ""}`;
-    items.push({
-      q: `What areas does ${name} serve?`,
-      a: `${name} buys test strips${company.city ? ` in the ${company.city} area` : ""} and serves ${stateList}. Sellers from those areas can contact them directly through this listing.`,
+    const stateList =
+      stateNames.length <= 3
+        ? joinNatural(stateNames)
+        : `${stateNames.slice(0, 3).join(", ")} and ${stateNames.length - 3} more state${stateNames.length - 3 > 1 ? "s" : ""}`;
+    const geoPhrasings: FaqItem[] = [
+      {
+        question: `What areas does ${name} serve?`,
+        answer: `${name} buys test strips${company.city ? ` in the ${company.city} area` : ""} and serves ${stateList}. Sellers from those areas can contact them directly through this listing.`,
+      },
+      {
+        question: `Where does ${name} buy test strips?`,
+        answer: `${name} serves ${stateList}${company.city ? `, with a base in ${company.city}` : ""}. Reach out through this listing to arrange a transaction.`,
+      },
+    ];
+    candidates.push({
+      sortKey: (h >> 24) & 0xff,
+      item: geoPhrasings[(h >> 20) % geoPhrasings.length],
     });
   }
 
-  return items;
+  // Sort by independent hash windows so question order differs per slug
+  return candidates.sort((a, b) => a.sortKey - b.sortKey).map((c) => c.item);
 }
 
 // ─── page ─────────────────────────────────────────────────────────────────────
@@ -209,16 +302,24 @@ export default async function CompanyPage({ params }: Props) {
           .map((c) => ({ ...c, miles: null as number | null }))
   ).slice(0, 3);
 
-  // Build prose content from existing database fields
+  // Build prose content and FAQ from existing database fields only.
+  // The same faqItems array feeds both the visible Q&A block and the JSON-LD
+  // FAQPage schema — Google requires the two to match exactly.
   const introText = buildIntro(company, stateNames);
   const brandsText = buildBrandsText(company, company.accepted_brands ?? []);
   const paymentText = buildPaymentText(company);
-  const faqItems = buildFAQ(company, stateNames);
+  const faqItems = buildFAQ(company, stateNames, slug);
+  const faqSchema = faqItems.length > 0 ? buildFaqPageSchema(faqItems) : null;
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-12">
       <JsonLd data={localBusinessSchema} />
-      <Link href="/directory" className="text-sm text-gray-500 hover:text-ink mb-6 inline-block">← Back to directory</Link>
+      {/* FAQPage JSON-LD — only emitted when there are FAQ items to avoid an
+          empty mainEntity array, which Google Rich Results Test flags. The
+          visible Q&A block below renders the identical text so structured data
+          and page content stay in sync (required by Google's SD guidelines). */}
+      {faqSchema && <JsonLd data={faqSchema} />}
+      <Link href="/directory" className="text-sm text-gray-500 hover:text-ink mb-6 inline-block">back to directory</Link>
 
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 sm:p-8">
         {/* Header */}
@@ -306,17 +407,19 @@ export default async function CompanyPage({ params }: Props) {
           </ProfileSection>
         )}
 
-        {/* Per-buyer FAQ — Q&A built from database fields only, no invented facts */}
+        {/* Per-buyer FAQ — visible Q&A block.
+            Text must match the FAQPage JSON-LD above exactly (same faqItems source).
+            Phrasing and order vary per slug via slugHash() — deterministic, never random. */}
         {faqItems.length > 0 && (
           <div className="mt-8 pt-6 border-t border-gray-100">
             <h2 className="text-base font-extrabold text-gray-900 mb-4">
               Frequently asked about {company.name}
             </h2>
             <div className="space-y-4">
-              {faqItems.map(({ q, a }) => (
-                <div key={q}>
-                  <p className="text-sm font-semibold text-gray-800">{q}</p>
-                  <p className="text-sm text-gray-600 mt-0.5 leading-relaxed">{a}</p>
+              {faqItems.map(({ question, answer }) => (
+                <div key={question}>
+                  <p className="text-sm font-semibold text-gray-800">{question}</p>
+                  <p className="text-sm text-gray-600 mt-0.5 leading-relaxed">{answer}</p>
                 </div>
               ))}
             </div>
