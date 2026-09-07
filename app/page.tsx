@@ -215,6 +215,12 @@ export default async function HomePage() {
             >
               All 50 states →
             </Link>
+            <Link
+              href="/sell-test-strips-in-bulk"
+              className="bg-cash/10 border border-cash/30 text-cash text-sm font-medium px-4 py-2 rounded-full hover:bg-cash/20 transition-colors"
+            >
+              Selling in bulk? →
+            </Link>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-8 border-t border-gray-100 pt-8">

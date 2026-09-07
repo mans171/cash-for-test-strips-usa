@@ -4,9 +4,9 @@ import { BuyerPortalClient } from "./BuyerPortalClient";
 export const metadata: Metadata = {
   title: "Manage Your Buyer Listing — Cash4TestStripsUSA",
   description: "Claim or create your buyer listing on Cash4TestStripsUSA.",
-  // Login-gated utility page with ~80 visible words. Google rejected an
-  // indexing request for it on 2026-09-01. Explicitly noindex so it stops
-  // entering the crawl queue, and exclude it from sitemap.ts.
+  // Login-gated page: Google rejected it on 2026-09-01 ("Discovered – currently
+  // not indexed"). Explicitly noindex so crawlers stop queuing it and it
+  // stays out of the sitemap.
   robots: { index: false, follow: false },
 };
 

@@ -11,7 +11,7 @@ import { BuyerCard } from "@/app/components/BuyerCard";
 import { btnPrimary } from "@/app/components/ui";
 import { COMPANY_COLUMNS } from "@/lib/company-columns";
 import { STATE_LABELS as ALL_STATE_LABELS } from "@/lib/states";
-import { buildStateFaqs, joinList, nearestBuyers, siblingStates } from "@/lib/state-page-content";
+import { buildStateFaqs, joinList, nearestBuyers, siblingStates, statePageH1 } from "@/lib/state-page-content";
 import { CITY_TARGETS } from "@/lib/city-geo";
 
 // Canada is excluded here on purpose: this route is the US state directory and
@@ -137,9 +137,14 @@ export default async function StatePage({ params }: Props) {
         <span className="text-gray-700">{label}</span>
       </nav>
 
-      {/* Hero copy — SEO targeted */}
+      {/* Hero copy — SEO targeted.
+          H1 is derived from statePageH1() rather than hardcoded so it is
+          structurally distinct from the blog post H1 ("Selling Diabetic Test
+          Strips in [State]") and the city page H1 ("Sell Diabetic Test Strips
+          in [City], [State]"). This was the root cause of the 2026-09-01
+          duplicate-canonical report for /sell-test-strips/tx. */}
       <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-gray-900 mb-3">
-        Sell Diabetic Test Strips in {label}
+        {statePageH1(label, companies.length > 0)}
       </h1>
       <p className="text-gray-600 max-w-2xl mb-8 leading-relaxed">
         {companies.length > 0 ? buyerIntro : noBuyerIntro}

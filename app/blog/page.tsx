@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { STATE_BLOG_POSTS } from "@/lib/blog-posts";
 import { angleFor, angleLabel } from "@/lib/blog-post-content";
 import { bodyFor } from "@/lib/blog-bodies";
+import { POST_REGISTRY } from "@/lib/posts";
 
 export const metadata: Metadata = {
   title: "Blog — How to Sell Diabetic Test Strips for Cash by State",
@@ -77,6 +78,35 @@ export default function BlogIndexPage() {
           </Link>
         ))}
       </div>
+
+      {/* Non-state posts from the registry (Wednesday cadence) */}
+      {POST_REGISTRY.length > 0 && (
+        <div className="mt-14">
+          <h2 className="text-lg font-bold text-gray-900 mb-4">Topic guides</h2>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {POST_REGISTRY.map((post) => (
+              <Link
+                key={post.slug}
+                href={`/blog/${post.slug}`}
+                className="group bg-white border border-gray-100 rounded-xl p-5 shadow-sm hover:shadow-md hover:border-emerald-200 transition-all"
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-xs font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full">
+                    Guide
+                  </span>
+                  <span className="text-xs text-gray-400">{post.datePublished}</span>
+                </div>
+                <h3 className="text-sm font-semibold text-gray-900 leading-snug group-hover:text-emerald-700 transition-colors">
+                  {post.title}
+                </h3>
+                <p className="text-xs text-gray-400 mt-1 line-clamp-2 leading-relaxed">
+                  {post.description}
+                </p>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* CTA */}
       <div className="mt-14 bg-emerald-50 border border-emerald-100 rounded-2xl p-8 text-center">

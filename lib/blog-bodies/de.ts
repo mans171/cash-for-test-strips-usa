@@ -2,7 +2,8 @@ import type { PostBody } from "./types"
 
 /**
  * Delaware — estate angle, earned: 21.8% of Delawareans are 65 or over, among
- * the largest shares of any state. No in-state buyer anywhere.
+ * the largest shares of any state. One in-state buyer, in Selbyville in the
+ * far south of Sussex County; mail-in still covers the north.
  *
  * Florida already covers the estate angle as a sorting problem — three piles at
  * a cupboard. This one is deliberately built on a different axis: sequence and
@@ -18,11 +19,11 @@ export const DE: PostBody = {
   title: "Clearing a Delaware House: What to Do With Leftover Diabetic Supplies",
   heading: "Leftover Diabetic Supplies in Delaware",
   metaDescription:
-    "Delaware has no in-state buyer, and 21.8% of residents are 65 or over. When in a house clear-out this gets dealt with, who in the family should do it, and the two expired items worth keeping.",
+    "Delaware has one in-person buyer, in Selbyville, and 21.8% of residents are 65 or over. When in a house clear-out this gets dealt with, who in the family should do it, and the two expired items worth keeping.",
 
   lead: [
     "This is one of the last things anyone thinks about when a house is being emptied, and it is usually the reason it never gets done. The furniture is spoken for, the paperwork is with a solicitor, and a cupboard of sealed diabetic supplies sits there until someone with a van clears the room in an afternoon.",
-    "21.8% of Delaware residents are 65 or over, one of the largest shares of any state, so this situation is common here. There is no test strip buyer listed anywhere in Delaware, which means the route is postal — and that in turn means it needs a few days of notice rather than being handled on the last morning.",
+    "21.8% of Delaware residents are 65 or over, one of the largest shares of any state, so this situation is common here. One test strip buyer is listed in the state, in Selbyville, which suits a clear-out anywhere in lower Sussex County. For a house in Dover, Newark or Wilmington the route is postal — and that in turn means it needs a few days of notice rather than being handled on the last morning.",
   ],
 
   sections: [
@@ -70,7 +71,7 @@ export const DE: PostBody = {
     {
       heading: "Getting it out of Delaware",
       paragraphs: [
-        "There is no buyer listed anywhere in Delaware, in Wilmington or elsewhere, so this is a postal transaction. The label is prepaid and costs you nothing from any of the state's 68 ZIP codes.",
+        "One buyer is listed in Delaware, in Selbyville, about 10 miles from Millsboro and 19 from Georgetown. From the lower part of the state that makes an in-person handover realistic. From Dover it is roughly 52 miles and from Wilmington 89, far enough that a clear-out in the north is better handled as a postal transaction \u2014 the label is prepaid and costs you nothing from any of the state's 68 ZIP codes.",
         "Get the figure in writing before the parcel leaves. The actual number for what you actually have — brand, count and dates — rather than a range or an \"up to\". A buyer who will not commit before shipping intends to revise afterwards, and once the box is in their building you have no leverage left.",
         "Photograph the sealed boxes with the expiry dates and lot numbers visible. Do not open anything to photograph the contents; opening a box destroys the only thing that made it sellable. Keep the photographs until the money arrives.",
         "Payment runs within 24 hours of the parcel being received and verified, not from when you posted it. Transit from Delaware is short, so in practice this is a few days end to end — which is why moving the boxes out of the clearance pile early is the part that matters.",
@@ -97,7 +98,7 @@ export const DE: PostBody = {
     },
     {
       q: "Is there anywhere in Delaware to sell in person?",
-      a: "Not on this directory. There is no listed buyer in Wilmington, Dover, Newark or anywhere else in the state, and it would be dishonest to imply otherwise. Mail-in with a prepaid label is the route, and it costs you nothing.",
+      a: "Yes, in Selbyville, in the far south of Sussex County. It is about 10 miles from Millsboro and 19 from Georgetown, so it is a short run from the lower part of the state. Nobody is listed in Wilmington, Dover or Newark, and Selbyville is roughly 89 miles from Wilmington and 52 from Dover, so from the north mail-in with a prepaid label is usually the better route. It costs you nothing either way.",
     },
     {
       q: "What about the meter itself, and the opened boxes?",

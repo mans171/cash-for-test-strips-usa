@@ -18,7 +18,7 @@ export const NC: PostBody = {
     "North Carolina has three in-person buyers — Charlotte, Raleigh-Durham and Greensboro. They also happen to be the state's lowest-diabetes cities. Where that leaves everyone else.",
 
   lead: [
-    "North Carolina is one of the better-covered states on this directory. There are three in-person buyers listed here — Charlotte, the Raleigh-Durham area, and around Greensboro — against none at all in thirty-one states.",
+    "North Carolina is one of the better-covered states on this directory. There are three in-person buyers listed here — Charlotte, the Raleigh-Durham area, and around Greensboro — against none at all in twenty-nine states.",
     "There is also something worth noticing about where those three sit. Charlotte reads 10.1% for diagnosed diabetes, Raleigh 9.1% and Durham 10.2%. They are three of the lowest rates in the state. Coverage here has followed population and money, not need.",
   ],
 

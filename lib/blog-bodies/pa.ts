@@ -1,9 +1,13 @@
 import type { PostBody } from "./types"
 
 /**
- * Pennsylvania — four listed buyers, more than any other state: Philadelphia,
- * Pittsburgh, Hazleton and Greencastle. That is the story here, and it is the
- * one state where "there is probably someone near you" is actually true.
+ * Pennsylvania — three listed buyers, more than any other state: Philadelphia,
+ * Pittsburgh and Hazleton. That is the story here, and it is the one state
+ * where "there is probably someone near you" is actually true.
+ *
+ * NOTE (2026-09-06): the Greencastle buyer left the network. The south-central
+ * strip near the Maryland line is no longer covered, and the count dropped from
+ * four to three. State-count figures were re-derived on that date.
  *
  * Note the vintage: Pennsylvania is one of two states absent from the 2025 CDC
  * PLACES release, so its figures are BRFSS 2022 rather than 2023. Every number
@@ -14,10 +18,10 @@ export const PA: PostBody = {
   title: "Selling Diabetic Test Strips in Pennsylvania: Four Buyers, Most of the State",
   heading: "Selling Diabetic Test Strips in Pennsylvania",
   metaDescription:
-    "Pennsylvania has more listed in-person buyers than any other state — Philadelphia, Pittsburgh, Hazleton and Greencastle. Where each one reaches, and the two expired items worth keeping.",
+    "Pennsylvania has more listed in-person buyers than any other state — Philadelphia, Pittsburgh and Hazleton. Where each one reaches, and the two expired items worth keeping.",
 
   lead: [
-    "Pennsylvania is the best-covered state on this directory. There are four in-person buyers listed here — Philadelphia, Pittsburgh, Hazleton and Greencastle — against one or two in most states that have any at all, and none in thirty-one of them.",
+    "Pennsylvania is the best-covered state on this directory. There are three in-person buyers listed here — Philadelphia, Pittsburgh and Hazleton — against one or two in most states that have any at all, and none in twenty-nine of them.",
     "Practically, that means most Pennsylvanians are within a sensible drive of somebody, and an in-person handover with cash the same day is a realistic option rather than a theoretical one.",
   ],
 
@@ -28,8 +32,7 @@ export const PA: PostBody = {
         "Philadelphia covers the southeast — the city itself, the surrounding counties, and out toward Levittown and the Lehigh Valley. This is the densest part of the state and the easiest handover to arrange.",
         "Pittsburgh covers the southwest and the western half generally. If you are anywhere from Washington County up toward Butler, that is your nearest.",
         "Hazleton sits in the northeast and reaches Scranton, Wilkes-Barre and the coal region — an area that would otherwise be a long way from either of the big cities.",
-        "Greencastle is in the south-central strip near the Maryland line, covering Chambersburg, Waynesboro and down toward Hagerstown.",
-        "Between them that is genuinely broad coverage. The thinner parts are the northern tier and the north-west — Erie is roughly 130 miles from Pittsburgh, which is a real drive. From there, mail-in with a prepaid label costs nothing and is usually the sensible call.",
+        "Between them that is still broad coverage by the standards of this directory. The thinner parts are the northern tier, the north-west and the south-central strip around Chambersburg and Waynesboro — Erie is roughly 130 miles from Pittsburgh, which is a real drive. From any of those, mail-in with a prepaid label costs nothing and is usually the sensible call.",
       ],
     },
     {
@@ -78,8 +81,8 @@ export const PA: PostBody = {
 
   faqs: [
     {
-      q: "Which of the four Pennsylvania buyers is nearest to me?",
-      a: "Philadelphia covers the southeast, Pittsburgh the west, Hazleton the northeast and coal region, and Greencastle the south-central strip near the Maryland line. If you are in the northern tier or near Erie you are a fair distance from all four, and mail-in is likely easier.",
+      q: "Which of the three Pennsylvania buyers is nearest to me?",
+      a: "Philadelphia covers the southeast, Pittsburgh the west, and Hazleton the northeast and coal region. If you are in the northern tier, near Erie, or in the south-central strip around Chambersburg, you are a fair distance from all three, and mail-in is likely easier.",
     },
     {
       q: "Why do Pennsylvania's figures cite 2022 when other states say 2023?",

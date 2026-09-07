@@ -185,6 +185,10 @@ function StateLinks() {
         Each state page lists the buyers serving it, what they accept, and how they pay.{" "}
         <Link href="/sell-test-strips" className="text-cash font-medium hover:underline">
           See all states and cities →
+        </Link>{" "}
+        Got 100+ pieces?{" "}
+        <Link href="/sell-test-strips-in-bulk" className="text-cash font-medium hover:underline">
+          We buy in bulk →
         </Link>
       </p>
       <div className="flex flex-wrap gap-2">

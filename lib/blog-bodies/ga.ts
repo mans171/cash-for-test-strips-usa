@@ -1,20 +1,26 @@
 import type { PostBody } from "./types"
 
 /**
- * Georgia — no in-state buyer. The story here is the Atlanta-versus-everywhere
- * else split: Sandy Springs 7.9% and Atlanta 10.6% against Macon-Bibb 17.3%,
- * Augusta-Richmond 16.7% and Columbus 15.5%. Nearly ten points inside one
- * state, and the metro that has the money has the lowest rate.
+ * Georgia — the Atlanta-versus-everywhere-else split: Sandy Springs 7.9% and
+ * Atlanta 10.6% against Macon-Bibb 17.3%, Augusta-Richmond 16.7% and Columbus
+ * 15.5%. Nearly ten points inside one state, and the metro that has the money
+ * has the lowest rate.
+ *
+ * UPDATED 2026-09-07: Georgia gained buyers — one covering the state and one
+ * in Lawrenceville, in the northeast Atlanta metro. That SHARPENS the post's
+ * angle rather than replacing it: the in-person option landed in the low-rate,
+ * high-income half of the split, and Macon, Augusta and Columbus still have
+ * nobody within reach.
  */
 export const GA: PostBody = {
   label: "Atlanta and the rest",
   title: "Selling Diabetic Test Strips in Georgia: Atlanta Is Not the Whole State",
   heading: "Selling Diabetic Test Strips in Georgia",
   metaDescription:
-    "Georgia has no in-state buyer. Macon reads 17.3% for diabetes against Sandy Springs at 7.9%. How to sell by post from anywhere in Georgia, and the two expired items worth keeping.",
+    "Georgia's in-person buyer is in the Atlanta metro, while Macon reads 17.3% for diabetes against Sandy Springs at 7.9%. How to sell from anywhere in Georgia, and the two expired items worth keeping.",
 
   lead: [
-    "There is no test strip buyer listed anywhere in Georgia — not in Atlanta, not in Savannah, nowhere. Mail-in is the honest answer here, and a prepaid label costs you nothing across all 751 of the state's ZIP codes.",
+    "Georgia has an in-person buyer in Lawrenceville, in the northeast Atlanta metro, and another covering the state. Outside the metro, mail-in remains the honest answer, and a prepaid label costs you nothing across all 751 of the state's ZIP codes.",
     "The more interesting thing about Georgia is how differently the condition sits across it. Macon-Bibb County reads 17.3% for diagnosed diabetes and Augusta-Richmond 16.7%, against 7.9% in Sandy Springs and 10.1% in Athens-Clarke County. That is a spread of more than nine points, and the wealthiest part of metro Atlanta has less than half the rate of middle Georgia.",
   ],
 
@@ -31,7 +37,7 @@ export const GA: PostBody = {
     {
       heading: "Selling by post from Georgia",
       paragraphs: [
-        "With no in-state buyer, everything here runs through the post, so the protections matter more than they would somewhere you could hand a box over and count the cash.",
+        "Outside the Atlanta metro the post is still how this happens, so the protections matter more than they would somewhere you could hand a box over and count the cash.",
         "Get the number in writing before anything ships. The actual total for what you actually have — brand, count, expiry dates — not a range and not an \"up to\" figure. A buyer who will not commit before the parcel leaves intends to revise once it has arrived, and at that point you have no leverage left.",
         "Use the prepaid label and keep the tracking number. Payment runs from when the parcel is received and verified rather than from when you posted it, so tracking is what puts a date on the clock starting. From Georgia, budget two to three days in transit.",
         "Photograph the sealed boxes with the dates and lot numbers visible before they go, and hold onto those photographs until the money lands. Do not open a box to photograph what is inside — opening it destroys the thing that gave it value.",
@@ -74,7 +80,7 @@ export const GA: PostBody = {
   faqs: [
     {
       q: "Is there a buyer in Atlanta?",
-      a: "Not on this directory — there is no in-person buyer listed anywhere in Georgia. Mail-in with a prepaid label is the route from anywhere in the state, and it costs you nothing.",
+      a: "In the metro, yes — there is one in Lawrenceville, in Gwinnett County northeast of the city, and another covering the state. From Macon, Augusta, Columbus or Savannah that is a long drive rather than a local option, and mail-in with a prepaid label costs you nothing from anywhere in Georgia.",
     },
     {
       q: "Why is the diabetes rate so different across Georgia?",
