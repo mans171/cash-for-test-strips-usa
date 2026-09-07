@@ -2,8 +2,9 @@ import type { MetadataRoute } from 'next'
 import { supabase } from '@/lib/supabase'
 import { STATE_BLOG_POSTS } from '@/lib/blog-posts'
 import { STATE_LABELS } from '@/lib/states'
-import { CITY_TARGETS } from '@/lib/city-geo'
 import { POST_REGISTRY } from '@/lib/posts'
+import { publishableCityTargets } from '@/lib/city-page-content'
+import type { Company } from '@/lib/types'
 
 const BASE_URL = 'https://cash4teststripsusa.com'
 
@@ -17,8 +18,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE_URL}/sell-test-strips`, changeFrequency: 'weekly', priority: 0.9 },
     { url: `${BASE_URL}/blog`, changeFrequency: 'weekly', priority: 0.8 },
     { url: `${BASE_URL}/sell`, changeFrequency: 'monthly', priority: 0.7 },
+    // Reseller-facing money page: its own search intent, not a blog post.
+    { url: `${BASE_URL}/sell-test-strips-in-bulk`, changeFrequency: 'monthly', priority: 0.9 },
     // /buyer is login-gated; Google rejected it on 2026-09-01 and it must not
-    // appear in the sitemap. Add noindex robots metadata to the page itself.
+    // appear in the sitemap. The page itself carries noindex robots metadata.
     { url: `${BASE_URL}/about`, changeFrequency: 'monthly', priority: 0.6 },
     { url: `${BASE_URL}/is-it-legal-to-sell-diabetic-test-strips`, changeFrequency: 'monthly', priority: 0.8 },
     { url: `${BASE_URL}/how-much-are-diabetic-test-strips-worth`, changeFrequency: 'monthly', priority: 0.8 },
@@ -54,16 +57,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     }))
 
-  const cityRoutes: MetadataRoute.Sitemap = CITY_TARGETS.map((c) => ({
+  // One query serves both the company routes and the city gate below. RLS
+  // (companies_public_read, USING active = true) already excludes deactivated
+  // buyers, so a buyer who leaves the network drops out of both at once.
+  const { data: companies } = await supabase
+    .from('companies')
+    .select('slug, lat, lng')
+    .eq('mail_in', false)
+
+  // A city page 404s when no buyer is within CITY_BUYER_RADIUS_MI — the
+  // anti-doorway gate, enforced in the page itself. The sitemap MUST apply the
+  // same rule via the same function, or removing a buyer leaves Google being
+  // told to crawl pages that no longer exist. That is exactly what happened on
+  // 2026-09-06 to /wv/charleston and /wv/huntington.
+  const buyersForGate = (companies ?? []) as unknown as Company[]
+  const cityRoutes: MetadataRoute.Sitemap = publishableCityTargets(buyersForGate).map((c) => ({
     url: `${BASE_URL}/sell-test-strips/${c.state.toLowerCase()}/${c.slug}`,
     changeFrequency: 'monthly',
     priority: 0.7,
   }))
-
-  const { data: companies } = await supabase
-    .from('companies')
-    .select('slug')
-    .eq('mail_in', false)
 
   const companyRoutes: MetadataRoute.Sitemap = (companies ?? []).map((c) => ({
     url: `${BASE_URL}/company/${c.slug}`,
