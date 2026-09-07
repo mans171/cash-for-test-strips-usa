@@ -3,6 +3,8 @@ import { supabase } from '@/lib/supabase'
 import { STATE_BLOG_POSTS } from '@/lib/blog-posts'
 import { STATE_LABELS } from '@/lib/states'
 import { CITY_TARGETS } from '@/lib/city-geo'
+import { nearbyBuyers } from '@/lib/city-page-content'
+import type { Company } from '@/lib/types'
 
 const BASE_URL = 'https://cash4teststripsusa.com'
 
@@ -44,16 +46,27 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     }))
 
-  const cityRoutes: MetadataRoute.Sitemap = CITY_TARGETS.map((c) => ({
+  // One query serves both the company routes and the city gate below. RLS
+  // (companies_public_read, USING active = true) already excludes deactivated
+  // buyers, so a buyer who leaves the network drops out of both at once.
+  const { data: companies } = await supabase
+    .from('companies')
+    .select('slug, lat, lng')
+    .eq('mail_in', false)
+
+  // A city page 404s when no buyer is within CITY_BUYER_RADIUS_MI — the
+  // anti-doorway gate, enforced in the page itself. The sitemap MUST apply the
+  // same rule via the same function, or removing a buyer leaves Google being
+  // told to crawl pages that no longer exist. That is exactly what happened on
+  // 2026-09-06 to /wv/charleston and /wv/huntington.
+  const buyersForGate = (companies ?? []) as unknown as Company[]
+  const cityRoutes: MetadataRoute.Sitemap = CITY_TARGETS.filter(
+    (c) => nearbyBuyers(c, buyersForGate).length > 0,
+  ).map((c) => ({
     url: `${BASE_URL}/sell-test-strips/${c.state.toLowerCase()}/${c.slug}`,
     changeFrequency: 'monthly',
     priority: 0.7,
   }))
-
-  const { data: companies } = await supabase
-    .from('companies')
-    .select('slug')
-    .eq('mail_in', false)
 
   const companyRoutes: MetadataRoute.Sitemap = (companies ?? []).map((c) => ({
     url: `${BASE_URL}/company/${c.slug}`,

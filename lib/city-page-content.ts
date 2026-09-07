@@ -16,7 +16,19 @@ import { STATE_LABELS } from "./states"
 export type NearbyBuyer = Company & { miles: number }
 
 /** Buyers with coordinates, ordered by distance from the city center. */
-export function nearbyBuyers(target: CityTarget, buyers: Company[], radiusMi = 100): NearbyBuyer[] {
+/** The anti-doorway radius. A city page may not publish unless a real buyer is
+ *  within this many miles (docs/seo/2026-08-12-city-page-spec.md Rule 2).
+ *  Exported and shared so app/sitemap.ts applies the SAME gate the page does —
+ *  on 2026-09-06 a buyer was deactivated, two West Virginia city pages
+ *  correctly began 404ing, and the sitemap went on advertising both to Google
+ *  because it listed CITY_TARGETS unconditionally. */
+export const CITY_BUYER_RADIUS_MI = 100
+
+export function nearbyBuyers(
+  target: CityTarget,
+  buyers: Company[],
+  radiusMi = CITY_BUYER_RADIUS_MI,
+): NearbyBuyer[] {
   const origin = cityCenter(target)
   return buyers
     .filter((b) => b.lat != null && b.lng != null)

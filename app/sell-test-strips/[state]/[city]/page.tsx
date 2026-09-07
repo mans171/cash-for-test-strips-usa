@@ -56,7 +56,9 @@ export default async function CityPage({ params }: Props) {
 
   const allInPerson = (inPersonData ?? []) as Company[];
   const rawMailIn = ((mailInData ?? []) as Company[])[0] ?? null;
-  const rawBuyers = nearbyBuyers(target, allInPerson, 100);
+  // Radius comes from the shared constant, not a literal, so this page and
+  // app/sitemap.ts cannot drift apart.
+  const rawBuyers = nearbyBuyers(target, allInPerson);
 
   // Anti-doorway gate, enforced again here (not just at generateStaticParams
   // build time): a page for a target with no buyer within range must not
