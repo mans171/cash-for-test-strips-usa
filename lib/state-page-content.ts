@@ -207,3 +207,29 @@ export function buildStateFaqs({
 
   return faqs
 }
+
+/**
+ * H1 for the /sell-test-strips/[state] buyer-directory pages.
+ *
+ * Must be structurally distinct from both:
+ *   - City-page H1 pattern: "Sell Diabetic Test Strips in [City], [State]"
+ *   - Blog-post H1 patterns: angle-based, e.g. "How Much Are Diabetic Test
+ *     Strips Worth in [State]?" or "Selling Diabetic Test Strips in [State]"
+ *
+ * State pages are buyer *directories* — their job is to surface who pays cash
+ * in that state, not to explain how or why to sell. Framing the H1 around
+ * "buyers" makes the page intent unambiguous to Google and avoids the
+ * duplicate-canonical signal that caused /sell-test-strips/tx to be
+ * outcompeted by the TX blog post and Dallas city page on 2026-09-01.
+ *
+ * Applied to ALL states so the fix is structural rather than a TX patch.
+ */
+export function statePageH1(stateName: string, hasLocalBuyers: boolean): string {
+  if (hasLocalBuyers) {
+    return `Diabetic Test Strip Buyers in ${stateName}`
+  }
+  // No local buyers yet: the page still has real utility (nearest out-of-state
+  // buyers, mail-in option), so phrase around the action rather than the
+  // missing asset.
+  return `Sell or Ship Test Strips from ${stateName} — Find a Buyer`
+}
