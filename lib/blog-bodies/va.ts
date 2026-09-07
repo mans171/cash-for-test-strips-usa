@@ -1,7 +1,11 @@
 import type { PostBody } from "./types"
 
 /**
- * Virginia — no in-state buyer despite 8.7 million people and 903 ZIP codes.
+ * Virginia — 8.7 million people, 903 ZIP codes, and nobody BASED in the state.
+ * UPDATED 2026-09-07: the Silver Spring, Maryland buyer now covers Virginia as
+ * well as Maryland, so the state is covered without anyone being in it. The
+ * post's spine is unchanged and still correct, because the geography did not
+ * move — he is still across the Potomac.
  * The spine is that Virginia's two ends face outward in opposite directions:
  * the northern suburbs sit in the Washington belt and the nearest listing to
  * them is across the river in Silver Spring, Maryland, while Hampton Roads and
@@ -18,14 +22,14 @@ import type { PostBody } from "./types"
  * Figures: CDC BRFSS 2023 via lib/state-health-data.ts. No dollar amounts.
  */
 export const VA: PostBody = {
-  label: "No buyer in Virginia — the state's two ends look to two neighbours",
+  label: "The state's two ends look to two neighbours",
   title: "Selling Diabetic Test Strips in Virginia: Where the Nearest Buyers Are",
   heading: "Selling Diabetic Test Strips in Virginia",
   metaDescription:
-    "There is no test strip buyer anywhere in Virginia. Northern Virginia's nearest listing is in Maryland and Hampton Roads looks to North Carolina — but mail-in works the same from all 903 ZIP codes.",
+    "Virginia's listed buyer is across the Potomac in Silver Spring, Maryland, and Hampton Roads looks to North Carolina instead — but mail-in works the same from all 903 ZIP codes.",
 
   lead: [
-    "Virginia has 8.7 million people, 903 ZIP codes, and no listed diabetic supply buyer anywhere inside it. Not in Richmond, not in Virginia Beach, not in Arlington. For a state of this size that is unusual, and it is the first thing anyone searching this should be told.",
+    "Virginia has 8.7 million people, 903 ZIP codes, and nobody based inside it. The buyer who covers Virginia is across the Potomac in Silver Spring, Maryland. There is nobody in Richmond, nobody in Virginia Beach and nobody in Arlington, and for a state of this size that is unusual — it is the first thing anyone searching this should be told.",
     "What Virginia does have is neighbours. The northern suburbs sit inside the Washington commuter belt, where the nearest listing is across the Potomac in Silver Spring, Maryland. Hampton Roads and the southside look the other way, towards the North Carolina listings. The middle of the state looks at nothing in particular. That is why this page is organised by which part of Virginia you are in rather than by a single answer.",
   ],
 
@@ -83,8 +87,8 @@ export const VA: PostBody = {
 
   faqs: [
     {
-      q: "Is there really no buyer in Richmond or Virginia Beach?",
-      a: "None listed, in either, or anywhere else in Virginia. The nearest in-person options are in Maryland for the northern suburbs and in North Carolina for the south, and for most people neither is worth the journey when a prepaid label is free.",
+      q: "Is there really nobody in Richmond or Virginia Beach?",
+      a: "Nobody based in either, or anywhere else in Virginia. The buyer covering the state works out of Silver Spring, Maryland, which suits the northern suburbs; the southside is closer to the North Carolina listings. For most people in Richmond or Hampton Roads neither is worth the journey when a prepaid label is free.",
     },
     {
       q: "I live in Arlington. Should I go to the Maryland buyer?",

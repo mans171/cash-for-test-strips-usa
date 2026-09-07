@@ -12,7 +12,13 @@ import { COMPANY_COLUMNS } from "@/lib/company-columns";
 import { STATE_LABELS } from "@/lib/states";
 import { CITY_TARGETS, type CityTarget } from "@/lib/city-geo";
 import { zipsNearPoint } from "@/lib/zip-lookup";
-import { buildCityFaqs, cityIntro, nearbyBuyers, siblingCities } from "@/lib/city-page-content";
+import {
+  buildCityFaqs,
+  cityIntro,
+  nearbyBuyers,
+  publishableCityTargets,
+  siblingCities,
+} from "@/lib/city-page-content";
 
 type Props = { params: Promise<{ state: string; city: string }> };
 
@@ -56,7 +62,9 @@ export default async function CityPage({ params }: Props) {
 
   const allInPerson = (inPersonData ?? []) as Company[];
   const rawMailIn = ((mailInData ?? []) as Company[])[0] ?? null;
-  const rawBuyers = nearbyBuyers(target, allInPerson, 100);
+  // Radius comes from the shared constant, not a literal, so this page and
+  // app/sitemap.ts cannot drift apart.
+  const rawBuyers = nearbyBuyers(target, allInPerson);
 
   // Anti-doorway gate, enforced again here (not just at generateStaticParams
   // build time): a page for a target with no buyer within range must not
@@ -75,7 +83,9 @@ export default async function CityPage({ params }: Props) {
   const mailIn = rawMailIn ? (isAuthenticated ? rawMailIn : stripCompanyContact(rawMailIn)) : null;
 
   const faqs = buildCityFaqs({ target, buyers: rawBuyers, hasMailIn: !!rawMailIn });
-  const siblings = siblingCities(target.slug, 6);
+  // Pass the live buyer set so the footer never links to a city page that
+  // would 404 — see publishableCityTargets in lib/city-page-content.ts.
+  const siblings = siblingCities(target.slug, 6, publishableCityTargets(allInPerson));
   const zips = await zipsNearPoint(supabase, { lat: target.lat, lng: target.lng }, target.state, 30, 20);
   const intro = cityIntro(target, rawBuyers);
   const stateLabel = STATE_LABELS[target.state] ?? target.state;
