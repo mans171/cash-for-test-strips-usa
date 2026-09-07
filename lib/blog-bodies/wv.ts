@@ -6,12 +6,14 @@ import type { PostBody } from "./types"
  * different and much stronger: 15.9% of adults have diagnosed diabetes, the
  * highest rate of any state in the country.
  *
- * So this post is built on destination rather than on clearing a house. It is
- * the only one of the older-population states with an in-state buyer (Charleston
- * area), and the only one where the honest answer to "does any of this actually
- * help anyone nearby" is unambiguous. That gives it a spine none of Delaware,
- * Hawaii, Maine or Vermont can share, and it lets the expired-supplies
- * correction be framed as waste rather than as a missed payout.
+ * So this post is built on need rather than on clearing a house: the honest
+ * answer to "does any of this actually help anyone" is unambiguous here in a
+ * way it is not elsewhere, which lets the expired-supplies correction be framed
+ * as waste rather than as a missed payout.
+ *
+ * NOTE (2026-09-06): the state's one in-person buyer was removed from the
+ * network, so West Virginia is now a mail-in state. Every claim about a
+ * Charleston-area buyer was rewritten out on that date.
  *
  * Structure is deliberately front-light and FAQ-heavy, because a state with
  * partial coverage generates logistics questions rather than reassurance
@@ -24,11 +26,11 @@ export const WV: PostBody = {
   title: "Selling Diabetic Test Strips in West Virginia: The Highest Rate in the Country",
   heading: "Selling Diabetic Test Strips in West Virginia",
   metaDescription:
-    "15.9% of West Virginia adults have diagnosed diabetes — the highest rate of any state. There is a buyer in the Charleston area, an 11.2-point gap between Beckley and Morgantown, and two expired items worth keeping.",
+    "15.9% of West Virginia adults have diagnosed diabetes — the highest rate of any state. An 11.2-point gap between Beckley and Morgantown, how mail-in works from a rural state, and two expired items worth keeping.",
 
   lead: [
     "15.9% of adults in West Virginia have diagnosed diabetes. That is the highest rate of any state in the country, against a national figure of 12.1%, and it is the fact that shapes everything on this page.",
-    "It changes the usual answer to the question people ask when they find sealed supplies in a relative's house, which is whether any of this is actually needed by anyone. In most states that answer requires some qualification. Here it does not. Roughly one adult in six is managing this condition, and West Virginia is also one of the few older-population states with a buyer operating inside it.",
+    "It changes the usual answer to the question people ask when they find sealed supplies in a relative's house, which is whether any of this is actually needed by anyone. In most states that answer requires some qualification. Here it does not. Roughly one adult in six in this state is managing the condition these supplies are for.",
   ],
 
   sections: [
@@ -50,12 +52,12 @@ export const WV: PostBody = {
       ],
     },
     {
-      heading: "Charleston is the one place in the state with a buyer",
+      heading: "There is no in-state buyer, and that matters less than it sounds",
       paragraphs: [
-        "There is a buyer listed in the Charleston area who will take supplies in person. That is the only in-state option, and it is worth being precise about what it does and does not cover.",
-        "Huntington, Beckley, Parkersburg, Wheeling, Weirton, Martinsburg, Fairmont and Clarksburg have no listed buyer of their own. Whether the trip to Charleston is worth making from any of them depends entirely on how much you have — for two or three boxes it plainly is not, and for a large lot out of a house clear-out it can be, since you settle in one visit rather than waiting on a parcel.",
-        "The panhandles are a separate case. Weirton and Wheeling sit at the northern tip and Martinsburg at the eastern end, and neither is meaningfully connected to Charleston by geography. If you are in the eastern panhandle it is worth checking the Maryland page as well as this one before assuming Charleston is your nearest option.",
-        "For everywhere else, mail-in is the sensible default. The label is prepaid and costs nothing from any of West Virginia's 738 ZIP codes, which is a lot of ZIP codes for 1,769,795 people and a fair indication of how rural most of the state is.",
+        "No buyer is listed anywhere in West Virginia, so this is a postal transaction wherever you are. That is worth being precise about, because the alternative advice — drive somewhere and hand them over — does not apply here.",
+        "Charleston, Huntington, Beckley, Morgantown, Parkersburg, Wheeling, Weirton, Martinsburg, Fairmont and Clarksburg are all in the same position. There is no drive that shortens this for anyone, which at least removes a decision: the question is not whether the trip is worth making, only whether the boxes are worth posting.",
+        "The panhandles are still a separate case, for a different reason. Weirton and Wheeling sit at the northern tip and Martinsburg at the eastern end, and both are closer to another state's buyers than to anything in West Virginia. If you are in the eastern panhandle, the Maryland page is worth reading alongside this one.",
+        "The label is prepaid and costs nothing from any of West Virginia's 738 ZIP codes, which is a lot of ZIP codes for 1,769,795 people and a fair indication of how rural most of the state is. In a state shaped like this one, posting was usually the better answer even when there was somewhere to drive to.",
       ],
     },
     {
@@ -68,11 +70,10 @@ export const WV: PostBody = {
       ],
     },
     {
-      heading: "Doing the handover or the parcel properly",
+      heading: "Doing the parcel properly",
       paragraphs: [
-        "If you are driving to Charleston, settle the figure on the phone first. Brand, count, expiry dates. The meeting should be a handover rather than a negotiation, and a number that moves once you have arrived is one to walk away from, particularly after a drive across the state.",
-        "Meet somewhere public and busy in daylight, bring everything sealed, and bring the quantity you described. Turning up with a different count is the quickest way to reopen a price that was already agreed.",
-        "If you are posting instead, get the figure in writing before the parcel leaves, use the prepaid label and keep the tracking number. Photograph each sealed box with the expiry date and lot number visible, and hold onto those photographs until payment lands.",
+        "Settle the figure before the parcel leaves, and get it in writing. Brand, count, expiry dates. A buyer who will not commit to a number before shipping intends to revise it afterwards, and once the box is in their building you have no leverage left.",
+        "Use the prepaid label and keep the tracking number. Photograph each sealed box with the expiry date and lot number visible, and hold onto those photographs until payment lands. Do not open anything to photograph the contents — opening a box destroys the only thing that made it sellable.",
         "Payment follows within 24 hours of the parcel being received and verified. Verification means somebody has checked the boxes against your description, which is a step rather than a stall — and it is why an accurate description at the start is in your own interest.",
       ],
     },
@@ -81,11 +82,11 @@ export const WV: PostBody = {
   faqs: [
     {
       q: "Can I sell in person anywhere in West Virginia?",
-      a: "In the Charleston area, yes — that is the only listed in-state buyer. Huntington, Beckley, Morgantown, Parkersburg, Wheeling, Weirton, Martinsburg, Fairmont and Clarksburg have no buyer of their own, so from those places it is either the drive or a prepaid parcel.",
+      a: "Not at present. No buyer is listed anywhere in the state, so from Charleston, Huntington, Beckley, Morgantown, Parkersburg, Wheeling, Weirton, Martinsburg, Fairmont or Clarksburg alike, a prepaid parcel is the route. It costs you nothing from any ZIP code in West Virginia.",
     },
     {
-      q: "I'm in Martinsburg. Is Charleston really my nearest option?",
-      a: "Not necessarily. The eastern panhandle is not naturally connected to Charleston, so it is worth checking the Maryland page alongside this one. Mail-in also costs you nothing from anywhere in the state, which for a small quantity is usually the sensible answer.",
+      q: "I'm in Martinsburg. Is there anywhere nearer than posting them?",
+      a: "The eastern panhandle sits closer to Maryland than to anywhere in West Virginia, so the Maryland page is worth reading alongside this one. Mail-in costs you nothing from anywhere in the state either way, and for a small quantity that is usually the sensible answer.",
     },
     {
       q: "Which expired supplies are actually worth keeping?",
