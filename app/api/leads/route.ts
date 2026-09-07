@@ -5,10 +5,10 @@ import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { sendEmailOrThrow } from '@/lib/email'
 import { getCompanyContact } from '@/lib/order-matching'
 import type { OrderItem } from '@/lib/types'
+import { OWNER_EMAIL } from '@/lib/owner'
 
 const VALID_CONDITIONS = new Set(['sealed', 'unsealed'])
 const MAX_ITEMS = 50
-const OWNER_EMAIL = 'feldon.richards@gmail.com'
 
 function isValidItem(item: unknown): item is OrderItem {
   if (!item || typeof item !== 'object') return false

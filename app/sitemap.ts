@@ -17,6 +17,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE_URL}/sell-test-strips`, changeFrequency: 'weekly', priority: 0.9 },
     { url: `${BASE_URL}/blog`, changeFrequency: 'weekly', priority: 0.8 },
     { url: `${BASE_URL}/sell`, changeFrequency: 'monthly', priority: 0.7 },
+    // Reseller-facing money page: its own search intent, not a blog post.
+    { url: `${BASE_URL}/sell-test-strips-in-bulk`, changeFrequency: 'monthly', priority: 0.9 },
     { url: `${BASE_URL}/buyer`, changeFrequency: 'monthly', priority: 0.5 },
     { url: `${BASE_URL}/about`, changeFrequency: 'monthly', priority: 0.6 },
     { url: `${BASE_URL}/is-it-legal-to-sell-diabetic-test-strips`, changeFrequency: 'monthly', priority: 0.8 },
