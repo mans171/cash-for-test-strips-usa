@@ -48,11 +48,13 @@ export const CITY_TARGETS: CityTarget[] = [
   { name: "Durham", state: "NC", slug: "durham", lat: 35.9940, lng: -78.8986 },
   { name: "Fort Worth", state: "TX", slug: "fort-worth", lat: 32.7555, lng: -97.3308 },
   { name: "Greensboro", state: "NC", slug: "greensboro", lat: 36.0726, lng: -79.7920 },
+  { name: "Greenville", state: "SC", slug: "greenville", lat: 34.8526, lng: -82.394 },
   { name: "Henderson", state: "NV", slug: "henderson", lat: 36.0395, lng: -114.9817 },
   { name: "Huntington", state: "WV", slug: "huntington", lat: 38.4192, lng: -82.4452 },
   { name: "Kansas City", state: "MO", slug: "kansas-city", lat: 39.0997, lng: -94.5786 },
   { name: "Las Vegas", state: "NV", slug: "las-vegas", lat: 36.1699, lng: -115.1398 },
   { name: "Miami", state: "FL", slug: "miami", lat: 25.7617, lng: -80.1918 },
+  { name: "Orlando", state: "FL", slug: "orlando", lat: 28.5384, lng: -81.3789 },
   { name: "Philadelphia", state: "PA", slug: "philadelphia", lat: 39.9526, lng: -75.1652 },
   { name: "Pittsburgh", state: "PA", slug: "pittsburgh", lat: 40.4406, lng: -79.9959 },
   { name: "Portland", state: "OR", slug: "portland", lat: 45.5152, lng: -122.6784 },
@@ -61,6 +63,7 @@ export const CITY_TARGETS: CityTarget[] = [
   { name: "San Antonio", state: "TX", slug: "san-antonio", lat: 29.4241, lng: -98.4936 },
   { name: "San Diego", state: "CA", slug: "san-diego", lat: 32.7157, lng: -117.1611 },
   { name: "Stockton", state: "CA", slug: "stockton", lat: 37.9577, lng: -121.2908 },
+  { name: "Toledo", state: "OH", slug: "toledo", lat: 41.6528, lng: -83.5379 },
   { name: "New York City", state: "NY", slug: "new-york-city", lat: 40.7128, lng: -74.0060 },
 ]
 
