@@ -3,6 +3,9 @@ import type { LatLng } from "./geo"
 /**
  * Wave 1 city-page targets: US metros with a verified in-person buyer within
  * 50 miles, confirmed against live Supabase `companies` data on 2026-08-15
+ * (Atlanta added 2026-09-07 on the same rule: Nova Diabetic Supply in
+ * Lawrenceville is 26.5mi from downtown, and 132 Georgia ZIPs sit within 30mi
+ * of the centre — both measured live, not estimated)
  * (not the earlier planning-doc estimates in docs/seo/2026-08-12-metro-target-map.md,
  * which explicitly required re-verification before publishing).
  *
@@ -32,6 +35,7 @@ export type CityTarget = {
 
 export const CITY_TARGETS: CityTarget[] = [
   { name: "Arlington", state: "TX", slug: "arlington", lat: 32.7357, lng: -97.1081 },
+  { name: "Atlanta", state: "GA", slug: "atlanta", lat: 33.749, lng: -84.388 },
   { name: "Aurora", state: "CO", slug: "aurora", lat: 39.7294, lng: -104.8319 },
   { name: "Baltimore", state: "MD", slug: "baltimore", lat: 39.2904, lng: -76.6122 },
   { name: "Baton Rouge", state: "LA", slug: "baton-rouge", lat: 30.4515, lng: -91.1871 },

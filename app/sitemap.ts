@@ -2,8 +2,7 @@ import type { MetadataRoute } from 'next'
 import { supabase } from '@/lib/supabase'
 import { STATE_BLOG_POSTS } from '@/lib/blog-posts'
 import { STATE_LABELS } from '@/lib/states'
-import { CITY_TARGETS } from '@/lib/city-geo'
-import { nearbyBuyers } from '@/lib/city-page-content'
+import { publishableCityTargets } from '@/lib/city-page-content'
 import type { Company } from '@/lib/types'
 
 const BASE_URL = 'https://cash4teststripsusa.com'
@@ -60,9 +59,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // told to crawl pages that no longer exist. That is exactly what happened on
   // 2026-09-06 to /wv/charleston and /wv/huntington.
   const buyersForGate = (companies ?? []) as unknown as Company[]
-  const cityRoutes: MetadataRoute.Sitemap = CITY_TARGETS.filter(
-    (c) => nearbyBuyers(c, buyersForGate).length > 0,
-  ).map((c) => ({
+  const cityRoutes: MetadataRoute.Sitemap = publishableCityTargets(buyersForGate).map((c) => ({
     url: `${BASE_URL}/sell-test-strips/${c.state.toLowerCase()}/${c.slug}`,
     changeFrequency: 'monthly',
     priority: 0.7,

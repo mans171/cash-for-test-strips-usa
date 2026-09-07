@@ -24,6 +24,17 @@ export type NearbyBuyer = Company & { miles: number }
  *  because it listed CITY_TARGETS unconditionally. */
 export const CITY_BUYER_RADIUS_MI = 100
 
+/** The city targets that will actually RENDER, given the live buyer set.
+ *  A city page 404s when no buyer is within CITY_BUYER_RADIUS_MI, so anything
+ *  that advertises city pages — the sitemap, the sibling links at the foot of
+ *  every city page — must ask this instead of reading CITY_TARGETS raw.
+ *  Learned 2026-09-06/07: deactivating one buyer 404'd two West Virginia city
+ *  pages while the sitemap went on listing them AND every other city page went
+ *  on linking to them. */
+export function publishableCityTargets(buyers: Company[]): CityTarget[] {
+  return CITY_TARGETS.filter((t) => nearbyBuyers(t, buyers).length > 0)
+}
+
 export function nearbyBuyers(
   target: CityTarget,
   buyers: Company[],
@@ -42,14 +53,18 @@ export function nearbyBuyers(
  * relevant to someone comparing in-state options), then the nearest
  * out-of-state cities by center-to-center distance to fill the quota.
  */
-export function siblingCities(citySlug: string, limit = 6): CityTarget[] {
+export function siblingCities(citySlug: string, limit = 6, publishable?: CityTarget[]): CityTarget[] {
+  const pool = publishable ?? CITY_TARGETS
   const current = CITY_TARGETS.find((c) => c.slug === citySlug)
   if (!current) return []
 
   const byDistance = (a: CityTarget, b: CityTarget) =>
     haversineMiles(cityCenter(current), cityCenter(a)) - haversineMiles(cityCenter(current), cityCenter(b))
 
-  const others = CITY_TARGETS.filter((c) => c.slug !== citySlug)
+  // `publishable` omitted keeps the old behaviour for any caller that has no
+  // buyer list to hand; the city page always passes one, so live pages never
+  // link to a target that would 404.
+  const others = pool.filter((c) => c.slug !== citySlug)
   const sameState = others.filter((c) => c.state === current.state).sort(byDistance)
   const rest = others.filter((c) => c.state !== current.state).sort(byDistance)
 
