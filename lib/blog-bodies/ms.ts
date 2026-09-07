@@ -7,22 +7,28 @@ import type { PostBody } from "./types"
  * state, is still at roughly the national average of 12.1%. Mississippi has no
  * low end.
  *
- * That, plus 11.5% of working-age adults uninsured and no buyer anywhere in
- * the state, makes this the one post where the honest subject is where these
+ * That, plus 11.5% of working-age adults uninsured and nobody BASED in the
+ * state, makes this the one post where the honest subject is where these
  * supplies actually go and who ends up using them. It is a demand-side page,
  * not a coverage page, and it does not pretend the mail-in route puts anything
  * back into the Delta.
+ *
+ * UPDATED 2026-09-07: a buyer now covers Mississippi, but is not located in it.
+ * The post says exactly that and no more. It deliberately does NOT promise an
+ * in-person handover in Jackson, Greenville or on the Coast, because nobody is
+ * there to do one — claiming otherwise would be the single most misleading
+ * thing this page could say.
  */
 export const MS: PostBody = {
-  label: "Highest need, no buyer",
+  label: "Highest need, nobody based here",
   title: "Selling Diabetic Test Strips in Mississippi: Where These Supplies Actually Go",
   heading: "Selling Diabetic Test Strips in Mississippi",
   metaDescription:
-    "Greenville's diabetes rate is 22.5% — more than one adult in five. Mississippi has no in-state buyer. What sealed supplies are worth, why Medicaid stock can't be sold, and the two expired items to keep.",
+    "Greenville's diabetes rate is 22.5% — more than one adult in five. Mississippi is covered, but no buyer is based in the state. What sealed supplies are worth, why Medicaid stock can't be sold, and the two expired items to keep.",
 
   lead: [
     "In Greenville, 22.5% of adults have diagnosed diabetes. That is more than one adult in five, and it is the highest city figure we hold for any state. Meridian reads 19.7% and Jackson 18.4%.",
-    "Mississippi as a whole sits at 15.5% against a national rate of 12.1%. There is no diabetic supply buyer listed anywhere in the state. Those two facts sit uncomfortably together and this page is not going to pretend otherwise.",
+    "Mississippi as a whole sits at 15.5% against a national rate of 12.1%. A buyer covers the state, but none is based in it — not in Jackson, not on the Coast, not in the Delta. Those facts sit uncomfortably together and this page is not going to pretend otherwise.",
   ],
 
   sections: [
@@ -45,9 +51,9 @@ export const MS: PostBody = {
       ],
     },
     {
-      heading: "There is no buyer in Mississippi, and that is unlikely to change",
+      heading: "Nobody is based in Mississippi, and that is unlikely to change",
       paragraphs: [
-        "Nobody is listed in Jackson, on the Gulf Coast, in the Delta or anywhere else in the state. It is a genuine gap and not an oversight in the listings.",
+        "Mississippi is covered on this directory, but nobody operates out of Jackson, the Gulf Coast, the Delta or anywhere else in the state. That is a genuine gap rather than an oversight in the listings, and it is the difference between being able to sell and being able to hand a box over locally.",
         "The reason is that an in-person buyer needs volume within a short drive to justify the driving, and Mississippi spreads under three million people across 427 ZIP codes with no single dominant metro area. High prevalence does not by itself create a local trade, because the people with the condition are the ones consuming supplies rather than the ones with a cupboard of spares.",
         "So this is a mail-in state. The prepaid label costs you nothing from any of those 427 ZIP codes, the Delta included, and payment follows within 24 hours of the parcel arriving and being verified.",
       ],
@@ -91,7 +97,7 @@ export const MS: PostBody = {
     },
     {
       q: "Is there anywhere in Jackson or on the Coast I can sell in person?",
-      a: "Not on this directory. There is no listed buyer anywhere in Mississippi, and mail-in with a prepaid label is the honest answer statewide. If a buyer sets up in Jackson or Gulfport, they will appear on the Mississippi page.",
+      a: "Nobody is based there. Mississippi is covered by a listing, so you can sell from anywhere in the state, but a prepaid parcel is the practical route rather than a local handover. If someone sets up in Jackson or Gulfport, they will appear on the Mississippi page.",
     },
     {
       q: "I've got expired Dexcom sensors. Are those worth anything?",
