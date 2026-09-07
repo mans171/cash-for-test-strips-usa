@@ -1,8 +1,11 @@
 import type { PostBody } from "./types"
 
 /**
- * Oregon — the Vancouver, WA buyer now covers Oregon too (added 2026-09-06),
- * and he is still physically across the Columbia rather than inside the state,
+ * Oregon — the Vancouver, WA buyer covers Oregon as well as Washington
+ * (confirmed by Feldon 2026-09-06), while still being physically across the
+ * Columbia rather than inside the state. The TITLE is deliberately unchanged:
+ * "your nearest buyer is across the river" is still true and still the useful
+ * fact, and it never claimed the state was uncovered.
  * which sits directly across the Columbia from Portland. For a Portland-metro
  * reader the nearest in-person buyer is minutes away and in another state.
  * That is a specific, checkable, genuinely useful thing to tell them, and no
@@ -19,22 +22,22 @@ import type { PostBody } from "./types"
  * nobody else.
  */
 export const OR: PostBody = {
-  label: "The buyer is across the river",
+  label: "Covered from across the river",
   title: "Selling Diabetic Test Strips in Oregon: Your Nearest Buyer Is Across the River",
   heading: "Selling Diabetic Test Strips in Oregon",
   metaDescription:
     "Oregon's listed buyer is in Vancouver, across the Columbia from Portland — a bridge from the metro, a long way from everywhere else. What that's worth, what it isn't, and the two expired items most guides tell you to bin.",
 
   lead: [
-    "There is no diabetic supply buyer listed anywhere in Oregon. That sounds worse than it is, because of where the nearest one happens to sit.",
-    "The Washington listing is in Vancouver. Vancouver is on the north bank of the Columbia, directly across the river from Portland. If you live in the Portland metro, your nearest in-person buyer is a bridge away — in a different state, but not a different journey.",
+    "Oregon has one listed buyer, and he is not in Oregon. That sounds worse than it is, because of where he sits.",
+    "He is in Vancouver, on the north bank of the Columbia, directly across the river from Portland, and he covers Oregon as well as Washington. If you live in the Portland metro, your nearest in-person buyer is a bridge away — in a different state, but not a different journey.",
   ],
 
   sections: [
     {
       heading: "A state line that is not a distance",
       paragraphs: [
-        "\"No buyer in your state\" usually means a long drive or no drive at all. In Oregon it means crossing a river inside one metropolitan area, which is a trip a large number of Portlanders already make regularly for entirely ordinary reasons.",
+        "A buyer based in another state usually means a long drive or no drive at all. In Oregon it means crossing a river inside one metropolitan area, which is a trip a large number of Portlanders already make regularly for entirely ordinary reasons.",
         "Nothing about selling supplies changes when you cross into Washington. The same conditions apply on either bank: the boxes have to be factory-sealed, they cannot have come through Medicare or Medicaid, and in-date strips want at least six months left on them. You are not doing anything different by driving over the bridge.",
         "Ring first and agree a number before you go. Describe what you have accurately — brand, box count, quantity, expiry dates as printed — because a figure quoted against a rough description is a figure that moves when someone sees the boxes.",
       ],
@@ -44,7 +47,7 @@ export const OR: PostBody = {
       paragraphs: [
         "Portland reads 8.9% for diagnosed diabetes. Gresham, on the eastern edge of the metro, reads 11.3%. Beaverton is 9.6% and Hillsboro 9.1%, both west of the city. All four are within reasonable reach of the Vancouver listing, and between them they account for a large share of Oregon's population.",
         "Salem is further south at 11.7%. Eugene at 9.4% and Springfield at 11.0% are further still, and Medford at 11.9% is at the opposite end of the state entirely. Bend, at 8.9%, is over the mountains.",
-        "For all of those, the bridge is irrelevant and the postal route is the real one. That is most of Oregon geographically, even if it is not most of Oregon by headcount. Nobody should read \"there's a buyer across the river\" as coverage of the state, because it is not.",
+        "He covers those places too, but coverage and distance are different things. From Medford or Bend the bridge is irrelevant and the postal route is the real one — that is most of Oregon geographically, even if it is not most of Oregon by headcount. Being covered on paper is not the same as being within a sensible drive, and it is worth asking on the phone which one applies to you before assuming either.",
       ],
     },
     {
