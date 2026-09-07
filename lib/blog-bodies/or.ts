@@ -1,7 +1,8 @@
 import type { PostBody } from "./types"
 
 /**
- * Oregon — no in-state buyer, but the Washington listing is in Vancouver,
+ * Oregon — the Vancouver, WA buyer now covers Oregon too (added 2026-09-06),
+ * and he is still physically across the Columbia rather than inside the state,
  * which sits directly across the Columbia from Portland. For a Portland-metro
  * reader the nearest in-person buyer is minutes away and in another state.
  * That is a specific, checkable, genuinely useful thing to tell them, and no
@@ -22,7 +23,7 @@ export const OR: PostBody = {
   title: "Selling Diabetic Test Strips in Oregon: Your Nearest Buyer Is Across the River",
   heading: "Selling Diabetic Test Strips in Oregon",
   metaDescription:
-    "Oregon has no in-state buyer — but the Washington listing is in Vancouver, across the Columbia from Portland. What that's worth, what it isn't, and the two expired items most guides tell you to bin.",
+    "Oregon's listed buyer is in Vancouver, across the Columbia from Portland — a bridge from the metro, a long way from everywhere else. What that's worth, what it isn't, and the two expired items most guides tell you to bin.",
 
   lead: [
     "There is no diabetic supply buyer listed anywhere in Oregon. That sounds worse than it is, because of where the nearest one happens to sit.",
@@ -51,7 +52,7 @@ export const OR: PostBody = {
       paragraphs: [
         "Statewide, 11.2% of Oregon adults have diagnosed diabetes against a national rate of 12.1%. What is interesting is not the average but how little the state departs from it.",
         "The widest gap between any two Oregon cities we hold figures for is 4.1 points: Medford at 11.9% against Corvallis at 7.8%. Compare that with Michigan, where Detroit and Ann Arbor are 12.8 points apart, or Mississippi, where the spread runs to nearly eleven. Oregon simply does not have a city that is dramatically worse off than the rest.",
-        "That evenness is part of why no buyer has set up here. In-person buying depends on a dense pocket of demand worth driving to, and Oregon's demand is spread thinly and fairly consistently across a state with 428 ZIP codes.",
+        "That evenness is part of why nobody has set up inside the state itself. In-person buying depends on a dense pocket of demand worth driving to, and Oregon's demand is spread thinly and fairly consistently across a state with 428 ZIP codes — so the one buyer who serves Oregon does it from the Washington side of the Portland metro.",
         "The one figure that stands out is age: 19.9% of Oregonians are 65 or over. That is where most sellable supplies come from — a prescription changes, someone moves into care, or a family clearing a house finds a cupboard of sealed boxes nobody knew about.",
       ],
     },
