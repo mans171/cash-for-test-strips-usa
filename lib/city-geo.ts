@@ -60,6 +60,7 @@ export const CITY_TARGETS: CityTarget[] = [
   { name: "Portland", state: "OR", slug: "portland", lat: 45.5152, lng: -122.6784 },
   { name: "Raleigh", state: "NC", slug: "raleigh", lat: 35.7796, lng: -78.6382 },
   { name: "Sacramento", state: "CA", slug: "sacramento", lat: 38.5816, lng: -121.4944 },
+  { name: "Salt Lake City", state: "UT", slug: "salt-lake-city", lat: 40.7608, lng: -111.8910 },
   { name: "San Antonio", state: "TX", slug: "san-antonio", lat: 29.4241, lng: -98.4936 },
   { name: "San Diego", state: "CA", slug: "san-diego", lat: 32.7157, lng: -117.1611 },
   { name: "Stockton", state: "CA", slug: "stockton", lat: 37.9577, lng: -121.2908 },
