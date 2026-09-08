@@ -11,6 +11,11 @@ const NAV_LINKS = [
   // needs an inbound link from every page rather than just the homepage.
   { href: "/sell-test-strips", label: "By State" },
   { href: "/how-much-are-diabetic-test-strips-worth", label: "Price Guide" },
+  // Reseller-facing money page. It launched 2026-09-07 linked only from the
+  // homepage footer area and one line on /directory, and was effectively
+  // invisible — Feldon could not find it on his own site. A page aimed at
+  // businesses needs to be reachable from every page, not discovered.
+  { href: "/sell-test-strips-in-bulk", label: "Sell in Bulk" },
   { href: "/blog", label: "Blog" },
   { href: "/#how-it-works", label: "How It Works" },
 ];
