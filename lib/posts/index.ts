@@ -22,6 +22,10 @@ export type { RegistryPost, PostFaq } from "./types"
 import { recyclingDiabeticSupplies } from "./recycling-diabetic-supplies"
 import { oldDexcomSensorsAfterSwitching } from "./old-dexcom-sensors-after-switching"
 import { insuranceChangedBrands } from "./insurance-changed-brands"
+import { doTestStripsExpire } from "./do-test-strips-expire"
+import { deceasedRelativeDiabeticSupplies } from "./deceased-relative-diabetic-supplies"
+import { switchedToInsulinPump } from "./switched-to-insulin-pump"
+import { leftoverOmnipodPods } from "./leftover-omnipod-pods"
 
 /**
  * All non-state registry posts, newest first.
@@ -30,6 +34,10 @@ import { insuranceChangedBrands } from "./insurance-changed-brands"
  * in the right order without a runtime sort.
  */
 export const POST_REGISTRY: RegistryPost[] = [
+  leftoverOmnipodPods,
+  switchedToInsulinPump,
+  deceasedRelativeDiabeticSupplies,
+  doTestStripsExpire,
   insuranceChangedBrands,
   oldDexcomSensorsAfterSwitching,
   recyclingDiabeticSupplies,
