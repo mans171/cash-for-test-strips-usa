@@ -6,18 +6,19 @@ import type { PostBody } from "./types"
  * makes Utah the one state where the honest framing is "this probably matters
  * less here than anywhere else, and here is what that means for you."
  *
- * No in-state buyer.
+ * In-state buyer in Salt Lake City covering the Wasatch Front; the rest of
+ * the state goes by post.
  */
 export const UT: PostBody = {
   label: "Lowest rate in the US",
   title: "Selling Diabetic Test Strips in Utah: The Lowest-Diabetes State in the Country",
   heading: "Selling Diabetic Test Strips in Utah",
   metaDescription:
-    "Utah has the lowest diagnosed diabetes rate in the US at 8.5%, and the youngest population. What that means if you're holding unused supplies, and how to sell them from a state with no local buyer.",
+    "Utah has the lowest diagnosed diabetes rate in the US at 8.5%, and the youngest population. What that means if you're holding unused supplies, where to sell them in person along the Wasatch Front, and how to sell by post from everywhere else.",
 
   lead: [
     "Utah has the lowest rate of diagnosed diabetes of any state in the country — 8.5% of adults, against a national rate of 12.1%. It is also the youngest state, with just 12.4% of residents aged 65 or over, where most states sit between 17 and 22%.",
-    "Both of those facts work against there being much of a local market here, and there is no buyer listed anywhere in Utah. But they cut the other way too: fewer people locally means the supplies you are holding are more useful somewhere else, not less useful overall.",
+    "Both of those facts work against there being much of a local market here, and for a long time there was no buyer listed anywhere in the state. There is one now, in Salt Lake City. But the underlying point still cuts the other way: fewer people locally means the supplies you are holding are more useful somewhere else, not less useful overall.",
   ],
 
   sections: [
@@ -26,13 +27,13 @@ export const UT: PostBody = {
       paragraphs: [
         "Utah being youngest and lowest-prevalence at the same time is not a coincidence — type 2 diabetes risk rises sharply with age, and a state with comparatively few older residents will report fewer diagnoses almost regardless of anything else.",
         "Within Utah the spread is also unusually narrow. West Valley City reads 10.6% and Salt Lake City sits below that, against 6.1% in Provo. A four-and-a-half point range is tight by national standards — Michigan's runs to nearly thirteen points between two cities forty miles apart.",
-        "What that means practically: there is no pocket of Utah where demand is concentrated enough to support a local buyer, which is why nobody has set up here. It is not an oversight.",
+        "What that means practically: demand is thin and evenly spread rather than concentrated in one pocket, which is why Utah supports a single buyer along the Wasatch Front rather than one in every metro. Outside that corridor, post is the route.",
       ],
     },
     {
       heading: "So where do the supplies actually go",
       paragraphs: [
-        "Out of state, mostly. That is worth being straight about rather than implying a local market that does not exist.",
+        "Out of state, mostly, even the ones sold in person here. That is worth being straight about rather than implying a local market larger than it is.",
         "10.5% of working-age Utahns have no health insurance, which is above the national middle despite the state's low prevalence overall. For anyone uninsured and managing the condition, retail is the only price there is, and retail on test strips is severe. Sealed boxes that would otherwise be binned do find someone.",
         "But the bigger share of what gets sold from a state like Utah ends up serving demand in places like Mississippi, West Virginia and the older industrial cities of the Midwest, where diagnosed diabetes runs at twice Utah's rate.",
       ],
@@ -55,9 +56,10 @@ export const UT: PostBody = {
       ],
     },
     {
-      heading: "Selling by post from Utah",
+      heading: "Selling in Utah, in person or by post",
       paragraphs: [
-        "With no in-state buyer, everything here goes by post. A prepaid label costs you nothing and reaches all 298 of Utah's ZIP codes — a small number by national standards, which reflects how concentrated the population is along the Wasatch Front.",
+        "There is one buyer listed in the state, in Salt Lake City, taking supplies in person across Salt Lake, Davis and Utah counties. If you are along the Wasatch Front that is usually the simplest route, because a mixed lot gets quoted and settled in one meeting rather than boxed up and posted.",
+        "Everywhere else in Utah goes by post. A prepaid label costs you nothing and reaches all 298 of the state's ZIP codes — a small number by national standards, which reflects how concentrated the population is along that same corridor.",
         "Get the number in writing before anything ships. The actual figure for what you actually have, based on brand, count and dates — not a range and not an \"up to\". A buyer who will not commit before the parcel leaves intends to revise after it arrives, when you have nothing left to negotiate with.",
         "Use the prepaid label and keep the tracking number. Payment runs from when the parcel is received and verified rather than from when you posted it. From Utah, budget three to four days in transit depending on the destination.",
         "Photograph the sealed boxes with dates and lot numbers visible before they go, and keep those photographs until payment lands. Do not open a box to photograph the contents — opening it destroys the thing that made it worth money.",
@@ -75,7 +77,7 @@ export const UT: PostBody = {
   faqs: [
     {
       q: "Is there anywhere in Utah I can sell in person?",
-      a: "No — there is no buyer listed anywhere in the state. Utah has the lowest diagnosed diabetes rate in the country and the youngest population, so there is not enough local demand to support one. Mail-in with a prepaid label is the route and costs you nothing.",
+      a: "Yes — there is a buyer listed in Salt Lake City who meets in person across Salt Lake, Davis and Utah counties. Utah has the lowest diagnosed diabetes rate in the country and the youngest population, so that one buyer covers the whole state rather than there being one in every metro. Outside the Wasatch Front, mail-in with a prepaid label is the route and costs you nothing.",
     },
     {
       q: "Does Utah's low rate mean my supplies are worth less?",
@@ -91,7 +93,7 @@ export const UT: PostBody = {
     },
     {
       q: "How long does it take from Utah?",
-      a: "Three to four days in transit depending on destination, then payment within 24 hours of the parcel being received and verified. Shipping is free from anywhere in the state.",
+      a: "If you meet the Salt Lake City buyer in person, the same day. By post, three to four days in transit depending on destination, then payment within 24 hours of the parcel being received and verified. Shipping is free from anywhere in the state.",
     },
     {
       q: "Can I send several brands together?",
