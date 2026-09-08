@@ -20,6 +20,15 @@ const NAV_LINKS = [
   { href: "/#how-it-works", label: "How It Works" },
 ];
 
+/** The desktop bar shows four. Seven links plus Login plus a button was nine
+ *  items in half a bar, and four of them read as the same job to a seller.
+ *  "By State" is reachable sitewide from the footer ("Sell by State") and
+ *  "How It Works" is a homepage anchor, so neither loses its inbound link.
+ *  The mobile drawer still renders NAV_LINKS in full — it has the room. */
+const PRIMARY_LINKS = NAV_LINKS.filter((l) =>
+  ["Find a Buyer", "Price Guide", "Sell in Bulk", "Blog"].includes(l.label)
+);
+
 export default function SiteNav() {
   const [open, setOpen] = useState(false);
   const { user, loading } = useUser();
@@ -33,17 +42,18 @@ export default function SiteNav() {
 
   return (
     <nav className="max-w-6xl mx-auto px-4 relative">
-      <div className="h-16 flex items-center justify-between">
+      <div className="h-16 md:h-[72px] flex items-center justify-between">
         <Link href="/" className="font-black text-lg tracking-tight text-white">
           Cash For Test Strips <span className="text-electric">USA</span>
         </Link>
 
-        <div className="hidden md:flex items-center gap-6 text-sm font-medium text-white/70">
-          {NAV_LINKS.map((link) => (
+        <div className="hidden md:flex items-center gap-7 text-[15px] font-medium text-white/90">
+          {PRIMARY_LINKS.map((link) => (
             <Link key={link.label} href={link.href} className="hover:text-white transition-colors">
               {link.label}
             </Link>
           ))}
+          <span aria-hidden="true" className="h-5 w-px bg-white/20" />
           {!loading && (
             user ? (
               <div className="flex items-center gap-3">
@@ -51,13 +61,13 @@ export default function SiteNav() {
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="text-white/70 hover:text-white transition-colors"
+                  className="text-white/65 hover:text-white transition-colors"
                 >
                   Log out
                 </button>
               </div>
             ) : (
-              <Link href="/login" className="text-white/70 hover:text-white transition-colors">
+              <Link href="/login" className="text-white/65 hover:text-white transition-colors">
                 Login
               </Link>
             )
@@ -70,12 +80,12 @@ export default function SiteNav() {
           </Link>
         </div>
 
-        <div className="flex md:hidden items-center gap-3">
+        <div className="flex md:hidden items-center gap-4">
           <Link
             href="/sell"
-            className="bg-electric text-ink-deep font-extrabold px-4 py-2 rounded-lg text-sm hover:bg-white transition-colors"
+            className="bg-electric text-ink-deep font-extrabold px-3.5 py-2 rounded-lg text-sm whitespace-nowrap hover:bg-white transition-colors"
           >
-            Get Cash Now
+            Get Cash
           </Link>
           <button
             type="button"
@@ -101,7 +111,7 @@ export default function SiteNav() {
       </div>
 
       {open && (
-        <div className="md:hidden absolute left-0 right-0 top-16 bg-ink border-b border-white/10 shadow-lg flex flex-col px-4 py-3 gap-1">
+        <div className="md:hidden absolute left-0 right-0 top-16 md:top-[72px] bg-ink border-b border-white/10 shadow-lg flex flex-col px-4 py-3 gap-1">
           {NAV_LINKS.map((link) => (
             <Link
               key={link.label}
