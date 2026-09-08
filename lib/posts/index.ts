@@ -21,6 +21,7 @@ export type { RegistryPost, PostFaq } from "./types"
 
 import { recyclingDiabeticSupplies } from "./recycling-diabetic-supplies"
 import { oldDexcomSensorsAfterSwitching } from "./old-dexcom-sensors-after-switching"
+import { insuranceChangedBrands } from "./insurance-changed-brands"
 
 /**
  * All non-state registry posts, newest first.
@@ -29,6 +30,7 @@ import { oldDexcomSensorsAfterSwitching } from "./old-dexcom-sensors-after-switc
  * in the right order without a runtime sort.
  */
 export const POST_REGISTRY: RegistryPost[] = [
+  insuranceChangedBrands,
   oldDexcomSensorsAfterSwitching,
   recyclingDiabeticSupplies,
 ]
