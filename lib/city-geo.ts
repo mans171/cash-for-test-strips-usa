@@ -39,6 +39,7 @@ export const CITY_TARGETS: CityTarget[] = [
   { name: "Aurora", state: "CO", slug: "aurora", lat: 39.7294, lng: -104.8319 },
   { name: "Baltimore", state: "MD", slug: "baltimore", lat: 39.2904, lng: -76.6122 },
   { name: "Baton Rouge", state: "LA", slug: "baton-rouge", lat: 30.4515, lng: -91.1871 },
+  { name: "Boise", state: "ID", slug: "boise", lat: 43.6150, lng: -116.2023 },
   { name: "Boston", state: "MA", slug: "boston", lat: 42.3601, lng: -71.0589 },
   { name: "Charleston", state: "WV", slug: "charleston", lat: 38.3498, lng: -81.6326 },
   { name: "Charlotte", state: "NC", slug: "charlotte", lat: 35.2271, lng: -80.8431 },

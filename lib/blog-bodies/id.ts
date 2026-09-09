@@ -9,8 +9,8 @@ import type { PostBody } from "./types"
  * about what any individual seller gets. So this post inverts the usual
  * structure: it opens on what actually sets the value of a box — brand, count,
  * dates, seal, quantity — and uses the Rexburg/Caldwell gap as the argument
- * that where you live is not on that list. The no-buyer fact and the 394-mile
- * distance are stated plainly but sit late, because they are not the spine.
+ * that where you live is not on that list. The in-person buyer in Boise is
+ * stated plainly but sits late, because it is not the spine.
  *
  * Deliberately avoids Utah's "low-prevalence state, so where do the supplies
  * go" argument, which is already written. Figures from lib/state-health-data.ts
@@ -55,11 +55,11 @@ export const ID: PostBody = {
       ],
     },
     {
-      heading: "Where the buyers are, which is not Idaho",
+      heading: "Where the buyers are",
       paragraphs: [
-        "There is no buyer listed anywhere in Idaho. The nearest one to the centre of the state is roughly 394 miles out, which is shorter than the equivalent figure from Montana or the Dakotas and still far too far to drive with a bag of boxes.",
-        "So this is a postal transaction from anywhere in Idaho — Boise City, Coeur d'Alene, Twin Falls or a ZIP code with three hundred people in it. The label is prepaid and reaches all 280 of the state's ZIP codes at no cost to you. If a buyer asks you to pay postage on a sale like this, that alone tells you what you are dealing with.",
-        "Get the actual figure in writing before the parcel leaves. Not a range, not an \"up to\", not a table of averages — the number for what you specifically have, based on brand, count and dates. Once your boxes are 394 miles away, a buyer who never committed to a figure has no reason to start.",
+        "There is one buyer listed in Idaho, in Boise, who takes supplies in person. For the Treasure Valley — Boise City, Meridian, Nampa, Caldwell — that is a short drive and a mixed lot gets settled in one meeting. From the panhandle or the east of the state it is not, and post is the sensible route.",
+        "Outside the Treasure Valley this is a postal transaction — Coeur d'Alene, Twin Falls, Idaho Falls or a ZIP code with three hundred people in it. The label is prepaid and reaches all 280 of the state's ZIP codes at no cost to you. If a buyer asks you to pay postage on a sale like this, that alone tells you what you are dealing with.",
+        "If you are posting, get the actual figure in writing before the parcel leaves. Not a range, not an \"up to\", not a table of averages — the number for what you specifically have, based on brand, count and dates. Once your boxes have left the state, a buyer who never committed to a figure has no reason to start.",
       ],
     },
     {
@@ -67,7 +67,7 @@ export const ID: PostBody = {
       paragraphs: [
         "Type 2 diabetes risk climbs steeply with age, so a city's reading tracks its age profile more closely than almost anything else. A town whose population skews heavily young will report a low rate almost regardless of what else is true about it, and that is the most likely explanation for a figure as low as Rexburg's 4.3%.",
         "Idaho as a whole reads 10.1% on the CDC's 2023 BRFSS estimates, below the national 12.1%, with 17.7% of the population aged 65 or over and 10.7% of working-age adults uninsured. Nampa is 10.6%, Idaho Falls 10.2%, Twin Falls 10.7%, Post Falls 10.0% — a cluster of towns that look much alike, with Boise City at 8.7% and Meridian at 8.4% below them.",
-        "For a seller none of this is actionable, and it is worth saying so directly rather than dressing a statistic up as advice. It explains why no buyer has set up in a state of just under two million people. It has no bearing on what your unopened boxes are worth.",
+        "For a seller none of this is actionable, and it is worth saying so directly rather than dressing a statistic up as advice. It explains why a state of just under two million people supports one buyer rather than several. It has no bearing on what your unopened boxes are worth.",
       ],
     },
   ],
