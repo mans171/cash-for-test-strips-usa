@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "indexnow": "npx tsx scripts/indexnow-ping.ts"
+    "indexnow": "npx tsx scripts/indexnow-ping.ts",
+    "check:crawl": "npx tsx scripts/crawl-check.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.4",
