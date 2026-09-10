@@ -4,6 +4,7 @@ import { STATE_LABELS } from "@/lib/states"
 import { Chip, VerifiedBadge, FeaturedBadge, MonogramAvatar, PinIcon, btnSecondary } from "./ui"
 import { UnlockContact } from "./UnlockContact"
 import { hasAnyContact } from "@/lib/company-contact"
+import { hasProfilePage } from "@/lib/company-profile"
 
 export function BuyerCard({
   company,
@@ -19,6 +20,8 @@ export function BuyerCard({
   const moreStates = company.states.length > 2 ? ` +${company.states.length - 2}` : ""
   const brands = company.accepted_brands ?? []
   const showContact = hasAnyContact(company)
+  // Mail-in buyers have no /company/[slug] page — linking to one ships a 404.
+  const showProfile = hasProfilePage(company)
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-5 flex flex-col gap-3 shadow-sm hover:shadow-lg hover:border-gray-300 transition-all">
@@ -72,16 +75,20 @@ export function BuyerCard({
         </p>
       )}
 
-      <div className="flex gap-2 mt-auto pt-1 items-stretch">
-        <Link href={`/company/${company.slug}`} className={`${btnSecondary} flex-1 !px-3 !py-2 !text-xs`}>
-          View profile
-        </Link>
-        {showContact && (
-          <div className="flex-1">
-            <UnlockContact company={company} isAuthenticated={isAuthenticated} />
-          </div>
-        )}
-      </div>
+      {(showProfile || showContact) && (
+        <div className="flex gap-2 mt-auto pt-1 items-stretch">
+          {showProfile && (
+            <Link href={`/company/${company.slug}`} className={`${btnSecondary} flex-1 !px-3 !py-2 !text-xs`}>
+              View profile
+            </Link>
+          )}
+          {showContact && (
+            <div className="flex-1">
+              <UnlockContact company={company} isAuthenticated={isAuthenticated} />
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }

@@ -6,6 +6,7 @@ import type { Metadata } from "next";
 import { STATE_LABELS } from "@/lib/states";
 import type { Company } from "@/lib/types";
 import { stripCompanyContact } from "@/lib/company-contact";
+import { hasProfilePage } from "@/lib/company-profile";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { buildLocalBusinessSchema, buildFaqPageSchema } from "@/lib/schema";
 import type { FaqItem } from "@/lib/schema";
@@ -249,16 +250,15 @@ function buildFAQ(
 export default async function CompanyPage({ params }: Props) {
   const { slug } = await params;
 
-  // mail_in isn't part of COMPANY_COLUMNS (it's a filter field, not a display
-  // field — see directory/page.tsx), but the notFound() guard below needs it,
-  // so it's appended for this fetch only.
   const { data: rawCompany } = await supabase
     .from("companies")
-    .select(`${COMPANY_COLUMNS}, mail_in`)
+    .select(COMPANY_COLUMNS)
     .eq("slug", slug)
     .single();
 
-  if (!rawCompany || rawCompany.mail_in) notFound();
+  // Mail-in buyers get no profile page. BuyerCard asks the same helper before
+  // rendering a "View profile" link, so the two can't drift apart again.
+  if (!rawCompany || !hasProfilePage(rawCompany as Company)) notFound();
 
   const supabaseServer = await createServerSupabaseClient();
   const { data: { user } } = await supabaseServer.auth.getUser();
@@ -274,6 +274,8 @@ export default async function CompanyPage({ params }: Props) {
     description: company.description,
     areaServed: stateNames,
     paymentAccepted: company.payment_methods ?? [],
+    city: company.city,
+    stateCode: company.states[0] ?? null,
   });
 
   // Distance from the visitor's last searched ZIP (cookie set by directory search)

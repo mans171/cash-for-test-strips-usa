@@ -60,6 +60,8 @@ describe('buildLocalBusinessSchema', () => {
       description: 'We buy test strips.',
       areaServed: ['New York', 'New Jersey'],
       paymentAccepted: ['PayPal', 'Zelle'],
+      city: 'Albany',
+      stateCode: 'NY',
     })
     expect(result).toEqual({
       '@context': 'https://schema.org',
@@ -70,6 +72,49 @@ describe('buildLocalBusinessSchema', () => {
       description: 'We buy test strips.',
       areaServed: ['New York', 'New Jersey'],
       paymentAccepted: ['PayPal', 'Zelle'],
+      address: {
+        '@type': 'PostalAddress',
+        addressCountry: 'US',
+        addressLocality: 'Albany',
+        addressRegion: 'NY',
+      },
+    })
+  })
+
+  // Google requires `address` on LocalBusiness. A buyer with no town on file
+  // still has to carry one, or the item is invalid.
+  it('always emits an address, even with no town or state on file', () => {
+    const result = buildLocalBusinessSchema({
+      name: 'Nationwide Buyer',
+      url: 'https://cash4teststripsusa.com/company/nationwide-buyer',
+      telephone: null,
+      description: null,
+      areaServed: [],
+      paymentAccepted: [],
+      city: null,
+      stateCode: null,
+    })
+    expect(result.address).toEqual({
+      '@type': 'PostalAddress',
+      addressCountry: 'US',
+    })
+  })
+
+  it('emits a region-only address when the state is known but the town is not', () => {
+    const result = buildLocalBusinessSchema({
+      name: 'Cash For Test Strips Indiana',
+      url: 'https://cash4teststripsusa.com/company/cash-for-test-strips-indiana',
+      telephone: null,
+      description: null,
+      areaServed: ['Indiana'],
+      paymentAccepted: [],
+      city: null,
+      stateCode: 'IN',
+    })
+    expect(result.address).toEqual({
+      '@type': 'PostalAddress',
+      addressCountry: 'US',
+      addressRegion: 'IN',
     })
   })
 
@@ -81,12 +126,15 @@ describe('buildLocalBusinessSchema', () => {
       description: null,
       areaServed: [],
       paymentAccepted: [],
+      city: null,
+      stateCode: null,
     })
     expect(result).toEqual({
       '@context': 'https://schema.org',
       '@type': 'LocalBusiness',
       name: 'Anon Buyer Co',
       url: 'https://cash4teststripsusa.com/company/anon-buyer-co',
+      address: { '@type': 'PostalAddress', addressCountry: 'US' },
     })
   })
 })

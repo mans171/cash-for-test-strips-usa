@@ -36,6 +36,28 @@ export type LocalBusinessInput = {
   description: string | null
   areaServed: string[]
   paymentAccepted: string[]
+  /** Town the buyer operates from, when known. */
+  city: string | null
+  /** Two-letter state code the buyer operates from, when known. */
+  stateCode: string | null
+}
+
+/**
+ * PostalAddress for a buyer.
+ *
+ * Street addresses are not held in the database and are contact-gated anyway,
+ * so this is built from the town and state that already appear publicly in the
+ * page title and heading. addressCountry is always present, so the address is
+ * never an empty object.
+ */
+function buildPostalAddress(city: string | null, stateCode: string | null): Record<string, unknown> {
+  const address: Record<string, unknown> = {
+    '@type': 'PostalAddress',
+    addressCountry: 'US',
+  }
+  if (city) address.addressLocality = city
+  if (stateCode) address.addressRegion = stateCode
+  return address
 }
 
 export function buildLocalBusinessSchema(input: LocalBusinessInput): Record<string, unknown> {
@@ -44,6 +66,10 @@ export function buildLocalBusinessSchema(input: LocalBusinessInput): Record<stri
     '@type': 'LocalBusiness',
     name: input.name,
     url: input.url,
+    // Google requires `address` on LocalBusiness. Without it the item is
+    // invalid and earns no rich result — which is what Semrush's Site Audit
+    // flagged across the company profiles on 2026-09-10.
+    address: buildPostalAddress(input.city, input.stateCode),
   }
   if (input.telephone) schema.telephone = input.telephone
   if (input.description) schema.description = input.description
