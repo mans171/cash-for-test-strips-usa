@@ -19,6 +19,7 @@
 import type { RegistryPost } from "./types"
 export type { RegistryPost, PostFaq } from "./types"
 
+import { howToSellDiabeticSuppliesByMail } from "./how-to-sell-diabetic-supplies-by-mail"
 import { recyclingDiabeticSupplies } from "./recycling-diabetic-supplies"
 import { oldDexcomSensorsAfterSwitching } from "./old-dexcom-sensors-after-switching"
 import { insuranceChangedBrands } from "./insurance-changed-brands"
@@ -40,6 +41,7 @@ export const POST_REGISTRY: RegistryPost[] = [
   doTestStripsExpire,
   insuranceChangedBrands,
   oldDexcomSensorsAfterSwitching,
+  howToSellDiabeticSuppliesByMail,
   recyclingDiabeticSupplies,
 ]
 
