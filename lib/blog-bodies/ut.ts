@@ -14,7 +14,7 @@ export const UT: PostBody = {
   title: "Selling Diabetic Test Strips in Utah: The Lowest-Diabetes State in the Country",
   heading: "Selling Diabetic Test Strips in Utah",
   metaDescription:
-    "Utah has the lowest diagnosed diabetes rate in the US at 8.5%, and the youngest population. What that means if you're holding unused supplies, where to sell them in person along the Wasatch Front, and how to sell by post from everywhere else.",
+    "Utah has the lowest diagnosed diabetes rate in the US at 8.5%, and the youngest population. What that means if you're holding unused supplies, where to sell in person along the Wasatch Front, and how to sell by post from everywhere else.",
 
   lead: [
     "Utah has the lowest rate of diagnosed diabetes of any state in the country — 8.5% of adults, against a national rate of 12.1%. It is also the youngest state, with just 12.4% of residents aged 65 or over, where most states sit between 17 and 22%.",
