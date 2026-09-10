@@ -67,7 +67,7 @@ export const NV: PostBody = {
       paragraphs: [
         "Strips: FreeStyle Lite, Contour Next, Accu-Chek Guide, Aviva and SmartView, OneTouch Verio and Ultra, True Metrix. A 100-count box is worth meaningfully more than two 50-count boxes of the same brand.",
         "Sensors: Dexcom G6 sensors and transmitters, G7 sensors and receivers, and FreeStyle Libre 1, 2 and 3 — US retail versions only, so anything bought outside the country is out regardless of condition.",
-        "Pods and pump parts: Omnipod 5, DASH and Classic pods, plus some sealed Medtronic and Tandem components. Anything unusual is worth a call to 518-779-9751 before you pack it.",
+        "Pods and pump parts: Omnipod 5, DASH and Classic pods, plus some sealed Medtronic and Tandem components. Anything unusual is worth a call to 518-278-6008 before you pack it.",
       ],
     },
   ],

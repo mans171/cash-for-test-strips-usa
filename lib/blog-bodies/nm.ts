@@ -66,7 +66,7 @@ export const NM: PostBody = {
       paragraphs: [
         "Strips: FreeStyle Lite, Contour Next, Accu-Chek Guide, Aviva and SmartView, OneTouch Verio and Ultra, True Metrix. Six months or more before the expiry date, and remember that one 100-count box is worth meaningfully more than two 50-count boxes of the same brand.",
         "Sensors and monitors: Dexcom G6 sensors and transmitters, G7 sensors and receivers, FreeStyle Libre 1, 2 and 3. One qualifier on Libre catches people out — US retail versions only. Sensors sourced from outside the country cannot be resold here regardless of condition.",
-        "Pods and pump components: Omnipod 5, DASH and Classic pods, plus some sealed Medtronic and Tandem parts. If you are unsure whether a particular component is on the list, ring 518-779-9751 before posting it rather than after.",
+        "Pods and pump components: Omnipod 5, DASH and Classic pods, plus some sealed Medtronic and Tandem parts. If you are unsure whether a particular component is on the list, ring 518-278-6008 before posting it rather than after.",
       ],
     },
   ],

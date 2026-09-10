@@ -50,7 +50,7 @@ export const KY: PostBody = {
     {
       heading: "Pile three: ring first",
       paragraphs: [
-        "Sealed Medtronic and Tandem components. Some qualify and some do not, and the answer depends on the specific part rather than on the brand. This is a call to 518-779-9751 rather than a coin toss.",
+        "Sealed Medtronic and Tandem components. Some qualify and some do not, and the answer depends on the specific part rather than on the brand. This is a call to 518-278-6008 rather than a coin toss.",
         "Omnipod controllers as opposed to pods. Pods are on the list; the controller is a different item and should not be assumed in.",
         "Anything where you cannot read the date, cannot identify the generation, or cannot tell whether the packaging is a US retail version. Ask before you post it. A five-minute call is cheaper than a parcel that comes back.",
       ],

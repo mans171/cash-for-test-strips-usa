@@ -57,7 +57,7 @@ export default async function HomePage() {
     },
     {
       q: 'How does the process work?',
-      a: "Call or text us at 518-779-9751 with the brand, quantity, and expiration date of what you have. We quote you immediately. For most transactions, we send a prepaid shipping label at no cost. Once we receive and verify the strips, you get paid.",
+      a: "Call or text us at 518-278-6008 with the brand, quantity, and expiration date of what you have. We quote you immediately. For most transactions, we send a prepaid shipping label at no cost. Once we receive and verify the strips, you get paid.",
     },
     {
       q: 'What if my strips are expired or the box has been opened?',

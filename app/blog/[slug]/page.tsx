@@ -128,10 +128,10 @@ export default async function BlogPostPage({ params }: Props) {
             <p className="text-sm text-gray-500 mt-0.5">Call or text — we respond within hours.</p>
           </div>
           <a
-            href="tel:5187799751"
+            href="tel:5182786008"
             className="shrink-0 bg-emerald-600 text-white font-semibold px-6 py-3 rounded-full hover:bg-emerald-700 transition-colors text-sm"
           >
-            Call 518-779-9751
+            Call 518-278-6008
           </a>
         </div>
 
@@ -164,10 +164,10 @@ export default async function BlogPostPage({ params }: Props) {
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a
-              href="tel:5187799751"
+              href="tel:5182786008"
               className="bg-white text-emerald-700 font-semibold px-8 py-3 rounded-full hover:bg-emerald-50 transition-colors"
             >
-              Call 518-779-9751
+              Call 518-278-6008
             </a>
             <Link
               href="/directory"
@@ -295,10 +295,10 @@ export default async function BlogPostPage({ params }: Props) {
           <p className="text-sm text-gray-500 mt-0.5">Call or text us — we respond within hours.</p>
         </div>
         <a
-          href="tel:5187799751"
+          href="tel:5182786008"
           className="shrink-0 bg-emerald-600 text-white font-semibold px-6 py-3 rounded-full hover:bg-emerald-700 transition-colors text-sm"
         >
-          Call 518-779-9751
+          Call 518-278-6008
         </a>
       </div>
 
@@ -406,7 +406,7 @@ export default async function BlogPostPage({ params }: Props) {
               We accept <strong>expired Omnipod pods</strong> (5, DASH and Classic) and{" "}
               <strong>expired Dexcom G7 sensors</strong>. These are the only items we take
               past expiration — everything else must be unexpired. Call{" "}
-              <a href="tel:5187799751" className="font-semibold underline">518-779-9751</a>{" "}
+              <a href="tel:5182786008" className="font-semibold underline">518-278-6008</a>{" "}
               for pricing on expired stock.
             </p>
           </div>
@@ -428,7 +428,7 @@ export default async function BlogPostPage({ params }: Props) {
               {
                 step: "1",
                 title: "Call or text us",
-                body: "Reach out at 518-779-9751. Tell us the brand, quantity and expiration dates. We'll give you a price immediately — no waiting.",
+                body: "Reach out at 518-278-6008. Tell us the brand, quantity and expiration dates. We'll give you a price immediately — no waiting.",
               },
               {
                 step: "2",
@@ -499,8 +499,8 @@ export default async function BlogPostPage({ params }: Props) {
               </Link>{" "}
               lists every brand we buy by payout tier. For an exact number on what you
               have, call{" "}
-              <a href="tel:5187799751" className="text-emerald-600 font-semibold hover:underline">
-                518-779-9751
+              <a href="tel:5182786008" className="text-emerald-600 font-semibold hover:underline">
+                518-278-6008
               </a>
               .
             </p>
@@ -567,7 +567,7 @@ export default async function BlogPostPage({ params }: Props) {
           {tierTables.length > 0 && (
             <p className="mt-3 text-sm text-gray-400">
               Bulk lots of 10+ boxes typically receive a higher per-box rate. Call{" "}
-              <a href="tel:5187799751" className="text-emerald-600 hover:underline">518-779-9751</a>{" "}
+              <a href="tel:5182786008" className="text-emerald-600 hover:underline">518-278-6008</a>{" "}
               for an exact quote.
             </p>
           )}
@@ -599,10 +599,10 @@ export default async function BlogPostPage({ params }: Props) {
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <a
-            href="tel:5187799751"
+            href="tel:5182786008"
             className="bg-white text-emerald-700 font-semibold px-8 py-3 rounded-full hover:bg-emerald-50 transition-colors"
           >
-            Call 518-779-9751
+            Call 518-278-6008
           </a>
           <Link
             href={`/sell-test-strips/${stateCode.toLowerCase()}`}

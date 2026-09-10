@@ -64,7 +64,7 @@ export const WY: PostBody = {
     {
       heading: "How the sale runs from here",
       paragraphs: [
-        "Ring or write first and get the figure agreed against what you actually have — the brands, the counts, the dates. A quote that only materialises after your parcel has arrived somewhere else is not a quote you agreed to, and by then there is nothing to push back with. The number is 518-779-9751.",
+        "Ring or write first and get the figure agreed against what you actually have — the brands, the counts, the dates. A quote that only materialises after your parcel has arrived somewhere else is not a quote you agreed to, and by then there is nothing to push back with. The number is 518-278-6008.",
         "Photograph the sealed boxes with the dates visible before packing, keep the tracking number, and keep the pictures until you have been paid. The label is prepaid, so the whole thing costs you nothing to complete.",
         "Payment follows within 24 hours of the parcel being received and verified. Verification means someone has checked the contents against your description, which is why the clock runs from arrival rather than from the day you posted it.",
       ],
@@ -90,7 +90,7 @@ export const WY: PostBody = {
     },
     {
       q: "What if I cannot tell whether a component is on the list?",
-      a: "Ring 518-779-9751 before posting it. Some sealed Medtronic and Tandem parts qualify and some do not, and it is a faster question to ask than to guess at.",
+      a: "Ring 518-278-6008 before posting it. Some sealed Medtronic and Tandem parts qualify and some do not, and it is a faster question to ask than to guess at.",
     },
   ],
 }

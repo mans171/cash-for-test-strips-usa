@@ -30,7 +30,7 @@ const FAQS = [
   },
   {
     q: 'Do expired strips have any value?',
-    a: 'Most expired test strips have no buyer market. The exceptions are expired Omnipod pods and expired Dexcom G7 sensors, which some buyers do purchase. Call 518-779-9751 for pricing on expired stock.',
+    a: 'Most expired test strips have no buyer market. The exceptions are expired Omnipod pods and expired Dexcom G7 sensors, which some buyers do purchase. Call 518-278-6008 for pricing on expired stock.',
   },
 ]
 
@@ -121,7 +121,7 @@ export default function PriceGuidePage() {
       <p className="text-gray-600 leading-relaxed mb-6">
         The tiers above reflect how buyers in our network currently value each brand relative to the
         others. Your actual offer depends on lot size, expiration dates, and demand. Call{' '}
-        <a href="tel:5187799751" className="text-emerald-600 hover:underline">518-779-9751</a> — we&apos;ll
+        <a href="tel:5182786008" className="text-emerald-600 hover:underline">518-278-6008</a> — we&apos;ll
         give you a number on the spot.
       </p>
 
@@ -137,10 +137,10 @@ export default function PriceGuidePage() {
 
       <div className="bg-emerald-50 rounded-xl p-6 text-center mt-10 not-prose">
         <a
-          href="tel:5187799751"
+          href="tel:5182786008"
           className="inline-block bg-emerald-600 text-white font-semibold px-6 py-3 rounded-full text-sm hover:bg-emerald-700 transition-colors"
         >
-          Call 518-779-9751 for a quote →
+          Call 518-278-6008 for a quote →
         </a>
       </div>
     </div>

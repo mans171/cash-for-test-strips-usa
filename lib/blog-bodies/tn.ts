@@ -57,7 +57,7 @@ export const TN: PostBody = {
       heading: "Four: the brand and product",
       paragraphs: [
         "Once a box has cleared the first three checks, the product itself sets the band. Test strips: FreeStyle Lite, Contour Next, Accu-Chek Guide, Aviva and SmartView, OneTouch Verio and Ultra, True Metrix. CGM: Dexcom G6 sensors and transmitters, G7 sensors and receivers, FreeStyle Libre 1, 2 and 3 sensors. Pods: Omnipod 5, DASH and Classic.",
-        "Some sealed Medtronic and Tandem components qualify as well, but which ones depends on the part rather than the brand, and that is a call to 518-779-9751 rather than an assumption in either direction.",
+        "Some sealed Medtronic and Tandem components qualify as well, but which ones depends on the part rather than the brand, and that is a call to 518-278-6008 rather than an assumption in either direction.",
         "One restriction sits inside this factor rather than alongside it: FreeStyle Libre must be a US retail version. A sensor bought abroad is not a lower-value Libre, it is an unsellable one.",
       ],
     },

@@ -49,7 +49,7 @@ export const MD: PostBody = {
       paragraphs: [
         "Test strips: FreeStyle Lite, Contour Next, Accu-Chek Guide, Aviva and SmartView, OneTouch Verio and Ultra, True Metrix. They need at least six months before expiry, and box count is worth watching — a 100-count box is worth meaningfully more than two 50-count boxes of the same product, so keep the large boxes together rather than splitting a lot.",
         "FreeStyle Libre 1, 2 and 3 sensors are accepted, with one restriction that catches a surprising number of people: US retail versions only. A sensor bought abroad cannot be resold here whatever its condition or date.",
-        "Omnipod 5, DASH and Classic pods are accepted, including past their expiry date at a reduced rate. Pods rather than controllers. Some sealed Medtronic and Tandem components qualify as well; those are worth a call on 518-779-9751 rather than an assumption either way.",
+        "Omnipod 5, DASH and Classic pods are accepted, including past their expiry date at a reduced rate. Pods rather than controllers. Some sealed Medtronic and Tandem components qualify as well; those are worth a call on 518-278-6008 rather than an assumption either way.",
       ],
     },
     {

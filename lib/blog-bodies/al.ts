@@ -66,7 +66,7 @@ export const AL: PostBody = {
       paragraphs: [
         "Test strips: FreeStyle Lite, Contour Next, Accu-Chek Guide, Aviva and SmartView, OneTouch Verio and Ultra, and True Metrix. Count matters more than most people expect — a single 100-count box is worth meaningfully more than two 50-count boxes of the same product.",
         "Continuous monitoring: Dexcom G6 sensors and transmitters, G7 sensors and receivers, and FreeStyle Libre 1, 2 and 3 sensors. Libre carries one qualifier worth knowing before you post anything — US retail versions only, so sensors bought overseas cannot be resold here whatever condition they are in.",
-        "Pods and pump parts: Omnipod 5, DASH and Classic pods, and some sealed Medtronic and Tandem components. Pods rather than controllers. If yours is an unusual pump part, that is a call to 518-779-9751 rather than a guess.",
+        "Pods and pump parts: Omnipod 5, DASH and Classic pods, and some sealed Medtronic and Tandem components. Pods rather than controllers. If yours is an unusual pump part, that is a call to 518-278-6008 rather than a guess.",
       ],
     },
   ],

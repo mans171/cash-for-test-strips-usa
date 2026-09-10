@@ -28,8 +28,8 @@ export default function BlogIndexPage() {
         <p className="text-gray-500 max-w-2xl leading-relaxed">
           Browse our state-by-state guides to selling unused diabetic test strips for cash. We accept
           all major brands, single boxes, and bulk lots. Call us at{" "}
-          <a href="tel:5187799751" className="text-emerald-600 font-semibold hover:underline">
-            518-779-9751
+          <a href="tel:5182786008" className="text-emerald-600 font-semibold hover:underline">
+            518-278-6008
           </a>{" "}
           — most inquiries answered within hours.
         </p>
@@ -117,10 +117,10 @@ export default function BlogIndexPage() {
           We buy all major brands, single boxes, and bulk lots. PayPal, Zelle, check, or cash in hand.
         </p>
         <a
-          href="tel:5187799751"
+          href="tel:5182786008"
           className="inline-block bg-emerald-600 text-white font-semibold px-8 py-3 rounded-full hover:bg-emerald-700 transition-colors"
         >
-          Call 518-779-9751
+          Call 518-278-6008
         </a>
       </div>
     </div>
