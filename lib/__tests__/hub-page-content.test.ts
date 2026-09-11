@@ -46,6 +46,17 @@ function company(overrides: Partial<Company> = {}): Company {
 
 const US_CODES = Object.keys(STATE_LABELS).filter((c) => c !== "CANADA")
 
+/**
+ * One buyer sitting on each city's own centre, so every city target passes the
+ * publishable gate. Without coordinates in range a city page 404s, and the hub
+ * must not link it.
+ */
+function buyersCoveringEveryCity(): Company[] {
+  return CITY_TARGETS.map((t, i) =>
+    company({ id: `cover-${i}`, states: [t.state], lat: t.lat, lng: t.lng })
+  )
+}
+
 describe("region map", () => {
   it("covers exactly the 50 US states, once each", () => {
     const codes = hubStateCodes()
@@ -106,13 +117,37 @@ describe("buildHubRegions", () => {
   })
 
   it("attaches every city target to its own state and nowhere else", () => {
-    const states = buildHubRegions([]).flatMap((r) => r.states)
+    const states = buildHubRegions(buyersCoveringEveryCity()).flatMap((r) => r.states)
     const linked = states.flatMap((s) => s.cities.map((c) => `${s.code}/${c.slug}`))
 
     expect(linked).toHaveLength(CITY_TARGETS.length)
     for (const target of CITY_TARGETS) {
       expect(linked).toContain(`${target.state}/${target.slug}`)
     }
+  })
+
+  // Regression, 2026-09-11: a city page 404s when no buyer is within
+  // CITY_BUYER_RADIUS_MI, and the hub went on linking West Virginia's
+  // Charleston and Huntington for days after their buyer was deactivated.
+  // A crawl found them still linked from two pages each.
+  it("links no city when no buyer is in range of one", () => {
+    const states = buildHubRegions([]).flatMap((r) => r.states)
+    expect(states.flatMap((s) => s.cities)).toHaveLength(0)
+  })
+
+  it("drops only the cities that lost their buyer, keeping the rest", () => {
+    const wv = CITY_TARGETS.filter((c) => c.state === "WV")
+    expect(wv.length).toBeGreaterThan(0)
+
+    const withoutWv = buyersCoveringEveryCity().filter(
+      (b) => !wv.some((c) => b.lat === c.lat && b.lng === c.lng)
+    )
+    const linked = buildHubRegions(withoutWv)
+      .flatMap((r) => r.states)
+      .flatMap((s) => s.cities.map((c) => c.slug))
+
+    for (const c of wv) expect(linked).not.toContain(c.slug)
+    expect(linked.length).toBe(CITY_TARGETS.length - wv.length)
   })
 
   it("carries the real prevalence reading for each state", () => {
@@ -133,7 +168,9 @@ describe("buildHubTotals", () => {
     expect(totals.buyerCount).toBe(2)
     expect(totals.stateCount).toBe(50)
     expect(totals.statesWithBuyers).toBe(2)
-    expect(totals.cityCount).toBe(CITY_TARGETS.length)
+    // These fixture buyers carry no coordinates, so no city page would
+    // render for them. The hub must not count a city it will not link.
+    expect(totals.cityCount).toBe(0)
   })
 })
 

@@ -1,5 +1,6 @@
 import type { Company } from "./types"
-import { CITY_TARGETS, type CityTarget } from "./city-geo"
+import { type CityTarget } from "./city-geo"
+import { publishableCityTargets } from "./city-page-content"
 import { STATE_HEALTH_DATA } from "./state-health-data"
 import { STATE_LABELS } from "./states"
 import { joinList } from "./state-page-content"
@@ -85,14 +86,18 @@ export function hubStateCodes(): string[] {
   return REGION_ORDER.flatMap((r) => REGIONS[r])
 }
 
-function buildHubState(code: string, buyers: Company[]): HubState {
+function buildHubState(code: string, buyers: Company[], publishable: CityTarget[]): HubState {
   const health = STATE_HEALTH_DATA[code]
   return {
     code,
     label: STATE_LABELS[code] ?? code,
     href: `/sell-test-strips/${code.toLowerCase()}`,
     buyerCount: buyers.filter((b) => b.states.includes(code)).length,
-    cities: CITY_TARGETS.filter((c) => c.state === code),
+    // Gated, not raw: a city page 404s when no buyer is within
+    // CITY_BUYER_RADIUS_MI, and the hub linking one anyway is how West
+    // Virginia's two city pages stayed linked after their buyer was
+    // deactivated. See publishableCityTargets in lib/city-page-content.ts.
+    cities: publishable.filter((c) => c.state === code),
     diabetesPrevalence: health?.diabetesPrevalence ?? null,
     brfssYear: health?.brfssYear ?? null,
   }
@@ -104,8 +109,11 @@ function buildHubState(code: string, buyers: Company[]): HubState {
  * counts are therefore always current rather than a number baked into copy.
  */
 export function buildHubRegions(buyers: Company[]): HubRegion[] {
+  // Computed once rather than per state — the gate is a radius check over
+  // every buyer, so it does not vary by state.
+  const publishable = publishableCityTargets(buyers)
   return REGION_ORDER.map((name) => {
-    const states = REGIONS[name].map((code) => buildHubState(code, buyers))
+    const states = REGIONS[name].map((code) => buildHubState(code, buyers, publishable))
     return {
       name,
       states,

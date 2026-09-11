@@ -12,7 +12,7 @@ import { btnPrimary } from "@/app/components/ui";
 import { COMPANY_COLUMNS } from "@/lib/company-columns";
 import { STATE_LABELS as ALL_STATE_LABELS } from "@/lib/states";
 import { buildStateFaqs, joinList, nearestBuyers, siblingStates, statePageH1 } from "@/lib/state-page-content";
-import { CITY_TARGETS } from "@/lib/city-geo";
+import { publishableCityTargets } from "@/lib/city-page-content";
 
 // Canada is excluded here on purpose: this route is the US state directory and
 // is enumerated as such in app/sitemap.ts.
@@ -87,7 +87,11 @@ export default async function StatePage({ params }: Props) {
   });
 
   const siblings = siblingStates(code, 8);
-  const cities = CITY_TARGETS.filter((c) => c.state === code);
+  // Gated, not raw: a city page 404s when no buyer is within
+  // CITY_BUYER_RADIUS_MI of it, so linking CITY_TARGETS unconditionally
+  // advertises dead pages — which is what kept West Virginia's two city
+  // pages linked after their buyer was deactivated.
+  const cities = publishableCityTargets(allInPerson).filter((c) => c.state === code);
 
   // Intro copy is derived too — the old fixed line promised "trusted local
   // buyers" and "no shipping required" on all 50 pages, which was simply untrue
