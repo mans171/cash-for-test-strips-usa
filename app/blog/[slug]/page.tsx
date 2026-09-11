@@ -393,7 +393,7 @@ export default async function BlogPostPage({ params }: Props) {
                 </span>
               ))}
               . See the{" "}
-              <Link href="/price-guide" className="text-emerald-600 font-semibold hover:underline">
+              <Link href="/how-much-are-diabetic-test-strips-worth" className="text-emerald-600 font-semibold hover:underline">
                 full price guide
               </Link>{" "}
               for the complete list.
@@ -494,7 +494,7 @@ export default async function BlogPostPage({ params }: Props) {
             <p>
               Payout depends on brand, quantity and expiration date, and bulk lots of
               10+ boxes earn a higher per-box rate. The{" "}
-              <Link href="/price-guide" className="text-emerald-600 font-semibold hover:underline">
+              <Link href="/how-much-are-diabetic-test-strips-worth" className="text-emerald-600 font-semibold hover:underline">
                 price guide
               </Link>{" "}
               lists every brand we buy by payout tier. For an exact number on what you

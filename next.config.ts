@@ -20,6 +20,16 @@ const nextConfig: NextConfig = {
         destination: "/company/cash-for-test-strips-keyport-nj",
         permanent: true,
       },
+      // /price-guide was linked from 23 blog posts but never existed as a
+      // route — the guide has always lived at the long URL below. Those links
+      // are fixed at source, but this catches anything outside the site that
+      // already points at the short path, including whatever Google indexed
+      // while they were live. Found by scripts/crawl-check.ts.
+      {
+        source: "/price-guide",
+        destination: "/how-much-are-diabetic-test-strips-worth",
+        permanent: true,
+      },
     ];
   },
 };
