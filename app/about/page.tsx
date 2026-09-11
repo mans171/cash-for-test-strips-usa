@@ -18,7 +18,7 @@ export default function AboutPage() {
         Cash For Test Strips USA is a national directory connecting people who have unused diabetic
         supplies with local cash buyers. We operate the network, maintain the listings, and make it
         easy to find a buyer anywhere in the country — or to reach us directly at{' '}
-        <a href="tel:5187799751" className="text-emerald-600 hover:underline">518-779-9751</a>.
+        <a href="tel:5182786008" className="text-emerald-600 hover:underline">518-278-6008</a>.
       </p>
 
       <h2 className="text-xl font-bold text-gray-900 mt-10 mb-3">The problem we solve</h2>
@@ -44,7 +44,7 @@ export default function AboutPage() {
       </p>
       <p className="text-gray-600 leading-relaxed mb-6">
         For sellers who want a single point of contact, we also buy directly. Call or text{' '}
-        <a href="tel:5187799751" className="text-emerald-600 hover:underline">518-779-9751</a> and
+        <a href="tel:5182786008" className="text-emerald-600 hover:underline">518-278-6008</a> and
         we&apos;ll quote you on the spot — single boxes or bulk lots.
       </p>
 
@@ -80,10 +80,10 @@ export default function AboutPage() {
 
       <div className="bg-emerald-50 rounded-xl p-6 text-center mt-10">
         <a
-          href="tel:5187799751"
+          href="tel:5182786008"
           className="inline-block bg-emerald-600 text-white font-semibold px-6 py-3 rounded-full text-sm hover:bg-emerald-700 transition-colors"
         >
-          Call or text 518-779-9751 →
+          Call or text 518-278-6008 →
         </a>
         <p className="text-sm text-gray-500 mt-3">We respond within hours.</p>
       </div>

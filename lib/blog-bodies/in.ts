@@ -76,7 +76,7 @@ export const IN: PostBody = {
   faqs: [
     {
       q: "How far past the date can Omnipod pods be and still be worth something?",
-      a: "There is no clean cut-off worth quoting, because it depends on the generation and the condition of the packaging. What is certain is that past-date is not the same as worthless for pods, so the right move is to ask about the specific boxes rather than assume either way. Call 518-779-9751 with the dates in front of you.",
+      a: "There is no clean cut-off worth quoting, because it depends on the generation and the condition of the packaging. What is certain is that past-date is not the same as worthless for pods, so the right move is to ask about the specific boxes rather than assume either way. Call 518-278-6008 with the dates in front of you.",
     },
     {
       q: "Do you buy the Omnipod controller or PDM as well?",

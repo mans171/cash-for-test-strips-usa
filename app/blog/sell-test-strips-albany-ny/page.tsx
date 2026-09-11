@@ -158,10 +158,10 @@ export default function AlbanyPost() {
             Text or call with the brand, quantity and expiration date. No photos needed to start.
           </p>
           <a
-            href="tel:5187799751"
+            href="tel:5182786008"
             className="inline-block bg-emerald-600 text-white font-semibold px-6 py-3 rounded-full hover:bg-emerald-700 transition-colors"
           >
-            Call or text 518-779-9751
+            Call or text 518-278-6008
           </a>
           <p className="text-xs text-gray-500 mt-3">
             More detail at{" "}
@@ -205,7 +205,7 @@ export default function AlbanyPost() {
         <h2 className="text-2xl font-extrabold text-gray-900 pt-6">How the process works</h2>
 
         <ol className="list-decimal pl-6 space-y-2">
-          <li>Text or call 518-779-9751 with what you have.</li>
+          <li>Text or call 518-278-6008 with what you have.</li>
           <li>Send the brand, quantity and expiration dates.</li>
           <li>Get a quote back, typically within 5 to 15 minutes.</li>
           <li>Meet somewhere public in your area and get paid cash.</li>

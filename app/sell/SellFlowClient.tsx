@@ -703,7 +703,7 @@ export function SellFlowClient() {
           <p className="text-sm text-gray-500">
             We couldn&apos;t find a buyer for your area right now. Email{" "}
             <a href="mailto:feldon.richards@gmail.com" className="text-cash hover:underline">feldon.richards@gmail.com</a>{" "}
-            or call <a href="tel:5187799751" className="text-cash hover:underline">518-779-9751</a> directly and we&apos;ll help you sell your strips.
+            or call <a href="tel:5182786008" className="text-cash hover:underline">518-278-6008</a> directly and we&apos;ll help you sell your strips.
           </p>
         ) : (
           <div className="flex flex-col gap-2">

@@ -52,7 +52,7 @@ export const WI: PostBody = {
         "Supplies obtained through Medicare or Medicaid cannot be resold. This is the check that disqualifies a box even when everything else about it is perfect, so it is worth doing before you go to the trouble of packing anything.",
         "It is about the funding route and nothing else. If the supplies were bought retail, or came through private insurance, or were passed on by a relative who paid for them privately, the sale is straightforward. Nobody will ask you to justify how you came to have them.",
         "A pharmacy label with a name printed on it is not a problem and does not need removing. People assume it is the giveaway that stops a sale. It is not — it says nothing about which programme paid for the prescription.",
-        "If you are clearing a house and genuinely cannot tell how a particular box was funded, ring 518-779-9751 and ask rather than sending it and finding out afterwards.",
+        "If you are clearing a house and genuinely cannot tell how a particular box was funded, ring 518-278-6008 and ask rather than sending it and finding out afterwards.",
       ],
     },
     {

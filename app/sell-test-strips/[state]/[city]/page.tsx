@@ -109,6 +109,8 @@ export default async function CityPage({ params }: Props) {
       description: b.description,
       areaServed: [target.name, stateLabel],
       paymentAccepted: b.payment_methods ?? [],
+      city: b.city,
+      stateCode: b.states[0] ?? null,
     })
   );
 

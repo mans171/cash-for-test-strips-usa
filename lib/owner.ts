@@ -5,7 +5,7 @@
 export const OWNER_EMAIL = 'feldon.richards@gmail.com'
 
 /** The number printed on the bulk page and on every partner listing. */
-export const OWNER_PHONE = '518-779-9751'
+export const OWNER_PHONE = '518-278-6008'
 
 /** A reseller lot starts here. Competitors set 75-100 items PER MONTH;
  *  this is 100 pieces in a single lot, which is a lower bar deliberately. */

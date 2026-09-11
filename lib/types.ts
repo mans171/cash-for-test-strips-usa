@@ -19,6 +19,10 @@ export type Company = {
   transaction_modes: string[]
   response_time: string | null
   est_year: number | null
+  // True for the national mail-in buyer. It is a filter field, but the public
+  // cards need it too: mail-in buyers have no /company/[slug] page, so a card
+  // must not render a "View profile" link for one. See lib/company-profile.ts.
+  mail_in?: boolean
   // Set only by lib/company-contact.ts's stripCompanyContact() for anonymous requests:
   // true when the underlying buyer has real email/phone on file, even though
   // those fields are nulled out here. Lets the client render the account-gate

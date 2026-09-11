@@ -126,10 +126,10 @@ export default function IsItLegalPage() {
         <p className="text-xs text-gray-500 mb-4">Not legal advice — consult an attorney with specific questions about your situation.</p>
         <div className="bg-emerald-50 rounded-xl p-6">
           <a
-            href="tel:5187799751"
+            href="tel:5182786008"
             className="inline-block bg-emerald-600 text-white font-semibold px-6 py-3 rounded-full text-sm hover:bg-emerald-700 transition-colors"
           >
-            Call 518-779-9751 with questions →
+            Call 518-278-6008 with questions →
           </a>
         </div>
       </div>
