@@ -580,7 +580,7 @@ export const PRODUCT_CATEGORIES: ProductCategory[] = [
  * Vermont still measured 92% alike. Product angles keep the category they are
  * named after; the rest rotate within their angle group so that two states
  * sharing an angle do not expand the same list. Everything else is one summary
- * line pointing at /price-guide, which is where the full catalogue belongs.
+ * line pointing at the price guide, which is where the full catalogue belongs.
  */
 export function emphasisCategories(angle: PostAngle, stateCode: string): string[] {
   switch (angle) {
@@ -603,8 +603,8 @@ export function emphasisCategories(angle: PostAngle, stateCode: string): string[
  *
  * Both tables on all 50 posts was one of the largest single blocks of identical
  * text on the site — roughly twenty rows of the same brand names in the same
- * order. Posts that are not about pricing now link to /price-guide instead,
- * which is where that table belongs anyway.
+ * order. Posts that are not about pricing now link to the price guide
+ * instead, which is where that table belongs anyway.
  */
 export function emphasisTierTables(angle: PostAngle): Array<"strips" | "cgm"> {
   switch (angle) {
