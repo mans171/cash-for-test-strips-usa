@@ -5,6 +5,7 @@ import { sendEmailOrThrow } from '@/lib/email'
 import { getCompanyContact } from '@/lib/order-matching'
 import type { OrderItem } from '@/lib/types'
 import { OWNER_EMAIL } from '@/lib/owner'
+import { isHoneypotTripped } from '@/lib/honeypot'
 
 const VALID_CONDITIONS = new Set(['sealed', 'unsealed'])
 const MAX_ITEMS = 50
@@ -27,6 +28,15 @@ export async function POST(request: Request) {
     // seller can reach a buyer without signing up. Every validation below
     // still applies.
     const body = await request.json()
+
+    // Bot check first, before any validation: a filled honeypot means nothing
+    // is inserted and nothing is emailed, but the response is the ordinary
+    // success shape so the bot learns nothing about why it failed.
+    if (isHoneypotTripped(body)) {
+      console.warn('[honeypot] dropped', '/api/leads')
+      return NextResponse.json({ leadId: 'ok' })
+    }
+
     const { items, matchedCompanyId, channel, sourcePage, name, email, phone } = body ?? {}
 
     if (!Array.isArray(items) || items.length === 0) {

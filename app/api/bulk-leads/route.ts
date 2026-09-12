@@ -4,13 +4,12 @@ import { sendEmail, escapeHtml } from '@/lib/email'
 import { BULK_MIN_PIECES } from '@/lib/owner'
 import { pickBulkRecipient } from '@/lib/bulk-routing'
 import { STATE_LABELS } from '@/lib/states'
+import { isHoneypotTripped } from '@/lib/honeypot'
 
-// PUBLIC ON PURPOSE. app/api/leads/route.ts requires a signed-in user, because
-// that flow hands the seller a BUYER's contact details and the account gate is
-// what protects them. This flow runs the other way: a reseller gives us their
-// details and asks us to call. Making them create an account first would cost
-// enquiries and protects nobody. RLS (leads_insert_anon) already permits the
-// anonymous insert.
+// PUBLIC ON PURPOSE. A reseller gives us their details and asks us to call;
+// making them create an account first would cost enquiries and protects
+// nobody. RLS (leads_insert_anon) already permits the anonymous insert. The
+// only bot guard is the honeypot below.
 
 const MAX_LEN = 2000
 
@@ -24,6 +23,15 @@ export async function POST(request: Request) {
     if (!body || typeof body !== 'object') {
       return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
     }
+
+    // Bot check before validation: nothing is inserted, nothing is emailed,
+    // and the response is the ordinary success shape so the bot learns
+    // nothing about why it failed.
+    if (isHoneypotTripped(body)) {
+      console.warn('[honeypot] dropped', '/api/bulk-leads')
+      return NextResponse.json({ ok: true })
+    }
+
     const field = (key: string) => clean((body as Record<string, unknown>)[key])
 
     const name = field('name')
@@ -49,12 +57,17 @@ export async function POST(request: Request) {
     // Who gets this enquiry: the state's own buyer if it has a real inbox of
     // its own, otherwise the house. Anon client on purpose - RLS already lets
     // it read active rows, and nothing here is written outside `leads`.
-    const { data: companyRows } = await supabase
+    const { data: companyRows, error: companyError } = await supabase
       .from('companies')
       .select('states,email,active,mail_in,name,slug')
       .eq('active', true)
       .eq('mail_in', false)
       .contains('states', [state])
+    // A lookup failure silently routes to the house, which is the right
+    // behaviour for the seller but hides a real outage — so say so in the log.
+    if (companyError) {
+      console.error('[bulk-leads] buyer lookup failed', companyError.message)
+    }
     const recipient = pickBulkRecipient(state, companyRows ?? [])
 
     // The reseller's answers go in `notes` as readable text rather than new

@@ -19,6 +19,12 @@ describe('bulk routing', () => {
   it('ignores inactive and mail-in rows', () => {
     expect(pickBulkRecipient('NY', [co({ email: 'a@b.c', active: false }), co({ email: 'm@b.c', mail_in: true })]).to).toBe(OWNER_EMAIL)
   })
+  it('picks alphabetically when several buyers qualify, whatever order they arrive in', () => {
+    const zed = co({ email: 'zed@x.com', name: 'Zed Supplies' })
+    const ace = co({ email: 'ace@x.com', name: 'Ace Supplies' })
+    expect(pickBulkRecipient('NY', [zed, ace]).to).toBe('ace@x.com')
+    expect(pickBulkRecipient('NY', [ace, zed]).to).toBe('ace@x.com')
+  })
   it('is case-insensitive on the code', () => {
     expect(pickBulkRecipient('ny', [co({ email: 'a@b.c' })]).to).toBe('a@b.c')
   })

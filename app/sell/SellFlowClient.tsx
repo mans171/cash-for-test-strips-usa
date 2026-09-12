@@ -9,6 +9,8 @@ import { DEFAULT_EXPIRATION_MONTHS, getExpirationMonthOptions, isEffectivelyExpi
 import { useUser } from "@/lib/auth-client";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import { fetchOwnProfileContact } from "@/lib/profile-lookup";
+import { HONEYPOT_FIELD } from "@/lib/honeypot";
+import { OWNER_PHONE } from "@/lib/owner";
 
 type Stage = "build" | "results" | "sent";
 
@@ -68,6 +70,9 @@ export function SellFlowClient() {
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
+  // Honeypot: rendered off-screen and hidden from assistive tech, so only a
+  // form-filling bot ever puts anything in it. See lib/honeypot.ts.
+  const [honeypot, setHoneypot] = useState("");
   const { user } = useUser();
   const hasAutoFilledRef = useRef<string | null>(null);
 
@@ -237,6 +242,7 @@ export function SellFlowClient() {
           name: customerName,
           email: customerEmail || undefined,
           phone: customerPhone || undefined,
+          [HONEYPOT_FIELD]: honeypot,
         }),
       });
       const body = await res.json();
@@ -357,6 +363,16 @@ export function SellFlowClient() {
                 className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
               />
             </div>
+            <div style={{ position: "absolute", left: "-10000px", width: "1px", height: "1px", overflow: "hidden" }}>
+              <input
+                name={HONEYPOT_FIELD}
+                value={honeypot}
+                onChange={(e) => setHoneypot(e.target.value)}
+                autoComplete="off"
+                tabIndex={-1}
+                aria-hidden="true"
+              />
+            </div>
           </div>
         </div>
 
@@ -364,7 +380,7 @@ export function SellFlowClient() {
           <p className="text-sm text-gray-500">
             We couldn&apos;t find a buyer for your area right now. Email{" "}
             <a href="mailto:feldon.richards@gmail.com" className="text-cash hover:underline">feldon.richards@gmail.com</a>{" "}
-            or call <a href="tel:5182786008" className="text-cash hover:underline">518-278-6008</a> directly and we&apos;ll help you sell your strips.
+            or call <a href={`tel:${OWNER_PHONE.replace(/\D/g, "")}`} className="text-cash hover:underline">{OWNER_PHONE}</a> directly and we&apos;ll help you sell your strips.
           </p>
         ) : (
           <div className="flex flex-col gap-2">

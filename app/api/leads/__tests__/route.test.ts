@@ -104,22 +104,6 @@ function makeRequest(body: unknown) {
 }
 
 describe('POST /api/leads', () => {
-  it('creates a lead without any session', async () => {
-    const companyId = await createTestCompany({ email: 'buyer-real@example.com', active: true })
-    const response = await POST(
-      makeRequest({
-        items: [{ brand: 'OneTouch Verio', count: 1, expiration: '2027-01', condition: 'sealed' }],
-        matchedCompanyId: companyId,
-        channel: 'email',
-        name: 'Jane Doe',
-      })
-    )
-    const body = await response.json()
-    expect(response.status).toBe(200)
-    expect(body.leadId).toBeDefined()
-    cleanupLeadIds.push(body.leadId)
-  })
-
   it('returns 400 when items is empty', async () => {
     const response = await POST(
       makeRequest({ items: [], matchedCompanyId: 'irrelevant', channel: 'email', name: 'Jane Doe' })

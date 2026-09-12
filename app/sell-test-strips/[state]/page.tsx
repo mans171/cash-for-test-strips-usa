@@ -57,21 +57,17 @@ export default async function StatePage({ params }: Props) {
   ]);
 
   const allInPerson = (inPersonData ?? []) as Company[];
-  const rawCompanies = allInPerson.filter((c) => c.states.includes(code));
-  const rawMailIn = ((mailInData ?? []) as Company[])[0] ?? null;
-  const rawNearby = rawCompanies.length === 0 ? nearestBuyers(code, allInPerson, 3) : [];
-
   // Contact details are public on every card — the account gate was removed
   // on 2026-09-12. See lib/company-contact.ts.
-  const companies = rawCompanies;
-  const nearby = rawNearby;
-  const mailIn = rawMailIn;
+  const companies = allInPerson.filter((c) => c.states.includes(code));
+  const mailIn = ((mailInData ?? []) as Company[])[0] ?? null;
+  const nearby = companies.length === 0 ? nearestBuyers(code, allInPerson, 3) : [];
 
   const faqs = buildStateFaqs({
     stateCode: code,
-    buyers: rawCompanies,
-    nearby: rawNearby,
-    hasMailIn: !!rawMailIn,
+    buyers: companies,
+    nearby,
+    hasMailIn: !!mailIn,
   });
 
   const siblings = siblingStates(code, 8);
@@ -85,9 +81,9 @@ export default async function StatePage({ params }: Props) {
   // buyers" and "no shipping required" on all 50 pages, which was simply untrue
   // on the 31 states that have no local buyer at all.
   const introCities = joinList(
-    [...new Set(rawCompanies.map((c) => c.city).filter((c): c is string => !!c))].sort()
+    [...new Set(companies.map((c) => c.city).filter((c): c is string => !!c))].sort()
   );
-  const nearestMiles = rawNearby.length > 0 ? Math.round(rawNearby[0].miles) : null;
+  const nearestMiles = nearby.length > 0 ? Math.round(nearby[0].miles) : null;
 
   // Assembled as a string rather than JSX fragments so punctuation does not end
   // up with stray whitespace in front of it.
@@ -104,7 +100,7 @@ export default async function StatePage({ params }: Props) {
   })();
 
   const buyerIntro =
-    `${rawCompanies.length} verified ${rawCompanies.length === 1 ? "buyer pays" : "buyers pay"} cash for ` +
+    `${companies.length} verified ${companies.length === 1 ? "buyer pays" : "buyers pay"} cash for ` +
     `unused diabetic test strips in ${label}${introCities ? `, based in ${introCities}` : ""}. ` +
     `Compare them below, then contact one directly — most pay the same day you meet.`;
 

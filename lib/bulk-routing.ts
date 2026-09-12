@@ -27,15 +27,18 @@ function findBuyer(
 ): BulkRoutingCompany | null {
   const code = stateCode.trim().toUpperCase()
   if (!code) return null
-  return (
-    companies.find((company) => {
-      if (company.active === false) return false
-      if (company.mail_in) return false
-      const email = company.email?.trim()
-      if (!email || isHouseEmail(email)) return false
-      return (company.states ?? []).some((s) => s.trim().toUpperCase() === code)
-    }) ?? null
-  )
+  const qualifying = companies.filter((company) => {
+    if (company.active === false) return false
+    if (company.mail_in) return false
+    const email = company.email?.trim()
+    if (!email || isHouseEmail(email)) return false
+    return (company.states ?? []).some((s) => s.trim().toUpperCase() === code)
+  })
+  if (qualifying.length === 0) return null
+  // Several buyers can cover one state. Whichever row Postgres happened to
+  // return first is not a decision, so sort by name: the same state always
+  // routes to the same buyer, and a caller can predict which.
+  return [...qualifying].sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''))[0]
 }
 
 /** Who a bulk enquiry from `stateCode` should go to: the state's dedicated

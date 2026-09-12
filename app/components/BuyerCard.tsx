@@ -73,18 +73,17 @@ export function BuyerCard({
         </p>
       )}
 
+      {/* Stacked, not side by side: ContactButtons renders up to two buttons of
+          its own (call + visit site), and sitting that column next to a single
+          "View profile" button left one half twice the height of the other. */}
       {(showProfile || showContact) && (
-        <div className="flex gap-2 mt-auto pt-1 items-stretch">
+        <div className="flex flex-col gap-2 mt-auto pt-1">
           {showProfile && (
-            <Link href={`/company/${company.slug}`} className={`${btnSecondary} flex-1 !px-3 !py-2 !text-xs`}>
+            <Link href={`/company/${company.slug}`} className={`${btnSecondary} w-full !px-3 !py-2 !text-xs`}>
               View profile
             </Link>
           )}
-          {showContact && (
-            <div className="flex-1">
-              <ContactButtons company={company} />
-            </div>
-          )}
+          {showContact && <ContactButtons company={company} />}
         </div>
       )}
     </div>

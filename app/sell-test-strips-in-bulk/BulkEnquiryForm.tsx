@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { OWNER_PHONE } from '@/lib/owner'
 import { STATE_LABELS } from '@/lib/states'
+import { HONEYPOT_FIELD } from '@/lib/honeypot'
 
 const INPUT = 'w-full border border-gray-200 rounded-lg px-3 py-2 text-sm'
 const LABEL = 'block text-sm font-medium text-gray-700 mb-1'
@@ -103,6 +104,13 @@ export function BulkEnquiryForm() {
           className={INPUT}
           placeholder="Brands, box sizes, expiry dates, and whether it's a mixed lot."
         />
+      </div>
+
+      {/* Honeypot: off-screen and hidden from assistive tech, so only a
+          form-filling bot ever fills it. FormData picks it up with the rest.
+          See lib/honeypot.ts. */}
+      <div style={{ position: 'absolute', left: '-10000px', width: '1px', height: '1px', overflow: 'hidden' }}>
+        <input name={HONEYPOT_FIELD} autoComplete="off" tabIndex={-1} aria-hidden="true" />
       </div>
 
       {status === 'error' && <p className="text-sm text-red-600">{message}</p>}
