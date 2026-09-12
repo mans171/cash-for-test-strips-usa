@@ -5,6 +5,7 @@ import { BULK_MIN_PIECES } from '@/lib/owner'
 import { pickBulkRecipient } from '@/lib/bulk-routing'
 import { STATE_LABELS } from '@/lib/states'
 import { isHoneypotTripped } from '@/lib/honeypot'
+import { createServerSupabaseClient } from '@/lib/supabase/server'
 
 // PUBLIC ON PURPOSE. A reseller gives us their details and asks us to call;
 // making them create an account first would cost enquiries and protects
@@ -30,6 +31,19 @@ export async function POST(request: Request) {
     if (isHoneypotTripped(body)) {
       console.warn('[honeypot] dropped', '/api/bulk-leads')
       return NextResponse.json({ ok: true })
+    }
+
+    // If the reseller happens to be signed in, stamp the lead with their id so
+    // they can see it later under My Orders. Signing in is NOT required here
+    // either — any failure reading the session resolves to null rather than
+    // failing an enquiry that has already been filled in.
+    let userId: string | null = null
+    try {
+      const server = await createServerSupabaseClient()
+      const { data } = await server.auth.getUser()
+      userId = data?.user?.id ?? null
+    } catch (sessionError) {
+      console.warn('[bulk-leads] session read failed, continuing anonymously', sessionError)
     }
 
     const field = (key: string) => clean((body as Record<string, unknown>)[key])
@@ -93,6 +107,7 @@ export async function POST(request: Request) {
       phone,
       notes,
       source_page: '/sell-test-strips-in-bulk',
+      user_id: userId,
     })
     if (error) {
       console.error('bulk lead insert failed', error.message)

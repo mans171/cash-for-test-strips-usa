@@ -9,6 +9,9 @@ export type CreateLeadInput = {
   name: string
   email?: string
   phone?: string
+  // Set when the submitting seller happens to be signed in. Signing in is
+  // never required, so this is null for most submissions.
+  userId?: string | null
 }
 
 export type Lead = {
@@ -20,6 +23,7 @@ export type Lead = {
   name: string | null
   email: string | null
   phone: string | null
+  user_id: string | null
   created_at: string
 }
 
@@ -39,6 +43,7 @@ export async function createLead(input: CreateLeadInput): Promise<Lead> {
     name: input.name,
     email: input.email ?? null,
     phone: input.phone ?? null,
+    user_id: input.userId ?? null,
   })
 
   if (error) throw new Error(`Failed to create lead: ${error.message}`)
@@ -52,6 +57,7 @@ export async function createLead(input: CreateLeadInput): Promise<Lead> {
     name: input.name,
     email: input.email ?? null,
     phone: input.phone ?? null,
+    user_id: input.userId ?? null,
     created_at: createdAt,
   }
 }

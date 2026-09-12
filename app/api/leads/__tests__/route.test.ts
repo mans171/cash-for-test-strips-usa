@@ -23,10 +23,26 @@ vi.mock('@/lib/email', async (importOriginal) => {
   }
 })
 
+// The route reads the session so a signed-in seller's lead can be stamped with
+// their id. There is no cookie store in a vitest run, so stub the server client
+// module: the default is a signed-out visitor, which is exactly how every other
+// case in this file behaves today.
+const mockGetUser = vi.fn()
+
+beforeEach(() => {
+  mockGetUser.mockReset()
+  mockGetUser.mockResolvedValue({ data: { user: null }, error: null })
+})
+
+vi.mock('@/lib/supabase/server', () => ({
+  createServerSupabaseClient: async () => ({ auth: { getUser: () => mockGetUser() } }),
+}))
+
 const { POST } = await import('../route')
 
 const cleanupLeadIds: string[] = []
 const cleanupCompanyIds: string[] = []
+const cleanupUserIds: string[] = []
 
 // Naming pattern shared with createTestCompany below — used both to build
 // each row's slug and as the LIKE prefix for the safety-net cleanup.
@@ -40,6 +56,14 @@ afterEach(async () => {
   if (cleanupCompanyIds.length) {
     await supabaseAdmin.from('companies').delete().in('id', cleanupCompanyIds)
     cleanupCompanyIds.length = 0
+  }
+  // leads.user_id -> auth.users(id) is ON DELETE SET NULL, so the order here
+  // does not matter, but the leads above are already gone by this point.
+  if (cleanupUserIds.length) {
+    for (const userId of cleanupUserIds) {
+      await supabaseAdmin.auth.admin.deleteUser(userId)
+    }
+    cleanupUserIds.length = 0
   }
   // Safety net: an interrupted prior run may have left a stray row behind
   // (created but never reaching the cleanup above, e.g. process killed
@@ -273,5 +297,67 @@ describe('POST /api/leads', () => {
       .eq('matched_company_id', companyId)
     for (const lead of leads ?? []) cleanupLeadIds.push(lead.id)
     expect(leads?.length).toBe(1)
+  })
+
+  it('stamps the lead with the signed-in seller\'s id', async () => {
+    // A real auth user is required: leads.user_id is a foreign key onto
+    // auth.users(id), so a made-up uuid would be rejected by the insert.
+    const suffix = Date.now()
+    const { data: created, error: userError } = await supabaseAdmin.auth.admin.createUser({
+      email: `leads-route-test-seller-${suffix}@example.com`,
+      password: `test-${suffix}-Aa1!`,
+      email_confirm: true,
+    })
+    expect(userError).toBeNull()
+    const userId = created!.user!.id
+    cleanupUserIds.push(userId)
+    mockGetUser.mockResolvedValue({ data: { user: { id: userId } }, error: null })
+
+    const companyId = await createTestCompany({ phone: '5185550199', active: true })
+    const response = await POST(
+      makeRequest({
+        items: [{ brand: 'OneTouch Verio', count: 1, expiration: '2027-01', condition: 'sealed' }],
+        matchedCompanyId: companyId,
+        channel: 'sms',
+        name: 'Jane Doe',
+      })
+    )
+    const body = await response.json()
+    expect(response.status).toBe(200)
+    cleanupLeadIds.push(body.leadId)
+
+    const { data: lead, error } = await supabaseAdmin
+      .from('leads')
+      .select('user_id')
+      .eq('id', body.leadId)
+      .single()
+    expect(error).toBeNull()
+    expect(lead!.user_id).toBe(userId)
+  })
+
+  it('still creates the lead when the session cannot be read', async () => {
+    // A broken cookie must never cost us a submission.
+    mockGetUser.mockRejectedValue(new Error('cookie jar on fire'))
+
+    const companyId = await createTestCompany({ phone: '5185550199', active: true })
+    const response = await POST(
+      makeRequest({
+        items: [{ brand: 'OneTouch Verio', count: 1, expiration: '2027-01', condition: 'sealed' }],
+        matchedCompanyId: companyId,
+        channel: 'sms',
+        name: 'Jane Doe',
+      })
+    )
+    const body = await response.json()
+    expect(response.status).toBe(200)
+    expect(body.leadId).toBeDefined()
+    cleanupLeadIds.push(body.leadId)
+
+    const { data: lead } = await supabaseAdmin
+      .from('leads')
+      .select('user_id')
+      .eq('id', body.leadId)
+      .single()
+    expect(lead!.user_id).toBeNull()
   })
 })

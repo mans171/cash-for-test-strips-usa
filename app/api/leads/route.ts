@@ -6,6 +6,7 @@ import { getCompanyContact } from '@/lib/order-matching'
 import type { OrderItem } from '@/lib/types'
 import { OWNER_EMAIL } from '@/lib/owner'
 import { isHoneypotTripped } from '@/lib/honeypot'
+import { createServerSupabaseClient } from '@/lib/supabase/server'
 
 const VALID_CONDITIONS = new Set(['sealed', 'unsealed'])
 const MAX_ITEMS = 50
@@ -35,6 +36,19 @@ export async function POST(request: Request) {
     if (isHoneypotTripped(body)) {
       console.warn('[honeypot] dropped', '/api/leads')
       return NextResponse.json({ leadId: 'ok' })
+    }
+
+    // If the seller happens to be signed in, stamp the lead with their id so
+    // they can see it later under My Orders. Signing in is NOT required and a
+    // broken or missing cookie must never block a submission, so any failure
+    // here resolves to null rather than throwing into the 500 handler.
+    let userId: string | null = null
+    try {
+      const server = await createServerSupabaseClient()
+      const { data } = await server.auth.getUser()
+      userId = data?.user?.id ?? null
+    } catch (sessionError) {
+      console.warn('[POST /api/leads] session read failed, continuing anonymously', sessionError)
     }
 
     const { items, matchedCompanyId, channel, sourcePage, name, email, phone } = body ?? {}
@@ -75,6 +89,7 @@ export async function POST(request: Request) {
       name: name.trim(),
       email: trimmedEmail,
       phone: trimmedPhone,
+      userId,
     })
 
     if (channel === 'sms') {
