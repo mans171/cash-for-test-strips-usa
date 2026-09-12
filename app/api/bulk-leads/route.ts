@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 import { sendEmail, escapeHtml } from '@/lib/email'
-import { OWNER_EMAIL, BULK_MIN_PIECES } from '@/lib/owner'
+import { BULK_MIN_PIECES } from '@/lib/owner'
+import { pickBulkRecipient } from '@/lib/bulk-routing'
+import { STATE_LABELS } from '@/lib/states'
 
 // PUBLIC ON PURPOSE. app/api/leads/route.ts requires a signed-in user, because
 // that flow hands the seller a BUYER's contact details and the account gate is
@@ -28,6 +30,7 @@ export async function POST(request: Request) {
     const phone = field('phone')
     const email = field('email')
     const location = field('location')
+    const state = field('state').toUpperCase()
     const quantity = field('quantity')
     const details = field('details')
     const frequency = field('frequency')
@@ -37,16 +40,34 @@ export async function POST(request: Request) {
     if (!email || !email.includes('@')) {
       return NextResponse.json({ error: 'A valid email is required' }, { status: 400 })
     }
+    // STATE_LABELS carries a CANADA pseudo-code for the buyer directory. This
+    // form routes to a US state's buyer, so only the 50 real codes are valid.
+    if (!(state in STATE_LABELS) || state === 'CANADA') {
+      return NextResponse.json({ error: 'Please choose your state' }, { status: 400 })
+    }
+
+    // Who gets this enquiry: the state's own buyer if it has a real inbox of
+    // its own, otherwise the house. Anon client on purpose - RLS already lets
+    // it read active rows, and nothing here is written outside `leads`.
+    const { data: companyRows } = await supabase
+      .from('companies')
+      .select('states,email,active,mail_in,name,slug')
+      .eq('active', true)
+      .eq('mail_in', false)
+      .contains('states', [state])
+    const recipient = pickBulkRecipient(state, companyRows ?? [])
 
     // The reseller's answers go in `notes` as readable text rather than new
     // columns: `leads` is shared with the consumer flow and this is the only
     // caller that has these fields.
     const notes = [
       'BULK SELLER ENQUIRY',
+      'State: ' + state,
       location && 'Location: ' + location,
       quantity && 'Approx pieces: ' + quantity,
       frequency && 'Frequency: ' + frequency,
       details && 'What they have: ' + details,
+      'Routed to: ' + (recipient.buyerName ?? 'house'),
     ]
       .filter(Boolean)
       .join('\n')
@@ -69,16 +90,19 @@ export async function POST(request: Request) {
     // request - the seller has done their part and the row is the record.
     // sendEmail (not sendEmailOrThrow) swallows its own errors by design.
     await sendEmail({
-      to: OWNER_EMAIL,
-      subject: 'Bulk seller enquiry - ' + name + (location ? ' (' + location + ')' : ''),
+      to: recipient.to,
+      cc: recipient.cc ?? undefined,
+      subject: 'Bulk seller enquiry - ' + name + ' (' + state + ')',
       html: [
         '<h2>Bulk seller enquiry</h2>',
         '<p><strong>' + escapeHtml(name) + '</strong></p>',
         '<p>Phone: ' + escapeHtml(phone) + '<br>Email: ' + escapeHtml(email) + '</p>',
+        '<p>State: ' + escapeHtml(STATE_LABELS[state]) + '</p>',
         location && '<p>Location: ' + escapeHtml(location) + '</p>',
         quantity && '<p>Approx pieces: ' + escapeHtml(quantity) + '</p>',
         frequency && '<p>Frequency: ' + escapeHtml(frequency) + '</p>',
         details && '<p>What they have:<br>' + escapeHtml(details).replace(/\n/g, '<br>') + '</p>',
+        '<p style="color:#666">Routed to: ' + escapeHtml(recipient.buyerName ?? 'house') + '</p>',
         '<p style="color:#666">Minimum for this form is ' + BULK_MIN_PIECES + ' pieces. Lead id ' + id + '.</p>',
       ]
         .filter(Boolean)

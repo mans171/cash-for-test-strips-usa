@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { OWNER_PHONE } from '@/lib/owner'
+import { STATE_LABELS } from '@/lib/states'
 
 const INPUT = 'w-full border border-gray-200 rounded-lg px-3 py-2 text-sm'
 const LABEL = 'block text-sm font-medium text-gray-700 mb-1'
@@ -65,8 +66,19 @@ export function BulkEnquiryForm() {
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label className={LABEL} htmlFor="bulk-location">Where you are</label>
-          <input id="bulk-location" name="location" className={INPUT} placeholder="City and state" />
+          <label className={LABEL} htmlFor="bulk-state">State</label>
+          <select id="bulk-state" name="state" required className={INPUT} defaultValue="">
+            <option value="" disabled>Choose your state</option>
+            {Object.entries(STATE_LABELS)
+              .filter(([code]) => code !== 'CANADA')
+              .map(([code, label]) => (
+                <option key={code} value={code}>{label}</option>
+              ))}
+          </select>
+        </div>
+        <div>
+          <label className={LABEL} htmlFor="bulk-location">City</label>
+          <input id="bulk-location" name="location" className={INPUT} placeholder="Your city or town" />
         </div>
         <div>
           <label className={LABEL} htmlFor="bulk-quantity">Roughly how many pieces</label>
