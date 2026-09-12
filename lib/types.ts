@@ -23,11 +23,6 @@ export type Company = {
   // cards need it too: mail-in buyers have no /company/[slug] page, so a card
   // must not render a "View profile" link for one. See lib/company-profile.ts.
   mail_in?: boolean
-  // Set only by lib/company-contact.ts's stripCompanyContact() for anonymous requests:
-  // true when the underlying buyer has real email/phone on file, even though
-  // those fields are nulled out here. Lets the client render the account-gate
-  // prompt for logged-out visitors without leaking the actual contact info.
-  hasContact?: boolean
 }
 
 export type OrderItem = {

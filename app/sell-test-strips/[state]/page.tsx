@@ -4,8 +4,6 @@ import { supabase } from "@/lib/supabase";
 import type { Metadata } from "next";
 import { buildFaqPageSchema, buildBreadcrumbSchema } from "@/lib/schema";
 import { JsonLd } from "@/app/components/JsonLd";
-import { stripCompanyContact } from "@/lib/company-contact";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { Company } from "@/lib/types";
 import { BuyerCard } from "@/app/components/BuyerCard";
 import { btnPrimary } from "@/app/components/ui";
@@ -63,21 +61,11 @@ export default async function StatePage({ params }: Props) {
   const rawMailIn = ((mailInData ?? []) as Company[])[0] ?? null;
   const rawNearby = rawCompanies.length === 0 ? nearestBuyers(code, allInPerson, 3) : [];
 
-  const supabaseServer = await createServerSupabaseClient();
-  const { data: { user } } = await supabaseServer.auth.getUser();
-  const isAuthenticated = !!user;
-
-  // Contact details stay gated behind an account for every card on this page,
-  // exactly as on /directory and /company/[slug].
-  const companies = isAuthenticated ? rawCompanies : rawCompanies.map(stripCompanyContact);
-  const nearby = isAuthenticated
-    ? rawNearby
-    : rawNearby.map((c) => ({ ...stripCompanyContact(c), miles: c.miles }));
-  const mailIn = rawMailIn
-    ? isAuthenticated
-      ? rawMailIn
-      : stripCompanyContact(rawMailIn)
-    : null;
+  // Contact details are public on every card — the account gate was removed
+  // on 2026-09-12. See lib/company-contact.ts.
+  const companies = rawCompanies;
+  const nearby = rawNearby;
+  const mailIn = rawMailIn;
 
   const faqs = buildStateFaqs({
     stateCode: code,
@@ -166,7 +154,7 @@ export default async function StatePage({ params }: Props) {
                 strips and get paid once they arrive and are checked — no local buyer needed.
               </p>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <BuyerCard company={mailIn} isAuthenticated={isAuthenticated} />
+                <BuyerCard company={mailIn} />
               </div>
             </div>
           )}
@@ -183,7 +171,7 @@ export default async function StatePage({ params }: Props) {
               </p>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {nearby.map((c) => (
-                  <BuyerCard key={c.id} company={c} isAuthenticated={isAuthenticated} />
+                  <BuyerCard key={c.id} company={c} />
                 ))}
               </div>
             </div>
@@ -209,7 +197,7 @@ export default async function StatePage({ params }: Props) {
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
             {companies.map((c) => (
-              <BuyerCard key={c.id} company={c} isAuthenticated={isAuthenticated} />
+              <BuyerCard key={c.id} company={c} />
             ))}
           </div>
         </>

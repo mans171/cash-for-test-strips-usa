@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createLead } from '@/lib/leads'
 import { buildBuyerEmail, buildQuoteMessage } from '@/lib/message-template'
-import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { sendEmailOrThrow } from '@/lib/email'
 import { getCompanyContact } from '@/lib/order-matching'
 import type { OrderItem } from '@/lib/types'
@@ -24,12 +23,9 @@ function isValidItem(item: unknown): item is OrderItem {
 
 export async function POST(request: Request) {
   try {
-    const supabase = await createServerSupabaseClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'You must be signed in to contact a buyer' }, { status: 401 })
-    }
-
+    // No session required: the account gate was removed on 2026-09-12 so a
+    // seller can reach a buyer without signing up. Every validation below
+    // still applies.
     const body = await request.json()
     const { items, matchedCompanyId, channel, sourcePage, name, email, phone } = body ?? {}
 

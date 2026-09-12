@@ -5,12 +5,10 @@ import type { Metadata } from "next";
 import { DirectorySearch } from "./filters";
 import { STATE_LABELS } from "@/lib/states";
 import type { Company } from "@/lib/types";
-import { stripCompanyContact } from "@/lib/company-contact";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { buildItemListSchema } from "@/lib/schema";
 import { JsonLd } from "@/app/components/JsonLd";
 import { BuyerCard } from "@/app/components/BuyerCard";
-import { UnlockContact } from "@/app/components/UnlockContact";
+import { ContactButtons } from "@/app/components/ContactButtons";
 import { ZipCookieSync } from "@/app/components/ZipCookieSync";
 import { btnOnDark } from "@/app/components/ui";
 import { isValidZip } from "@/lib/geo";
@@ -46,12 +44,7 @@ export default async function DirectoryPage({
   if (state) query = query.contains("states", [state.toUpperCase()]);
 
   const { data } = await query;
-  const rawCompanies = (data ?? []) as Company[];
-
-  const supabaseServer = await createServerSupabaseClient();
-  const { data: { user } } = await supabaseServer.auth.getUser();
-  const isAuthenticated = !!user;
-  const companies = isAuthenticated ? rawCompanies : rawCompanies.map(stripCompanyContact);
+  const companies = (data ?? []) as Company[];
 
   // ZIP proximity mode
   const zipValid = !!zip && isValidZip(zip);
@@ -79,8 +72,7 @@ export default async function DirectoryPage({
       .maybeSingle();
     if (mailInError) console.error("mail-in fallback lookup failed:", mailInError.message);
     if (mailInRow) {
-      const row = mailInRow as Company;
-      mailIn = isAuthenticated ? row : stripCompanyContact(row);
+      mailIn = mailInRow as Company;
     }
   }
 
@@ -107,7 +99,7 @@ export default async function DirectoryPage({
         </h1>
         <p className="text-gray-500">
           {centroid
-            ? "Sorted by distance from your ZIP — contact info unlocks with a free account."
+            ? "Sorted by distance from your ZIP — contact details are on every card."
             : `${companies.length} buyer${companies.length !== 1 ? "s" : ""} found${stateLabel ? ` in ${stateLabel}` : ""}`}
         </p>
         {zip && !zipValid && (
@@ -126,20 +118,19 @@ export default async function DirectoryPage({
 
       {tiers ? (
         <div className="space-y-10">
-          <TierSection title="Near you" subtitle="Within 25 miles" companies={tiers.near} isAuthenticated={isAuthenticated} />
-          <TierSection title="Within driving distance" subtitle="25–100 miles" companies={tiers.driving} isAuthenticated={isAuthenticated} />
+          <TierSection title="Near you" subtitle="Within 25 miles" companies={tiers.near} />
+          <TierSection title="Within driving distance" subtitle="25–100 miles" companies={tiers.driving} />
           <TierSection
             title={zipStateLabel ? `Serving ${zipStateLabel}` : "Serving your state"}
             subtitle="Statewide buyers"
             companies={tiers.inState}
-            isAuthenticated={isAuthenticated}
           />
           {tiers.near.length === 0 && tiers.driving.length === 0 && tiers.inState.length === 0 && (
             <p className="text-gray-500">
               No local buyers near {zip} yet — but you're covered:
             </p>
           )}
-          <MailInFallback company={mailIn} isAuthenticated={isAuthenticated} />
+          <MailInFallback company={mailIn} />
           <p className="text-sm text-gray-400">
             Not what you're looking for? <Link href="/directory" className="underline hover:text-ink">Browse all buyers</Link>
           </p>
@@ -155,7 +146,7 @@ export default async function DirectoryPage({
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {companies.map((c) => (
-            <BuyerCard key={c.id} company={c} isAuthenticated={isAuthenticated} />
+            <BuyerCard key={c.id} company={c} />
           ))}
         </div>
       )}
@@ -210,12 +201,10 @@ function TierSection({
   title,
   subtitle,
   companies,
-  isAuthenticated,
 }: {
   title: string;
   subtitle: string;
   companies: CompanyWithMiles[];
-  isAuthenticated: boolean;
 }) {
   if (companies.length === 0) return null;
   return (
@@ -226,7 +215,7 @@ function TierSection({
       </div>
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {companies.map((c) => (
-          <BuyerCard key={c.id} company={c} isAuthenticated={isAuthenticated} />
+          <BuyerCard key={c.id} company={c} />
         ))}
       </div>
     </section>
@@ -236,9 +225,8 @@ function TierSection({
 // company is null when the mail-in row lookup errored or came back empty
 // (query failure, or the row missing/deactivated) — the section still
 // renders so a searched ZIP never dead-ends, just with a generic /sell CTA
-// instead of a real buyer's UnlockContact gate. No contact data involved in
-// that variant, so there's no security surface to strip for anon visitors.
-function MailInFallback({ company, isAuthenticated }: { company: Company | null; isAuthenticated: boolean }) {
+// instead of a real buyer's contact buttons.
+function MailInFallback({ company }: { company: Company | null }) {
   return (
     <section className="bg-ink rounded-2xl p-6 sm:p-8 text-white">
       <div className="flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
@@ -253,7 +241,7 @@ function MailInFallback({ company, isAuthenticated }: { company: Company | null;
         </div>
         <div className="shrink-0">
           {company ? (
-            <UnlockContact company={company} isAuthenticated={isAuthenticated} size="page" />
+            <ContactButtons company={company} size="page" />
           ) : (
             <Link href="/sell" className={btnOnDark}>
               Start a sale →

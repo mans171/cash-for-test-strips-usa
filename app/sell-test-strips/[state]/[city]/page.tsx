@@ -4,8 +4,6 @@ import type { Metadata } from "next";
 import { supabase } from "@/lib/supabase";
 import { buildFaqPageSchema, buildBreadcrumbSchema, buildLocalBusinessSchema } from "@/lib/schema";
 import { JsonLd } from "@/app/components/JsonLd";
-import { stripCompanyContact } from "@/lib/company-contact";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { Company } from "@/lib/types";
 import { BuyerCard } from "@/app/components/BuyerCard";
 import { COMPANY_COLUMNS } from "@/lib/company-columns";
@@ -71,16 +69,10 @@ export default async function CityPage({ params }: Props) {
   // render. See docs/seo/2026-08-12-city-page-spec.md Rule 2.
   if (rawBuyers.length === 0) notFound();
 
-  const supabaseServer = await createServerSupabaseClient();
-  const {
-    data: { user },
-  } = await supabaseServer.auth.getUser();
-  const isAuthenticated = !!user;
-
-  const buyers = isAuthenticated
-    ? rawBuyers
-    : rawBuyers.map((c) => ({ ...stripCompanyContact(c), miles: c.miles }));
-  const mailIn = rawMailIn ? (isAuthenticated ? rawMailIn : stripCompanyContact(rawMailIn)) : null;
+  // Contact details are public on every card — the account gate was removed
+  // on 2026-09-12. See lib/company-contact.ts.
+  const buyers = rawBuyers;
+  const mailIn = rawMailIn;
 
   const faqs = buildCityFaqs({ target, buyers: rawBuyers, hasMailIn: !!rawMailIn });
   // Pass the live buyer set so the footer never links to a city page that
@@ -149,7 +141,7 @@ export default async function CityPage({ params }: Props) {
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
         {buyers.map((c) => (
-          <BuyerCard key={c.id} company={c} isAuthenticated={isAuthenticated} />
+          <BuyerCard key={c.id} company={c} />
         ))}
       </div>
 
@@ -159,7 +151,7 @@ export default async function CityPage({ params }: Props) {
             Prefer to mail your strips instead?
           </h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <BuyerCard company={mailIn} isAuthenticated={isAuthenticated} />
+            <BuyerCard company={mailIn} />
           </div>
         </div>
       )}

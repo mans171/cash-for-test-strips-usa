@@ -1,15 +1,6 @@
 import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 
-// createServerSupabaseClient calls next/headers `cookies()`, which requires
-// a real Next.js request scope that doesn't exist when a route handler is
-// invoked directly in a unit test. Mock it so these tests exercise the
-// route's own logic; getUser defaults to an authenticated session (reset
-// every test in beforeEach, so test order never matters).
-const mockGetUser = vi.fn<
-  () => Promise<{ data: { user: { id: string; email: string } | null } }>
->()
-
 // Real SMTP sends must never happen from a test run — mock the one function
 // that actually talks to the mail server, same precedent as
 // lib/__tests__/email.test.ts mocking nodemailer directly. Everything else
@@ -17,17 +8,9 @@ const mockGetUser = vi.fn<
 const mockSendEmailOrThrow = vi.fn()
 
 beforeEach(() => {
-  mockGetUser.mockReset()
-  mockGetUser.mockResolvedValue({ data: { user: { id: 'test-user-id', email: 'jane@example.com' } } })
   mockSendEmailOrThrow.mockReset()
   mockSendEmailOrThrow.mockResolvedValue(undefined)
 })
-
-vi.mock('@/lib/supabase/server', () => ({
-  createServerSupabaseClient: async () => ({
-    auth: { getUser: mockGetUser },
-  }),
-}))
 
 // message-template.ts imports escapeHtml from this same module, so the mock
 // must preserve the real implementation via importOriginal rather than
@@ -121,17 +104,20 @@ function makeRequest(body: unknown) {
 }
 
 describe('POST /api/leads', () => {
-  it('returns 401 when there is no session', async () => {
-    mockGetUser.mockResolvedValueOnce({ data: { user: null } })
+  it('creates a lead without any session', async () => {
+    const companyId = await createTestCompany({ email: 'buyer-real@example.com', active: true })
     const response = await POST(
       makeRequest({
         items: [{ brand: 'OneTouch Verio', count: 1, expiration: '2027-01', condition: 'sealed' }],
-        matchedCompanyId: 'irrelevant',
+        matchedCompanyId: companyId,
         channel: 'email',
         name: 'Jane Doe',
       })
     )
-    expect(response.status).toBe(401)
+    const body = await response.json()
+    expect(response.status).toBe(200)
+    expect(body.leadId).toBeDefined()
+    cleanupLeadIds.push(body.leadId)
   })
 
   it('returns 400 when items is empty', async () => {

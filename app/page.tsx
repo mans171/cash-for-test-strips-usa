@@ -3,8 +3,6 @@ import { supabase } from "@/lib/supabase";
 import type { Metadata } from "next";
 import { buildWebsiteSchema, buildServiceSchema, buildFaqPageSchema } from "@/lib/schema";
 import { JsonLd } from "@/app/components/JsonLd";
-import { stripCompanyContact } from "@/lib/company-contact";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { Company } from "@/lib/types";
 import { STATE_LABELS } from "@/lib/states";
 import { BuyerCard } from "@/app/components/BuyerCard";
@@ -15,7 +13,7 @@ import { REGIONS, REGION_ORDER } from "@/lib/hub-page-content";
 export const metadata: Metadata = {
   title: "Cash For Test Strips USA — Sell Diabetic Test Strips Near You",
   description:
-    "Find local cash buyers for your unused diabetic test strips. Get paid fast via PayPal, Zelle, or check. Free to use. Free account required.",
+    "Find local cash buyers for your unused diabetic test strips. Get paid fast via PayPal, Zelle, or check. Free to use — no account needed.",
   alternates: { canonical: 'https://cash4teststripsusa.com' },
 };
 
@@ -35,12 +33,7 @@ export default async function HomePage() {
     .eq("mail_in", false)
     .eq("active", true);
 
-  const rawCompanies = (featured ?? []) as Company[];
-
-  const supabaseServer = await createServerSupabaseClient();
-  const { data: { user } } = await supabaseServer.auth.getUser();
-  const isAuthenticated = !!user;
-  const companies = isAuthenticated ? rawCompanies : rawCompanies.map(stripCompanyContact);
+  const companies = (featured ?? []) as Company[];
 
   const homeFaqs = [
     {
@@ -175,7 +168,7 @@ export default async function HomePage() {
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {companies.map((c) => (
-                <BuyerCard key={c.id} company={c} isAuthenticated={isAuthenticated} />
+                <BuyerCard key={c.id} company={c} />
               ))}
             </div>
           </div>

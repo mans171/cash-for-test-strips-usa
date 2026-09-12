@@ -2,16 +2,14 @@ import Link from "next/link"
 import type { Company } from "@/lib/types"
 import { STATE_LABELS } from "@/lib/states"
 import { Chip, VerifiedBadge, FeaturedBadge, MonogramAvatar, PinIcon, btnSecondary } from "./ui"
-import { UnlockContact } from "./UnlockContact"
+import { ContactButtons } from "./ContactButtons"
 import { hasAnyContact } from "@/lib/company-contact"
 import { hasProfilePage } from "@/lib/company-profile"
 
 export function BuyerCard({
   company,
-  isAuthenticated,
 }: {
   company: Company & { miles?: number | null }
-  isAuthenticated: boolean
 }) {
   const stateLabels = company.states
     .slice(0, 2)
@@ -84,7 +82,7 @@ export function BuyerCard({
           )}
           {showContact && (
             <div className="flex-1">
-              <UnlockContact company={company} isAuthenticated={isAuthenticated} />
+              <ContactButtons company={company} />
             </div>
           )}
         </div>

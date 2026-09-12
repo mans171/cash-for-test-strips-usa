@@ -5,9 +5,7 @@ import { supabase } from "@/lib/supabase";
 import type { Metadata } from "next";
 import { STATE_LABELS } from "@/lib/states";
 import type { Company } from "@/lib/types";
-import { stripCompanyContact } from "@/lib/company-contact";
 import { hasProfilePage } from "@/lib/company-profile";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { buildLocalBusinessSchema, buildFaqPageSchema } from "@/lib/schema";
 import type { FaqItem } from "@/lib/schema";
 import { JsonLd } from "@/app/components/JsonLd";
@@ -15,7 +13,7 @@ import { isValidZip, haversineMiles, withDistance } from "@/lib/geo";
 import { getZipCentroid } from "@/lib/zip-lookup";
 import { COMPANY_COLUMNS } from "@/lib/company-columns";
 import { BuyerCard } from "@/app/components/BuyerCard";
-import { UnlockContact } from "@/app/components/UnlockContact";
+import { ContactButtons } from "@/app/components/ContactButtons";
 import { MonogramAvatar, VerifiedBadge, FeaturedBadge, PinIcon } from "@/app/components/ui";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -177,7 +175,7 @@ function buildFAQ(
   const modePhrasings: FaqItem[] = [
     {
       question: `How does selling to ${name} work?`,
-      answer: `${name} buys strips via ${joinNatural(modeWords)}. Unlock the contact details on this page to reach them and arrange a transaction.`,
+      answer: `${name} buys strips via ${joinNatural(modeWords)}. Use the contact details on this page to reach them and arrange a transaction.`,
     },
     {
       question: `What is the process for selling test strips to ${name}?`,
@@ -185,7 +183,7 @@ function buildFAQ(
     },
     {
       question: `How do I contact ${name} to sell my test strips?`,
-      answer: `Unlock the contact details on this page, then reach out to ${name} directly. Transactions are done via ${joinNatural(modeWords)}.`,
+      answer: `Use the contact details on this page to reach out to ${name} directly. Transactions are done via ${joinNatural(modeWords)}.`,
     },
   ];
   candidates.push({
@@ -260,10 +258,7 @@ export default async function CompanyPage({ params }: Props) {
   // rendering a "View profile" link, so the two can't drift apart again.
   if (!rawCompany || !hasProfilePage(rawCompany as Company)) notFound();
 
-  const supabaseServer = await createServerSupabaseClient();
-  const { data: { user } } = await supabaseServer.auth.getUser();
-  const isAuthenticated = !!user;
-  const company = (isAuthenticated ? rawCompany : stripCompanyContact(rawCompany as Company)) as Company;
+  const company = rawCompany as Company;
 
   const stateNames = company.states.map((s: string) => STATE_LABELS[s] ?? s);
 
@@ -293,9 +288,7 @@ export default async function CompanyPage({ params }: Props) {
     .select(COMPANY_COLUMNS)
     .eq("mail_in", false)
     .neq("id", rawCompany.id);
-  const others = ((othersData ?? []) as Company[]).map((c) =>
-    isAuthenticated ? c : stripCompanyContact(c)
-  );
+  const others = (othersData ?? []) as Company[];
   const nearby = (
     company.lat != null && company.lng != null
       ? withDistance(others, { lat: company.lat, lng: company.lng })
@@ -431,8 +424,8 @@ export default async function CompanyPage({ params }: Props) {
         {/* CTA */}
         <div className="bg-ink rounded-xl p-6 text-center text-white mt-8">
           <h2 className="font-black text-lg mb-1">Ready to sell to {company.name.split(" ")[0]}?</h2>
-          <p className="text-sm text-white/60 mb-4">Contact info unlocks free — takes 10 seconds.</p>
-          <UnlockContact company={company} isAuthenticated={isAuthenticated} size="page" />
+          <p className="text-sm text-white/60 mb-4">Reach out directly — no account needed.</p>
+          <ContactButtons company={company} size="page" />
         </div>
       </div>
 
@@ -442,7 +435,7 @@ export default async function CompanyPage({ params }: Props) {
           <h2 className="text-xl font-extrabold text-gray-900 mb-4">Other buyers nearby</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {nearby.map(({ miles: _m, ...c }) => (
-              <BuyerCard key={c.id} company={c as Company} isAuthenticated={isAuthenticated} />
+              <BuyerCard key={c.id} company={c as Company} />
             ))}
           </div>
         </div>
