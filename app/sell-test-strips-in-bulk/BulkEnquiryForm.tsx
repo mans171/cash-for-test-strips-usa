@@ -46,9 +46,7 @@ export function BulkEnquiryForm() {
           We&apos;ll be in touch to talk through what you have and what we can pay for it. If
           you&apos;d rather not wait, call {OWNER_PHONE}.
         </p>
-        <div className="mt-4">
-          <OrdersNudge />
-        </div>
+        <OrdersNudge className="mt-4" />
       </div>
     )
   }

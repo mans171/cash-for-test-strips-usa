@@ -8,21 +8,24 @@ import { useUser } from "@/lib/auth-client"
  *
  *  A lead sent while signed OUT carries no user_id, so signing up afterwards
  *  will not pull it in. The copy says so rather than implying a backfill. */
-export function OrdersNudge() {
+/** `className` lands on whichever root actually renders, so a caller can set
+ *  its own spacing without wrapping the component in a div that would leave an
+ *  empty spacer while `useUser` is still loading. */
+export function OrdersNudge({ className = "" }: { className?: string }) {
   const { user, loading } = useUser()
 
   if (loading) return null
 
   if (user) {
     return (
-      <Link href="/orders" className="text-sm font-medium text-cash hover:underline self-start">
+      <Link href="/orders" className={`text-sm font-medium text-cash hover:underline self-start ${className}`}>
         See your orders →
       </Link>
     )
   }
 
   return (
-    <div className="bg-gray-50 border border-gray-100 rounded-xl p-4">
+    <div className={`bg-gray-50 border border-gray-100 rounded-xl p-4 ${className}`}>
       <p className="text-sm text-gray-600">
         Want to track this request?{" "}
         <Link href="/signup?next=/orders" className="font-medium text-cash hover:underline">

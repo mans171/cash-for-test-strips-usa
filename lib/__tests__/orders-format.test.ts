@@ -25,6 +25,12 @@ describe('summarizeItems', () => {
     expect(summarizeItems([])).toBe('No items listed')
   })
 
+  it('renders a missing or non-numeric count as "?"', () => {
+    const broken = { ...item('Accu-Chek Guide', 1), count: undefined as unknown as number }
+    expect(summarizeItems([broken])).toBe('? × Accu-Chek Guide')
+    expect(summarizeItems([{ ...item('Accu-Chek Guide', 1), count: NaN }])).toBe('? × Accu-Chek Guide')
+  })
+
   it('skips entries with no brand rather than printing a bare count', () => {
     expect(summarizeItems([item('', 4), item('Contour Next', 1)])).toBe('1 × Contour Next')
     expect(summarizeItems([item('   ', 4)])).toBe('No items listed')

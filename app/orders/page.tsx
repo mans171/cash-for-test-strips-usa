@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic'
 
 const SELECT =
-  'id, created_at, items, channel, source_page, notes, matched_company_id, companies:matched_company_id (name, slug, phone, mail_in)'
+  'id, created_at, items, channel, source_page, companies:matched_company_id (name, slug, phone, mail_in)'
 
 export default async function OrdersPage() {
   const supabase = await createServerSupabaseClient()

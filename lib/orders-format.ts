@@ -6,12 +6,13 @@ import type { OrderItem } from './types'
 /** "3 × Dexcom G7 sensors · 2 × OneTouch Verio".
  *  A lead's `items` column is nullable (bulk enquiries carry none) and rows
  *  written before the product catalog settled can hold a blank brand, so both
- *  cases fall back rather than rendering a bare count. */
+ *  cases fall back rather than rendering a bare count. A count that is
+ *  missing or not a number renders as "?" rather than "NaN"/"undefined". */
 export function summarizeItems(items: OrderItem[] | null): string {
   if (!items || items.length === 0) return 'No items listed'
   const parts = items
     .filter((i) => typeof i?.brand === 'string' && i.brand.trim().length > 0)
-    .map((i) => `${i.count} × ${i.brand.trim()}`)
+    .map((i) => `${Number.isFinite(i.count) ? i.count : '?'} × ${i.brand.trim()}`)
   return parts.length > 0 ? parts.join(' · ') : 'No items listed'
 }
 
