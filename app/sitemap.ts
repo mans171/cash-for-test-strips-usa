@@ -25,7 +25,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE_URL}/about`, changeFrequency: 'monthly', priority: 0.6 },
     { url: `${BASE_URL}/is-it-legal-to-sell-diabetic-test-strips`, changeFrequency: 'monthly', priority: 0.8 },
     { url: `${BASE_URL}/how-much-are-diabetic-test-strips-worth`, changeFrequency: 'monthly', priority: 0.8 },
-    // Hand-written feature post; not in STATE_BLOG_POSTS, so not covered by blogRoutes below.
+    // Hand-written feature post; its own route, not part of the state set.
     {
       url: `${BASE_URL}/blog/sell-test-strips-albany-ny`,
       lastModified: '2026-08-13',
@@ -34,12 +34,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ]
 
-  const blogRoutes: MetadataRoute.Sitemap = STATE_BLOG_POSTS.map((post) => ({
-    url: `${BASE_URL}/blog/${post.slug}`,
-    lastModified: post.datePublished,
-    changeFrequency: 'monthly',
-    priority: 0.7,
-  }))
+  // The 50 state posts are gone from /blog — their bodies moved onto the
+  // state pages and their URLs permanently redirect there (next.config.ts).
+  // A redirecting URL must never be submitted in a sitemap; the state routes
+  // below carry the posts' publish dates instead.
 
   // Non-state posts registered in lib/posts/index.ts.
   const registryRoutes: MetadataRoute.Sitemap = POST_REGISTRY.map((post) => ({
@@ -53,6 +51,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .filter((code) => code !== 'CANADA')
     .map((code) => ({
       url: `${BASE_URL}/sell-test-strips/${code.toLowerCase()}`,
+      lastModified: STATE_BLOG_POSTS.find((p) => p.stateCode === code)?.datePublished,
       changeFrequency: 'monthly',
       priority: 0.7,
     }))
@@ -83,5 +82,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }))
 
-  return [...staticRoutes, ...blogRoutes, ...registryRoutes, ...stateRoutes, ...cityRoutes, ...companyRoutes]
+  return [...staticRoutes, ...registryRoutes, ...stateRoutes, ...cityRoutes, ...companyRoutes]
 }

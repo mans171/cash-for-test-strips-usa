@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
-import { STATE_BLOG_POSTS } from '@/lib/blog-posts'
 import { POST_REGISTRY } from '@/lib/posts'
 import { publishableCityTargets } from '@/lib/city-page-content'
 import { changedUrls, submitToIndexNow, CHANGED_WITHIN_DAYS } from '@/lib/indexnow'
@@ -45,8 +44,11 @@ export async function GET(request: Request) {
   const urls = changedUrls({
     nowMs: Date.now(),
     posts: [
+      // State posts are deliberately absent: they folded into the state pages
+      // on 2026-09-12 and /blog/<state slug> now permanently redirects. A
+      // redirecting URL must never be submitted to IndexNow. The state pages
+      // themselves are submitted from `companies` below.
       ...POST_REGISTRY.map((p) => ({ slug: p.slug, changedAt: p.dateModified })),
-      ...STATE_BLOG_POSTS.map((p) => ({ slug: p.slug, changedAt: p.datePublished })),
     ],
     companies: companies.map((c) => ({
       slug: c.slug as string,

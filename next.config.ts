@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { stateRedirects } from "./lib/state-post-redirects";
 
 const nextConfig: NextConfig = {
   async redirects() {
@@ -30,6 +31,12 @@ const nextConfig: NextConfig = {
         destination: "/how-much-are-diabetic-test-strips-worth",
         permanent: true,
       },
+      // The 50 state blog posts folded into the 50 state pages — their
+      // hand-written bodies now render there. Both URLs targeted the same
+      // query and competed with each other; these send the post URL and its
+      // accumulated equity to the one surviving page.
+      // Source of truth: lib/state-post-redirects.ts (built from STATE_BLOG_POSTS).
+      ...stateRedirects(),
     ];
   },
 };
