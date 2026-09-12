@@ -3,23 +3,46 @@ import { supabase } from "@/lib/supabase";
 import type { Metadata } from "next";
 import { buildWebsiteSchema, buildServiceSchema, buildFaqPageSchema } from "@/lib/schema";
 import { JsonLd } from "@/app/components/JsonLd";
-import { stripCompanyContact } from "@/lib/company-contact";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { Company } from "@/lib/types";
 import { STATE_LABELS } from "@/lib/states";
 import { BuyerCard } from "@/app/components/BuyerCard";
 import { btnOnDark } from "@/app/components/ui";
 import { COMPANY_COLUMNS } from "@/lib/company-columns";
 import { REGIONS, REGION_ORDER } from "@/lib/hub-page-content";
+import { OWNER_PHONE } from "@/lib/owner";
 
 export const metadata: Metadata = {
-  title: "Cash For Test Strips USA — Sell Diabetic Test Strips Near You",
+  title: "We Buy Diabetic Test Strips — Mail-In or Same-Day Local | Cash For Test Strips USA",
   description:
-    "Find local cash buyers for your unused diabetic test strips. Get paid fast via PayPal, Zelle, or check. Free to use. Free account required.",
+    "Cash For Test Strips USA buys sealed, unexpired diabetic test strips, Dexcom and Libre sensors and Omnipod supplies. Mail in from any state or meet a local buyer. Call or text 518-278-6008.",
   alternates: { canonical: 'https://cash4teststripsusa.com' },
 };
 
 const POPULAR_STATES = ["NY", "TX", "FL", "CA", "PA", "NC", "OH", "GA", "MA", "NJ"];
+
+// Typed once here rather than inline in three CTAs. The stored format is
+// hyphenated for humans; a tel: href wants the digits alone.
+const TEL_HREF = `tel:${OWNER_PHONE.replace(/-/g, '')}`;
+// The same line receives SMS, and a photo of the box is the fastest quote we
+// can give, so the secondary CTA opens a text rather than a call.
+const SMS_HREF = `sms:${OWNER_PHONE.replace(/\D/g, '')}`;
+
+// What we buy — listed by the names printed on the box, because that is what a
+// seller reads off the carton. No prices anywhere: quotes happen in the DM.
+const WHAT_WE_BUY = [
+  {
+    title: 'Test strips',
+    items: ['OneTouch Verio / Ultra', 'FreeStyle Lite', 'Accu-Chek Guide / Aviva', 'Contour Next', 'True Metrix'],
+  },
+  {
+    title: 'CGM sensors',
+    items: ['Dexcom G6', 'Dexcom G7', 'FreeStyle Libre 2', 'FreeStyle Libre 3'],
+  },
+  {
+    title: 'Pump & pen supplies',
+    items: ['Omnipod 5', 'Omnipod DASH', 'Medtronic infusion sets', 'Tandem infusion sets'],
+  },
+];
 
 export default async function HomePage() {
   const { data: featured } = await supabase
@@ -35,12 +58,7 @@ export default async function HomePage() {
     .eq("mail_in", false)
     .eq("active", true);
 
-  const rawCompanies = (featured ?? []) as Company[];
-
-  const supabaseServer = await createServerSupabaseClient();
-  const { data: { user } } = await supabaseServer.auth.getUser();
-  const isAuthenticated = !!user;
-  const companies = isAuthenticated ? rawCompanies : rawCompanies.map(stripCompanyContact);
+  const companies = (featured ?? []) as Company[];
 
   const homeFaqs = [
     {
@@ -49,23 +67,23 @@ export default async function HomePage() {
     },
     {
       q: 'Is it legal to sell diabetic test strips?',
-      a: "Yes, selling unused, sealed, personally owned diabetic test strips is legal across the United States. The one firm rule: supplies purchased through Medicare or Medicaid cannot be resold. If your strips were paid for out of pocket or through private insurance, you're in the clear.",
+      a: "Yes, selling unused, sealed, personally owned diabetic test strips is legal across the United States. The one firm rule: supplies purchased through a government-covered program cannot be resold. If your supplies were paid for out of pocket or through private insurance, they are yours to sell.",
     },
     {
       q: 'How fast will I get paid?',
-      a: 'Most buyers pay within 24 hours of receiving and verifying your supplies. Payment is sent via PayPal, Zelle, Venmo, check, or cash — your choice. For local transactions, same-day payment is often possible.',
+      a: 'Local buyers often pay on the spot, the same day. Mail-in sellers are paid the day the box arrives and is verified. Payment is sent via PayPal, Zelle, Venmo, check, or cash — your choice.',
     },
     {
       q: 'How does the process work?',
-      a: "Call or text us at 518-278-6008 with the brand, quantity, and expiration date of what you have. We quote you immediately. For most transactions, we send a prepaid shipping label at no cost. Once we receive and verify the strips, you get paid.",
+      a: `Text a photo of your boxes to ${OWNER_PHONE} and we reply with a quote, usually the same day. If you are selling by mail we email you a prepaid shipping label at no cost, and you get paid the day it arrives. If a local buyer covers your area, you can meet them the same day instead.`,
     },
     {
       q: 'What if my strips are expired or the box has been opened?',
-      a: "Opened boxes are not accepted — we require original, sealed packaging only. For expired supplies: most expired test strips have no buyer market, but expired Omnipod pods and expired Dexcom G7 sensors are exceptions. Call us and we'll tell you whether what you have qualifies.",
+      a: "Opened boxes are not accepted — we require original, sealed packaging only. For expired supplies: most expired test strips have no buyer market, but expired Omnipod pods and expired Dexcom G7 sensors are exceptions. Text us a photo and we'll tell you whether what you have qualifies.",
     },
     {
       q: 'Do you buy in bulk?',
-      a: 'Yes — bulk is our specialty. Many of our customers are estate liquidators, caregivers, and pharmacies handling large quantities. We buy everything from a single box to 500 or more, and we pay a higher per-box rate on lots of 10 or more boxes.',
+      a: 'Yes — bulk is our specialty. Many of our sellers are estate liquidators, caregivers, and pharmacies handling large quantities. We buy from a single box to full estate or pharmacy lots, and large lots get a per-lot quote.',
     },
   ]
 
@@ -78,77 +96,127 @@ export default async function HomePage() {
       <JsonLd data={websiteSchema} />
       <JsonLd data={serviceSchema} />
       <JsonLd data={faqSchema} />
-      {/* Hero — dark ink, heavy type, ZIP-first */}
+      {/* Hero — we are the buyer. The page used to open on "the national
+          directory", which sent every visitor off to someone else before we
+          had said what we do. Phone first, mail-in second, ZIP lookup third. */}
       <section className="bg-ink text-white py-16 sm:py-24 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <p className="inline-block text-[11px] font-extrabold text-electric uppercase tracking-wider mb-5">
-            The national directory of diabetic supply buyers
+            Nationwide mail-in &middot; Same-day local
           </p>
           <h1 className="text-4xl sm:text-6xl font-black tracking-tight leading-[1.05] mb-4">
-            Turn extra supplies<br />into <span className="text-electric">cash today.</span>
+            We buy diabetic <span className="text-electric">test strips.</span><br />
+            <span className="block text-2xl sm:text-3xl font-black mt-3 text-white/90">
+              Mail them in from any state, or sell same&#8209;day to a local buyer.
+            </span>
           </h1>
           <p className="text-base sm:text-lg text-white/70 max-w-2xl mx-auto mb-8">
-            Local buyers pay{" "}
-            <Link href="/how-much-are-diabetic-test-strips-worth" className="font-extrabold text-white underline decoration-electric decoration-2 underline-offset-4 hover:text-electric transition-colors">
-              up to $100+ a box
-            </Link>{" "}
-            for qualifying, sealed, unexpired supplies. Cash in hand, same day.
+            Sealed boxes only. Some expired CGM sensors and pods still qualify. Text a photo of
+            what you have and get a quote back fast.
           </p>
 
-          <form action="/directory" method="get" className="flex items-stretch max-w-md mx-auto bg-white rounded-xl p-1.5 shadow-2xl shadow-black/30">
-            <input
-              name="zip"
-              inputMode="numeric"
-              pattern="[0-9]{5}"
-              maxLength={5}
-              placeholder="Enter your ZIP code"
-              aria-label="ZIP code"
-              className="flex-1 min-w-0 px-4 text-gray-900 text-sm focus:outline-none rounded-l-lg"
-            />
-            <button type="submit" className="bg-cash text-white font-extrabold text-sm px-6 py-3.5 rounded-lg hover:bg-cash-hover transition-colors shrink-0">
-              Find buyers →
-            </button>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-8">
+            <a
+              href={TEL_HREF}
+              className="bg-cash text-white font-extrabold text-sm px-7 py-3.5 rounded-lg hover:bg-cash-hover transition-colors"
+            >
+              Call or text {OWNER_PHONE}
+            </a>
+            <a
+              href={SMS_HREF}
+              className="text-white/80 font-bold text-sm px-5 py-3.5 underline decoration-electric decoration-2 underline-offset-4 hover:text-electric transition-colors"
+            >
+              Text a photo for a quote →
+            </a>
+          </div>
+
+          <form action="/directory" method="get" className="max-w-md mx-auto">
+            <label htmlFor="home-zip" className="block text-xs font-bold text-white/50 uppercase tracking-wider mb-2">
+              Or find a local buyer
+            </label>
+            <div className="flex items-stretch bg-white rounded-xl p-1.5 shadow-2xl shadow-black/30">
+              <input
+                id="home-zip"
+                name="zip"
+                inputMode="numeric"
+                pattern="[0-9]{5}"
+                maxLength={5}
+                placeholder="Enter your ZIP code"
+                aria-label="ZIP code"
+                className="flex-1 min-w-0 px-4 text-gray-900 text-sm focus:outline-none rounded-l-lg"
+              />
+              <button type="submit" className="bg-ink text-white font-extrabold text-sm px-6 py-3.5 rounded-lg hover:bg-black transition-colors shrink-0">
+                Find buyers →
+              </button>
+            </div>
           </form>
 
           <div className="flex flex-wrap justify-center gap-x-8 gap-y-2 mt-10 text-sm">
             <span className="text-white/60"><b className="text-electric font-black text-lg">{localBuyerCount ?? 29}</b> local buyers</span>{/* ?? 29: static fallback if the count query errors */}
-            <span className="text-white/60"><b className="text-electric font-black text-lg">Same day</b> local &middot; 24hr mail-in</span>
-            <span className="text-white/60"><b className="text-electric font-black text-lg">50</b> states</span>
+            <span className="text-white/60"><b className="text-electric font-black text-lg">50 states</b> by mail</span>
+            <span className="text-white/60"><b className="text-electric font-black text-lg">Quote</b> by text</span>
           </div>
         </div>
       </section>
 
       {/* Trust bar */}
       <section className="border-y border-gray-100 bg-white py-5">
-        <div className="max-w-4xl mx-auto px-4 flex flex-wrap justify-center gap-x-10 gap-y-2 text-sm text-gray-600 font-medium">
-          <span>✓ No shipping required</span>
-          <span>✓ Buyers in 30+ states</span>
+        <div className="max-w-5xl mx-auto px-4 flex flex-wrap justify-center gap-x-8 gap-y-2 text-sm text-gray-600 font-medium">
+          <span>✓ Sealed boxes only. Some expired CGM sensors and pods still qualify.</span>
+          <span>✓ Free shipping label for mail-in</span>
           <span>✓ PayPal · Zelle · Check · Cash</span>
-          <span>✓ Unopened boxes only</span>
-          <span>✓ All major brands accepted</span>
+          <span>✓ Dexcom · Libre · Omnipod · OneTouch · Contour · Accu-Chek</span>
+          <span>✓ Local pickup through {localBuyerCount ?? 29} buyers</span>
+        </div>
+      </section>
+
+      {/* What we buy */}
+      <section className="py-16 px-4">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-2xl font-bold text-center text-gray-900 mb-10">What We Buy</h2>
+          <div className="grid sm:grid-cols-3 gap-8">
+            {WHAT_WE_BUY.map(({ title, items }) => (
+              <div key={title}>
+                <h3 className="font-bold text-gray-900 mb-3 text-sm">{title}</h3>
+                <ul className="space-y-1.5">
+                  {items.map((item) => (
+                    <li key={item} className="text-sm text-gray-500 leading-relaxed">
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+          <p className="text-sm text-gray-600 text-center mt-10">
+            Not sure?{" "}
+            <a href={SMS_HREF} className="font-bold text-cash hover:underline">
+              Text a photo of the box to {OWNER_PHONE}.
+            </a>
+          </p>
         </div>
       </section>
 
       {/* How it works */}
-      <section id="how-it-works" className="py-16 px-4">
+      <section id="how-it-works" className="py-16 px-4 bg-ground">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-2xl font-bold text-center text-gray-900 mb-10">How It Works</h2>
           <div className="grid sm:grid-cols-3 gap-8">
             {[
               {
                 step: "1",
-                title: "Find a buyer",
-                body: "Browse our directory of vetted local buyers and filter by your state.",
+                title: "Text a photo",
+                body: "Send a picture of the boxes and their expiration dates.",
               },
               {
                 step: "2",
-                title: "Contact them",
-                body: "Reach out directly — most buyers respond within hours.",
+                title: "Get a quote",
+                body: "We reply with a firm number, usually the same day.",
               },
               {
                 step: "3",
                 title: "Get paid",
-                body: "Sell your extra strips and get paid via PayPal, Zelle, check, or cash.",
+                body: "Meet a local buyer the same day, or use our free shipping label and get paid when it arrives.",
               },
             ].map(({ step, title, body }) => (
               <div key={step} className="text-center">
@@ -165,17 +233,17 @@ export default async function HomePage() {
 
       {/* Featured buyers */}
       {companies.length > 0 && (
-        <section className="py-16 px-4 bg-ground">
+        <section className="py-16 px-4">
           <div className="max-w-5xl mx-auto">
             <div className="flex items-center justify-between mb-8">
-              <h2 className="text-2xl font-bold text-gray-900">Featured Buyers</h2>
+              <h2 className="text-2xl font-bold text-gray-900">Buyers who offer local pickup</h2>
               <Link href="/directory" className="text-sm text-cash font-medium hover:underline">
                 See all buyers →
               </Link>
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {companies.map((c) => (
-                <BuyerCard key={c.id} company={c} isAuthenticated={isAuthenticated} />
+                <BuyerCard key={c.id} company={c} />
               ))}
             </div>
           </div>
@@ -194,7 +262,7 @@ export default async function HomePage() {
           50 pills is a link dump, while the columns stay scannable and keep the
           section roughly the height it was. The most-searched states keep a
           fast-path row above so the common case is still one glance. */}
-      <section className="py-16 px-4">
+      <section className="py-16 px-4 bg-ground">
         <div className="max-w-5xl mx-auto">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Browse by State</h2>
           <p className="text-gray-500 text-sm mb-6">Find buyers in your state</p>
@@ -223,7 +291,7 @@ export default async function HomePage() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-8 border-t border-gray-100 pt-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-8 border-t border-gray-200 pt-8">
             {REGION_ORDER.map((region) => (
               <div key={region}>
                 <h3 className="text-[11px] font-extrabold text-gray-400 uppercase tracking-wider mb-3">
@@ -248,7 +316,7 @@ export default async function HomePage() {
       </section>
 
       {/* FAQ */}
-      <section className="py-16 px-4 bg-ground">
+      <section className="py-16 px-4">
         <div className="max-w-3xl mx-auto">
           <h2 className="text-2xl font-bold text-center text-gray-900 mb-10">Frequently Asked Questions</h2>
           <div className="space-y-6">
@@ -265,13 +333,18 @@ export default async function HomePage() {
       {/* Final CTA */}
       <section className="py-16 px-4 bg-ink text-white text-center">
         <div className="max-w-2xl mx-auto">
-          <h2 className="text-3xl font-black mb-3">Ready to turn supplies into cash?</h2>
+          <h2 className="text-3xl font-black mb-3">Have supplies to sell?</h2>
           <p className="text-white/70 mb-6">
-            Browse our full directory of buyers — most pay within 24 hours.
+            Text a photo for a quote, or find a buyer near you.
           </p>
-          <Link href="/directory" className={btnOnDark}>
-            Find a Buyer →
-          </Link>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <a href={TEL_HREF} className={btnOnDark}>
+              Call or text {OWNER_PHONE}
+            </a>
+            <Link href="/directory" className="text-white/80 font-bold text-sm px-5 py-3 underline decoration-electric decoration-2 underline-offset-4 hover:text-electric transition-colors">
+              Find a local buyer →
+            </Link>
+          </div>
         </div>
       </section>
     </>

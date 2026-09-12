@@ -1,7 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { STATE_BLOG_POSTS } from "@/lib/blog-posts";
-import { angleFor, angleLabel } from "@/lib/blog-post-content";
 import { bodyFor } from "@/lib/blog-bodies";
 import { POST_REGISTRY } from "@/lib/posts";
 
@@ -55,25 +54,28 @@ export default function BlogIndexPage() {
         </p>
       </Link>
 
-      {/* State grid */}
+      {/* State guides — these link to the state pages, not to /blog/<slug>.
+          The 50 state posts folded into the state pages on 2026-09-12 and
+          their old URLs now redirect there, so linking the post slug from here
+          would send every visitor through a redirect to reach the same page. */}
+      <h2 className="text-lg font-bold text-gray-900 mb-4">State guides</h2>
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {STATE_BLOG_POSTS.map((post) => (
           <Link
             key={post.slug}
-            href={`/blog/${post.slug}`}
+            href={`/sell-test-strips/${post.stateCode.toLowerCase()}`}
             className="group bg-white border border-gray-100 rounded-xl p-5 shadow-sm hover:shadow-md hover:border-emerald-200 transition-all"
           >
             <div className="flex items-center gap-3 mb-2">
               <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
                 {post.stateCode}
               </span>
-              <span className="text-xs text-gray-400">{bodyFor(post.stateCode)?.label ?? angleLabel(angleFor(post.stateCode))}</span>
             </div>
-            <h2 className="text-sm font-semibold text-gray-900 leading-snug group-hover:text-emerald-700 transition-colors">
+            <h3 className="text-sm font-semibold text-gray-900 leading-snug group-hover:text-emerald-700 transition-colors">
               {post.stateName}
-            </h2>
+            </h3>
             <p className="text-xs text-gray-400 mt-1 line-clamp-2 leading-relaxed">
-              {post.metaDescription}
+              {bodyFor(post.stateCode)?.metaDescription ?? post.metaDescription}
             </p>
           </Link>
         ))}

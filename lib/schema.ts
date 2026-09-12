@@ -1,5 +1,7 @@
 // lib/schema.ts
 
+import { OWNER_PHONE, PUBLIC_EMAIL } from './owner'
+
 export type FaqItem = { question: string; answer: string }
 
 export function buildFaqPageSchema(faqs: FaqItem[]): Record<string, unknown> {
@@ -116,13 +118,20 @@ export function buildWebsiteSchema(): Record<string, unknown> {
   }
 }
 
+/** The homepage block. It used to describe a Service ("buyer directory") that
+ *  pointed at other companies; the site now buys supplies itself, so this is
+ *  the business, with the number people actually call. */
 export function buildServiceSchema(): Record<string, unknown> {
   return {
     '@context': 'https://schema.org',
-    '@type': 'Service',
-    serviceType: 'Diabetic Test Strip Buyer Directory',
-    provider: { '@type': 'Organization', name: 'Cash For Test Strips USA' },
+    '@type': 'Organization',
+    name: 'Cash For Test Strips USA',
+    url: 'https://cash4teststripsusa.com',
+    telephone: OWNER_PHONE,
+    email: PUBLIC_EMAIL,
     areaServed: 'United States',
+    description:
+      'Buys sealed, unexpired diabetic test strips, CGM sensors and pump supplies by mail from any US state, and in person through local buyers.',
   }
 }
 

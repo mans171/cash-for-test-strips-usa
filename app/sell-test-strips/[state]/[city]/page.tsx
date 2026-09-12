@@ -4,8 +4,6 @@ import type { Metadata } from "next";
 import { supabase } from "@/lib/supabase";
 import { buildFaqPageSchema, buildBreadcrumbSchema, buildLocalBusinessSchema } from "@/lib/schema";
 import { JsonLd } from "@/app/components/JsonLd";
-import { stripCompanyContact } from "@/lib/company-contact";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { Company } from "@/lib/types";
 import { BuyerCard } from "@/app/components/BuyerCard";
 import { COMPANY_COLUMNS } from "@/lib/company-columns";
@@ -61,33 +59,24 @@ export default async function CityPage({ params }: Props) {
   ]);
 
   const allInPerson = (inPersonData ?? []) as Company[];
-  const rawMailIn = ((mailInData ?? []) as Company[])[0] ?? null;
+  // Contact details are public on every card — the account gate was removed
+  // on 2026-09-12. See lib/company-contact.ts.
+  const mailIn = ((mailInData ?? []) as Company[])[0] ?? null;
   // Radius comes from the shared constant, not a literal, so this page and
   // app/sitemap.ts cannot drift apart.
-  const rawBuyers = nearbyBuyers(target, allInPerson);
+  const buyers = nearbyBuyers(target, allInPerson);
 
   // Anti-doorway gate, enforced again here (not just at generateStaticParams
   // build time): a page for a target with no buyer within range must not
   // render. See docs/seo/2026-08-12-city-page-spec.md Rule 2.
-  if (rawBuyers.length === 0) notFound();
+  if (buyers.length === 0) notFound();
 
-  const supabaseServer = await createServerSupabaseClient();
-  const {
-    data: { user },
-  } = await supabaseServer.auth.getUser();
-  const isAuthenticated = !!user;
-
-  const buyers = isAuthenticated
-    ? rawBuyers
-    : rawBuyers.map((c) => ({ ...stripCompanyContact(c), miles: c.miles }));
-  const mailIn = rawMailIn ? (isAuthenticated ? rawMailIn : stripCompanyContact(rawMailIn)) : null;
-
-  const faqs = buildCityFaqs({ target, buyers: rawBuyers, hasMailIn: !!rawMailIn });
+  const faqs = buildCityFaqs({ target, buyers, hasMailIn: !!mailIn });
   // Pass the live buyer set so the footer never links to a city page that
   // would 404 — see publishableCityTargets in lib/city-page-content.ts.
   const siblings = siblingCities(target.slug, 6, publishableCityTargets(allInPerson));
   const zips = await zipsNearPoint(supabase, { lat: target.lat, lng: target.lng }, target.state, 30, 20);
-  const intro = cityIntro(target, rawBuyers);
+  const intro = cityIntro(target, buyers);
   const stateLabel = STATE_LABELS[target.state] ?? target.state;
 
   const pageUrl = `https://cash4teststripsusa.com/sell-test-strips/${state.toLowerCase()}/${city}`;
@@ -101,7 +90,7 @@ export default async function CityPage({ params }: Props) {
   // One LocalBusiness block per nearby buyer, sibling <script> tags rather
   // than a hand-rolled @graph wrapper — the state page already proves
   // multiple JSON-LD blocks on one page are valid and indexable.
-  const buyerSchemas = rawBuyers.map((b) =>
+  const buyerSchemas = buyers.map((b) =>
     buildLocalBusinessSchema({
       name: b.name,
       url: b.url ?? pageUrl,
@@ -114,7 +103,7 @@ export default async function CityPage({ params }: Props) {
     })
   );
 
-  const brands = [...new Set(rawBuyers.flatMap((b) => b.accepted_brands ?? []))].sort((a, b) =>
+  const brands = [...new Set(buyers.flatMap((b) => b.accepted_brands ?? []))].sort((a, b) =>
     a.localeCompare(b)
   );
 
@@ -149,7 +138,7 @@ export default async function CityPage({ params }: Props) {
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
         {buyers.map((c) => (
-          <BuyerCard key={c.id} company={c} isAuthenticated={isAuthenticated} />
+          <BuyerCard key={c.id} company={c} />
         ))}
       </div>
 
@@ -159,7 +148,7 @@ export default async function CityPage({ params }: Props) {
             Prefer to mail your strips instead?
           </h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <BuyerCard company={mailIn} isAuthenticated={isAuthenticated} />
+            <BuyerCard company={mailIn} />
           </div>
         </div>
       )}

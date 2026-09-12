@@ -2,6 +2,9 @@
 
 import { useState } from 'react'
 import { OWNER_PHONE } from '@/lib/owner'
+import { STATE_LABELS } from '@/lib/states'
+import { HONEYPOT_FIELD } from '@/lib/honeypot'
+import { OrdersNudge } from '@/app/components/OrdersNudge'
 
 const INPUT = 'w-full border border-gray-200 rounded-lg px-3 py-2 text-sm'
 const LABEL = 'block text-sm font-medium text-gray-700 mb-1'
@@ -43,6 +46,7 @@ export function BulkEnquiryForm() {
           We&apos;ll be in touch to talk through what you have and what we can pay for it. If
           you&apos;d rather not wait, call {OWNER_PHONE}.
         </p>
+        <OrdersNudge className="mt-4" />
       </div>
     )
   }
@@ -65,8 +69,19 @@ export function BulkEnquiryForm() {
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label className={LABEL} htmlFor="bulk-location">Where you are</label>
-          <input id="bulk-location" name="location" className={INPUT} placeholder="City and state" />
+          <label className={LABEL} htmlFor="bulk-state">State</label>
+          <select id="bulk-state" name="state" required className={INPUT} defaultValue="">
+            <option value="" disabled>Choose your state</option>
+            {Object.entries(STATE_LABELS)
+              .filter(([code]) => code !== 'CANADA')
+              .map(([code, label]) => (
+                <option key={code} value={code}>{label}</option>
+              ))}
+          </select>
+        </div>
+        <div>
+          <label className={LABEL} htmlFor="bulk-location">City</label>
+          <input id="bulk-location" name="location" className={INPUT} placeholder="Your city or town" />
         </div>
         <div>
           <label className={LABEL} htmlFor="bulk-quantity">Roughly how many pieces</label>
@@ -91,6 +106,13 @@ export function BulkEnquiryForm() {
           className={INPUT}
           placeholder="Brands, box sizes, expiry dates, and whether it's a mixed lot."
         />
+      </div>
+
+      {/* Honeypot: off-screen and hidden from assistive tech, so only a
+          form-filling bot ever fills it. FormData picks it up with the rest.
+          See lib/honeypot.ts. */}
+      <div style={{ position: 'absolute', left: '-10000px', width: '1px', height: '1px', overflow: 'hidden' }}>
+        <input name={HONEYPOT_FIELD} autoComplete="off" tabIndex={-1} aria-hidden="true" />
       </div>
 
       {status === 'error' && <p className="text-sm text-red-600">{message}</p>}

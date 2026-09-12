@@ -9,15 +9,18 @@ import { DEFAULT_EXPIRATION_MONTHS, getExpirationMonthOptions, isEffectivelyExpi
 import { useUser } from "@/lib/auth-client";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import { fetchOwnProfileContact } from "@/lib/profile-lookup";
-import { LoginForm } from "@/app/components/LoginForm";
+import { HONEYPOT_FIELD } from "@/lib/honeypot";
+import { OWNER_PHONE, PUBLIC_EMAIL } from "@/lib/owner";
+import { honorsBonus, BONUS_FORM_COPY } from "@/lib/bonus";
+import { OrdersNudge } from "@/app/components/OrdersNudge";
 
-type Stage = "build" | "account" | "results" | "sent";
+type Stage = "build" | "results" | "sent";
 
 const emptyItem: OrderItem = { brand: "", count: 1, expiration: "", condition: "sealed" };
 
-const SELL_STEPS = ["Your Order", "Your Info", "Buyers"] as const;
+const SELL_STEPS = ["Your Order", "Your Buyers"] as const;
 
-function StepIndicator({ current }: { current: 1 | 2 | 3 }) {
+function StepIndicator({ current }: { current: 1 | 2 }) {
   return (
     <div className="flex items-center">
       {SELL_STEPS.map((label, i) => {
@@ -25,7 +28,7 @@ function StepIndicator({ current }: { current: 1 | 2 | 3 }) {
         const isDone = step < current;
         const isActive = step === current;
         return (
-          <div key={label} className={`flex items-center ${step < 3 ? "flex-1" : ""}`}>
+          <div key={label} className={`flex items-center ${step < SELL_STEPS.length ? "flex-1" : ""}`}>
             <div className="flex items-center gap-1.5 shrink-0">
               <span
                 className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-semibold shrink-0 ${
@@ -42,7 +45,7 @@ function StepIndicator({ current }: { current: 1 | 2 | 3 }) {
                 {label}
               </span>
             </div>
-            {step < 3 && <div className={`h-px flex-1 mx-2 ${isDone ? "bg-electric/40" : "bg-gray-200"}`} />}
+            {step < SELL_STEPS.length && <div className={`h-px flex-1 mx-2 ${isDone ? "bg-electric/40" : "bg-gray-200"}`} />}
           </div>
         );
       })}
@@ -69,15 +72,10 @@ export function SellFlowClient() {
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [addressCity, setAddressCity] = useState("");
-  const [addressState, setAddressState] = useState("");
-  const [accountSubmitting, setAccountSubmitting] = useState(false);
-  const [accountError, setAccountError] = useState<string | null>(null);
-  const [accountPendingUserId, setAccountPendingUserId] = useState<string | null>(null);
-  const [matchFailedAfterAccountReady, setMatchFailedAfterAccountReady] = useState(false);
-  const [accountMode, setAccountMode] = useState<"signup" | "login">("signup");
-  const { user, loading: authLoading } = useUser();
+  // Honeypot: rendered off-screen and hidden from assistive tech, so only a
+  // form-filling bot ever puts anything in it. See lib/honeypot.ts.
+  const [honeypot, setHoneypot] = useState("");
+  const { user } = useUser();
   const hasAutoFilledRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -217,146 +215,17 @@ export function SellFlowClient() {
       setError("Fill in brand and count for every item.");
       return;
     }
-    if (user) {
-      setLoading(true);
-      try {
-        await runMatch(state);
-        setStage("results");
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Couldn't reach the server. Check your connection and try again.");
-      } finally {
-        setLoading(false);
-      }
-      return;
-    }
-    setStage("account");
-  }
-
-  // Shared by every path that reaches "results" from the account stage
-  // (fresh signup, profile-insert retry, and login) — retries cleanly on
-  // its own since the account itself is already fully set up by the time
-  // this runs, so a failure here only ever needs to redo this one step.
-  async function attemptMatchAfterAccountReady() {
-    setAccountSubmitting(true);
-    setMatchFailedAfterAccountReady(false);
+    // No account step: contacts are public since 2026-09-12, so a seller
+    // goes straight from their order to the matched buyer's contact form.
+    setLoading(true);
     try {
       await runMatch(state);
       setStage("results");
     } catch (err) {
-      setAccountError(err instanceof Error ? err.message : "Couldn't reach the server. Check your connection and try again.");
-      setMatchFailedAfterAccountReady(true);
+      setError(err instanceof Error ? err.message : "Couldn't reach the server. Check your connection and try again.");
     } finally {
-      setAccountSubmitting(false);
+      setLoading(false);
     }
-  }
-
-  async function insertProfile(userId: string) {
-    const supabase = createBrowserSupabaseClient();
-    const { error: profileError } = await supabase.from("profiles").insert({
-      id: userId,
-      role: "customer",
-      name: customerName,
-      phone: customerPhone,
-      address_street: "",
-      address_city: addressCity,
-      address_state: addressState,
-      address_zip: "",
-    });
-
-    if (profileError) {
-      // Never surface profileError.message to the customer — it's a raw
-      // Postgres/RLS error (e.g. policy or constraint text) not written for
-      // end users. Log it for debugging; show a safe, actionable message.
-      console.error("[sell] profile insert failed", profileError);
-      setAccountError("Your account was created, but we couldn't save your info. Please try again.");
-      setAccountPendingUserId(userId);
-      setAccountSubmitting(false);
-      return;
-    }
-
-    // No longer needed once the account exists — don't hold it in state
-    // any longer than necessary.
-    setPassword("");
-    await attemptMatchAfterAccountReady();
-  }
-
-  async function handleCreateAccount(e: React.FormEvent) {
-    e.preventDefault();
-    setAccountError(null);
-    setAccountSubmitting(true);
-
-    const supabase = createBrowserSupabaseClient();
-
-    // NOTE: this flow assumes "Confirm email" is OFF in Supabase Auth
-    // settings, so signUp() returns a live session immediately — same
-    // assumption SignupForm makes, documented there.
-    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-      email: customerEmail,
-      password,
-    });
-
-    if (signUpError) {
-      // Supabase Auth's own messages are written for end users (weak
-      // password, invalid email, rate limited) and are safe to show as-is —
-      // except the duplicate-account case, which reads better as a nudge
-      // toward the login toggle than as a raw error.
-      if (signUpError.code === "user_already_exists" || signUpError.code === "email_exists") {
-        setAccountError("Looks like you already have an account with this email — log in instead.");
-        setAccountMode("login");
-      } else {
-        setAccountError(signUpError.message);
-      }
-      setAccountSubmitting(false);
-      return;
-    }
-
-    const userId = signUpData.user?.id;
-    if (!userId) {
-      setAccountError("Account created but sign-up response was incomplete. Please try again.");
-      setAccountSubmitting(false);
-      return;
-    }
-
-    if (!signUpData.session) {
-      setAccountError("Check your email to confirm your account before continuing.");
-      setAccountSubmitting(false);
-      return;
-    }
-
-    await insertProfile(userId);
-  }
-
-  async function handleRetryProfile() {
-    if (!accountPendingUserId) return;
-    setAccountError(null);
-    setAccountSubmitting(true);
-    await insertProfile(accountPendingUserId);
-  }
-
-  async function handleRetryMatch() {
-    setAccountError(null);
-    await attemptMatchAfterAccountReady();
-  }
-
-  // "← Back to your order" leaves customerName/phone/email/address alone —
-  // no reason to make the customer retype those — but clears everything
-  // tied to a specific submit attempt, so returning to this stage later
-  // doesn't show a stale error, a stray "Try again" for an account that no
-  // longer needs one, or a leftover password in state.
-  function backToBuildFromAccount() {
-    setAccountError(null);
-    setAccountPendingUserId(null);
-    setMatchFailedAfterAccountReady(false);
-    setPassword("");
-    setStage("build");
-  }
-
-  // Runs after LoginForm's own signInWithPassword succeeds — same post-auth
-  // step the signup path runs in insertProfile above, so a match failure
-  // here gets the same "Try again" recovery.
-  async function handleLoginSuccess() {
-    setAccountError(null);
-    await attemptMatchAfterAccountReady();
   }
 
   async function handleSend(buyer: Company, channel: "sms" | "email") {
@@ -375,6 +244,7 @@ export function SellFlowClient() {
           name: customerName,
           email: customerEmail || undefined,
           phone: customerPhone || undefined,
+          [HONEYPOT_FIELD]: honeypot,
         }),
       });
       const body = await res.json();
@@ -426,6 +296,7 @@ export function SellFlowClient() {
             <p className="text-sm text-gray-500">They&apos;ll reach out to you directly to arrange your sale.</p>
           </>
         )}
+        <OrdersNudge />
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
           <h2 className="font-semibold text-gray-900 mb-2">Your Order</h2>
           <div className="flex flex-col gap-1">
@@ -440,213 +311,12 @@ export function SellFlowClient() {
     );
   }
 
-  if (stage === "account") {
-    return (
-      <div className="flex flex-col gap-4">
-        <StepIndicator current={2} />
-        <button
-          type="button"
-          onClick={backToBuildFromAccount}
-          className="text-xs font-medium text-gray-500 hover:text-cash self-start"
-        >
-          ← Back to your order
-        </button>
-
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-          <h2 className="font-semibold text-gray-900 mb-2">Order Summary</h2>
-          <div className="flex flex-col gap-1">
-            {items.map((item, i) => (
-              <p key={i} className="text-sm text-gray-600">
-                {item.brand} × {item.count} box{item.count === 1 ? "" : "es"} (exp: {item.expiration}, {item.condition})
-              </p>
-            ))}
-          </div>
-        </div>
-
-        {accountMode === "signup" ? (
-          <div className="flex flex-col gap-3">
-            <form onSubmit={handleCreateAccount} className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex flex-col gap-3">
-              <div className="flex flex-col gap-1">
-                <h2 className="font-semibold text-gray-900">Your Info</h2>
-                <p className="text-xs text-gray-500">We use this to find your local buyer and let you reach them directly.</p>
-              </div>
-              <div>
-                <label htmlFor="sell-account-name" className="text-xs font-medium text-gray-500 block mb-1">Your name</label>
-                <input
-                  type="text"
-                  required
-                  id="sell-account-name"
-                  name="name"
-                  autoComplete="name"
-                  placeholder="Jane Doe"
-                  value={customerName}
-                  onChange={(e) => setCustomerName(e.target.value)}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
-                />
-              </div>
-              <div>
-                <label htmlFor="sell-account-phone" className="text-xs font-medium text-gray-500 block mb-1">Phone</label>
-                <input
-                  type="tel"
-                  required
-                  id="sell-account-phone"
-                  name="tel"
-                  autoComplete="tel"
-                  placeholder="(555) 123-4567"
-                  value={customerPhone}
-                  onChange={(e) => setCustomerPhone(e.target.value)}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
-                />
-              </div>
-              <div>
-                <label htmlFor="sell-account-email" className="text-xs font-medium text-gray-500 block mb-1">Email</label>
-                <input
-                  type="email"
-                  required
-                  id="sell-account-email"
-                  name="email"
-                  autoComplete="email"
-                  placeholder="jane@example.com"
-                  value={customerEmail}
-                  onChange={(e) => setCustomerEmail(e.target.value)}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
-                />
-              </div>
-              <div>
-                <label htmlFor="sell-account-password" className="text-xs font-medium text-gray-500 block mb-1">Password</label>
-                <input
-                  type="password"
-                  required
-                  minLength={8}
-                  id="sell-account-password"
-                  name="new-password"
-                  autoComplete="new-password"
-                  placeholder="At least 8 characters"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
-                />
-              </div>
-              <div className="flex gap-2">
-                <div className="flex-1">
-                  <label htmlFor="sell-account-city" className="text-xs font-medium text-gray-500 block mb-1">City</label>
-                  <input
-                    type="text"
-                    required
-                    id="sell-account-city"
-                    name="address-level2"
-                    autoComplete="address-level2"
-                    placeholder="Albany"
-                    value={addressCity}
-                    onChange={(e) => setAddressCity(e.target.value)}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
-                  />
-                </div>
-                <div className="w-24">
-                  <label htmlFor="sell-account-state" className="text-xs font-medium text-gray-500 block mb-1">State</label>
-                  <input
-                    type="text"
-                    required
-                    id="sell-account-state"
-                    name="address-level1"
-                    autoComplete="address-level1"
-                    placeholder="NY"
-                    value={addressState}
-                    onChange={(e) => setAddressState(e.target.value)}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
-                  />
-                </div>
-              </div>
-              {accountError && (
-                <div className="flex flex-col gap-2">
-                  <p className="text-sm text-red-600">{accountError}</p>
-                  {accountPendingUserId && (
-                    <button
-                      type="button"
-                      onClick={handleRetryProfile}
-                      disabled={accountSubmitting}
-                      className="self-start text-sm font-medium text-cash underline disabled:opacity-50"
-                    >
-                      {accountSubmitting ? "Retrying..." : "Try again"}
-                    </button>
-                  )}
-                  {matchFailedAfterAccountReady && (
-                    <button
-                      type="button"
-                      onClick={handleRetryMatch}
-                      disabled={accountSubmitting}
-                      className="self-start text-sm font-medium text-cash underline disabled:opacity-50"
-                    >
-                      {accountSubmitting ? "Retrying..." : "Try again"}
-                    </button>
-                  )}
-                </div>
-              )}
-              <button
-                type="submit"
-                disabled={accountSubmitting}
-                className="bg-cash text-white font-semibold px-6 py-3 rounded-lg hover:bg-cash-hover transition-colors disabled:opacity-50 disabled:hover:bg-cash"
-              >
-                {accountSubmitting ? "Creating your account..." : "Create your account"}
-              </button>
-            </form>
-            <p className="text-center text-sm text-gray-500">
-              Already have an account?{" "}
-              <button
-                type="button"
-                onClick={() => {
-                  setAccountError(null);
-                  setAccountMode("login");
-                }}
-                className="text-cash underline"
-              >
-                Log in
-              </button>
-            </p>
-          </div>
-        ) : (
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex flex-col gap-3">
-            <LoginForm onSuccess={handleLoginSuccess} compact />
-            {accountError && (
-              <div className="flex flex-col gap-2 items-center">
-                <p className="text-sm text-red-600 text-center">{accountError}</p>
-                {matchFailedAfterAccountReady && (
-                  <button
-                    type="button"
-                    onClick={handleRetryMatch}
-                    disabled={accountSubmitting}
-                    className="text-sm font-medium text-cash underline disabled:opacity-50"
-                  >
-                    {accountSubmitting ? "Retrying..." : "Try again"}
-                  </button>
-                )}
-              </div>
-            )}
-            <p className="text-center text-sm text-gray-500">
-              Need an account?{" "}
-              <button
-                type="button"
-                onClick={() => {
-                  setAccountError(null);
-                  setAccountMode("signup");
-                }}
-                className="text-cash underline"
-              >
-                Sign up
-              </button>
-            </p>
-          </div>
-        )}
-      </div>
-    );
-  }
-
   if (stage === "results") {
     const cards = buyers.length > 0 ? buyers : mailIn ? [mailIn] : [];
     const nameMissing = customerName.trim().length === 0;
     return (
       <div className="flex flex-col gap-4">
-        <StepIndicator current={3} />
+        <StepIndicator current={2} />
         <button
           type="button"
           onClick={() => setStage("build")}
@@ -696,14 +366,24 @@ export function SellFlowClient() {
                 className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
               />
             </div>
+            <div style={{ position: "absolute", left: "-10000px", width: "1px", height: "1px", overflow: "hidden" }}>
+              <input
+                name={HONEYPOT_FIELD}
+                value={honeypot}
+                onChange={(e) => setHoneypot(e.target.value)}
+                autoComplete="off"
+                tabIndex={-1}
+                aria-hidden="true"
+              />
+            </div>
           </div>
         </div>
 
         {cards.length === 0 ? (
           <p className="text-sm text-gray-500">
             We couldn&apos;t find a buyer for your area right now. Email{" "}
-            <a href="mailto:feldon.richards@gmail.com" className="text-cash hover:underline">feldon.richards@gmail.com</a>{" "}
-            or call <a href="tel:5182786008" className="text-cash hover:underline">518-278-6008</a> directly and we&apos;ll help you sell your strips.
+            <a href={`mailto:${PUBLIC_EMAIL}`} className="text-cash hover:underline">{PUBLIC_EMAIL}</a>{" "}
+            or call <a href={`tel:${OWNER_PHONE.replace(/\D/g, "")}`} className="text-cash hover:underline">{OWNER_PHONE}</a> directly and we&apos;ll help you sell your strips.
           </p>
         ) : (
           <div className="flex flex-col gap-2">
@@ -715,6 +395,11 @@ export function SellFlowClient() {
                 <div>
                   <p className="font-medium text-gray-900">{c.name}</p>
                   {c.city && <p className="text-xs text-gray-400">{c.city}</p>}
+                  {/* Only this card's own buttons submit to this buyer, so the
+                      bonus is gated per card, not on the step as a whole. */}
+                  {honorsBonus(c) && (
+                    <p className="text-[11px] text-emerald-700 font-semibold mt-1">💵 {BONUS_FORM_COPY}</p>
+                  )}
                 </div>
                 {(c.email || c.phone) && (
                   <div className="flex gap-2 shrink-0">
@@ -940,10 +625,10 @@ export function SellFlowClient() {
       {error && <p className="text-red-600 text-sm">{error}</p>}
       <button
         type="submit"
-        disabled={loading || authLoading}
+        disabled={loading}
         className="bg-cash text-white font-semibold px-6 py-3 rounded-lg hover:bg-cash-hover transition-colors disabled:opacity-50 disabled:hover:bg-cash"
       >
-        {loading ? "Finding buyers..." : authLoading ? "Checking your account..." : "Find My Buyer"}
+        {loading ? "Finding buyers..." : "Find My Buyer"}
       </button>
     </form>
   );

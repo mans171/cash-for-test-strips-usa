@@ -3,6 +3,7 @@ import { Geist } from "next/font/google";
 import Link from "next/link";
 import SiteNav from "./SiteNav";
 import "./globals.css";
+import { PUBLIC_EMAIL } from "@/lib/owner";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-geist-sans" });
 
@@ -62,7 +63,7 @@ export default function RootLayout({
               <Link href="/buyer" className="hover:text-white transition-colors">
                 Manage Your Listing
               </Link>
-              <a href="mailto:feldon.richards@gmail.com" className="hover:text-white transition-colors">
+              <a href={`mailto:${PUBLIC_EMAIL}`} className="hover:text-white transition-colors">
                 Contact
               </a>
             </div>

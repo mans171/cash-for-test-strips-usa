@@ -2,10 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import type { Metadata } from "next";
-import { buildFaqPageSchema, buildBreadcrumbSchema } from "@/lib/schema";
+import { buildFaqPageSchema, buildBreadcrumbSchema, buildArticleSchema } from "@/lib/schema";
 import { JsonLd } from "@/app/components/JsonLd";
-import { stripCompanyContact } from "@/lib/company-contact";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { Company } from "@/lib/types";
 import { BuyerCard } from "@/app/components/BuyerCard";
 import { btnPrimary } from "@/app/components/ui";
@@ -13,6 +11,8 @@ import { COMPANY_COLUMNS } from "@/lib/company-columns";
 import { STATE_LABELS as ALL_STATE_LABELS } from "@/lib/states";
 import { buildStateFaqs, joinList, nearestBuyers, siblingStates, statePageH1 } from "@/lib/state-page-content";
 import { publishableCityTargets } from "@/lib/city-page-content";
+import { bodyFor } from "@/lib/blog-bodies";
+import { STATE_BLOG_POSTS } from "@/lib/blog-posts";
 
 // Canada is excluded here on purpose: this route is the US state directory and
 // is enumerated as such in app/sitemap.ts.
@@ -28,9 +28,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const label = STATE_LABELS[code];
   if (!label) return { title: "State Not Found" };
 
+  // The hand-written state guide moved here from /blog/sell-diabetic-test-
+  // strips-<state> on 2026-09-12, and it brings its own title and description
+  // with it — those are what the post ranked on. The derived pair below stays
+  // as the fallback for any state that never had a written body.
+  const guide = bodyFor(code);
+
   return {
-    title: `Sell Diabetic Test Strips in ${label} — Find Local Cash Buyers`,
-    description: `Find cash buyers for unused diabetic test strips in ${label}. Get paid fast via PayPal, Zelle, or check. Browse local buyers near you.`,
+    title: guide?.title ?? `Sell Diabetic Test Strips in ${label} — Find Local Cash Buyers`,
+    description:
+      guide?.metaDescription ??
+      `Find cash buyers for unused diabetic test strips in ${label}. Get paid fast via PayPal, Zelle, or check. Browse local buyers near you.`,
     alternates: { canonical: `https://cash4teststripsusa.com/sell-test-strips/${state.toLowerCase()}` },
   };
 }
@@ -59,32 +67,26 @@ export default async function StatePage({ params }: Props) {
   ]);
 
   const allInPerson = (inPersonData ?? []) as Company[];
-  const rawCompanies = allInPerson.filter((c) => c.states.includes(code));
-  const rawMailIn = ((mailInData ?? []) as Company[])[0] ?? null;
-  const rawNearby = rawCompanies.length === 0 ? nearestBuyers(code, allInPerson, 3) : [];
+  // Contact details are public on every card — the account gate was removed
+  // on 2026-09-12. See lib/company-contact.ts.
+  const companies = allInPerson.filter((c) => c.states.includes(code));
+  const mailIn = ((mailInData ?? []) as Company[])[0] ?? null;
+  const nearby = companies.length === 0 ? nearestBuyers(code, allInPerson, 3) : [];
 
-  const supabaseServer = await createServerSupabaseClient();
-  const { data: { user } } = await supabaseServer.auth.getUser();
-  const isAuthenticated = !!user;
+  // The hand-written guide that used to be the state's blog post. Its FAQ set
+  // replaces the derived one outright where it exists — it is written about
+  // this state rather than assembled from the buyer counts.
+  const guide = bodyFor(code);
+  const statePost = STATE_BLOG_POSTS.find((p) => p.stateCode === code);
 
-  // Contact details stay gated behind an account for every card on this page,
-  // exactly as on /directory and /company/[slug].
-  const companies = isAuthenticated ? rawCompanies : rawCompanies.map(stripCompanyContact);
-  const nearby = isAuthenticated
-    ? rawNearby
-    : rawNearby.map((c) => ({ ...stripCompanyContact(c), miles: c.miles }));
-  const mailIn = rawMailIn
-    ? isAuthenticated
-      ? rawMailIn
-      : stripCompanyContact(rawMailIn)
-    : null;
-
-  const faqs = buildStateFaqs({
-    stateCode: code,
-    buyers: rawCompanies,
-    nearby: rawNearby,
-    hasMailIn: !!rawMailIn,
-  });
+  const faqs =
+    guide?.faqs ??
+    buildStateFaqs({
+      stateCode: code,
+      buyers: companies,
+      nearby,
+      hasMailIn: !!mailIn,
+    });
 
   const siblings = siblingStates(code, 8);
   // Gated, not raw: a city page 404s when no buyer is within
@@ -97,9 +99,9 @@ export default async function StatePage({ params }: Props) {
   // buyers" and "no shipping required" on all 50 pages, which was simply untrue
   // on the 31 states that have no local buyer at all.
   const introCities = joinList(
-    [...new Set(rawCompanies.map((c) => c.city).filter((c): c is string => !!c))].sort()
+    [...new Set(companies.map((c) => c.city).filter((c): c is string => !!c))].sort()
   );
-  const nearestMiles = rawNearby.length > 0 ? Math.round(rawNearby[0].miles) : null;
+  const nearestMiles = nearby.length > 0 ? Math.round(nearby[0].miles) : null;
 
   // Assembled as a string rather than JSX fragments so punctuation does not end
   // up with stray whitespace in front of it.
@@ -116,7 +118,7 @@ export default async function StatePage({ params }: Props) {
   })();
 
   const buyerIntro =
-    `${rawCompanies.length} verified ${rawCompanies.length === 1 ? "buyer pays" : "buyers pay"} cash for ` +
+    `${companies.length} verified ${companies.length === 1 ? "buyer pays" : "buyers pay"} cash for ` +
     `unused diabetic test strips in ${label}${introCities ? `, based in ${introCities}` : ""}. ` +
     `Compare them below, then contact one directly — most pay the same day you meet.`;
 
@@ -127,11 +129,23 @@ export default async function StatePage({ params }: Props) {
     { name: "Directory", url: "https://cash4teststripsusa.com/directory" },
     { name: label, url: pageUrl },
   ]);
+  // Carried over from the blog post along with its body, so the guide keeps
+  // its Article markup and its original publish date on the new URL.
+  const articleSchema =
+    guide && statePost
+      ? buildArticleSchema({
+          headline: guide.title,
+          description: guide.metaDescription,
+          datePublished: statePost.datePublished,
+          url: pageUrl,
+        })
+      : null;
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-12">
       <JsonLd data={faqSchema} />
       <JsonLd data={breadcrumbSchema} />
+      {articleSchema && <JsonLd data={articleSchema} />}
       {/* Breadcrumb */}
       <nav className="text-sm text-gray-400 mb-6">
         <Link href="/" className="hover:text-cash">Home</Link>
@@ -166,7 +180,7 @@ export default async function StatePage({ params }: Props) {
                 strips and get paid once they arrive and are checked — no local buyer needed.
               </p>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <BuyerCard company={mailIn} isAuthenticated={isAuthenticated} />
+                <BuyerCard company={mailIn} />
               </div>
             </div>
           )}
@@ -183,7 +197,7 @@ export default async function StatePage({ params }: Props) {
               </p>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {nearby.map((c) => (
-                  <BuyerCard key={c.id} company={c} isAuthenticated={isAuthenticated} />
+                  <BuyerCard key={c.id} company={c} />
                 ))}
               </div>
             </div>
@@ -209,7 +223,7 @@ export default async function StatePage({ params }: Props) {
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
             {companies.map((c) => (
-              <BuyerCard key={c.id} company={c} isAuthenticated={isAuthenticated} />
+              <BuyerCard key={c.id} company={c} />
             ))}
           </div>
         </>
@@ -230,6 +244,28 @@ export default async function StatePage({ params }: Props) {
             ))}
           </div>
         </div>
+      )}
+
+      {/* The state guide — the hand-written body that used to live at
+          /blog/sell-diabetic-test-strips-<state>. That post and this page were
+          two URLs chasing the same query; the post now 308s here (see
+          lib/state-post-redirects.ts) and its writing is the page's depth.
+          The written `heading` opens the section — the page keeps its own H1. */}
+      {guide && (
+        <section className="mt-12 pt-8 border-t border-gray-100 max-w-3xl">
+          <h2 className="text-2xl font-extrabold text-gray-900 mb-4">{guide.heading}</h2>
+          {guide.lead.map((p, i) => (
+            <p key={i} className="text-gray-700 leading-relaxed mb-4">{p}</p>
+          ))}
+          {guide.sections.map((s, i) => (
+            <div key={i} className="mt-8">
+              <h3 className="text-xl font-bold text-gray-900 mb-3">{s.heading}</h3>
+              {s.paragraphs.map((p, i) => (
+                <p key={i} className="text-gray-700 leading-relaxed mb-4">{p}</p>
+              ))}
+            </div>
+          ))}
+        </section>
       )}
 
       {/* FAQ — helps SEO */}

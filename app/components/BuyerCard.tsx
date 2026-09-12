@@ -2,16 +2,15 @@ import Link from "next/link"
 import type { Company } from "@/lib/types"
 import { STATE_LABELS } from "@/lib/states"
 import { Chip, VerifiedBadge, FeaturedBadge, MonogramAvatar, PinIcon, btnSecondary } from "./ui"
-import { UnlockContact } from "./UnlockContact"
+import { ContactButtons } from "./ContactButtons"
 import { hasAnyContact } from "@/lib/company-contact"
 import { hasProfilePage } from "@/lib/company-profile"
+import { honorsBonus, BONUS_MENTION_COPY } from "@/lib/bonus"
 
 export function BuyerCard({
   company,
-  isAuthenticated,
 }: {
   company: Company & { miles?: number | null }
-  isAuthenticated: boolean
 }) {
   const stateLabels = company.states
     .slice(0, 2)
@@ -75,17 +74,19 @@ export function BuyerCard({
         </p>
       )}
 
+      {/* Stacked, not side by side: ContactButtons renders up to two buttons of
+          its own (call + visit site), and sitting that column next to a single
+          "View profile" button left one half twice the height of the other. */}
       {(showProfile || showContact) && (
-        <div className="flex gap-2 mt-auto pt-1 items-stretch">
+        <div className="flex flex-col gap-2 mt-auto pt-1">
           {showProfile && (
-            <Link href={`/company/${company.slug}`} className={`${btnSecondary} flex-1 !px-3 !py-2 !text-xs`}>
+            <Link href={`/company/${company.slug}`} className={`${btnSecondary} w-full !px-3 !py-2 !text-xs`}>
               View profile
             </Link>
           )}
-          {showContact && (
-            <div className="flex-1">
-              <UnlockContact company={company} isAuthenticated={isAuthenticated} />
-            </div>
+          {showContact && <ContactButtons company={company} />}
+          {showContact && honorsBonus(company) && (
+            <p className="text-[11px] text-emerald-700 font-semibold">💵 {BONUS_MENTION_COPY}</p>
           )}
         </div>
       )}

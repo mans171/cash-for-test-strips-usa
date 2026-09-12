@@ -8,6 +8,7 @@ import {
   buildServiceSchema,
   buildItemListSchema,
 } from '@/lib/schema'
+import { OWNER_PHONE } from '@/lib/owner'
 
 describe('buildFaqPageSchema', () => {
   it('builds a FAQPage schema with mainEntity questions', () => {
@@ -174,14 +175,26 @@ describe('buildWebsiteSchema / buildServiceSchema', () => {
     expect(result.potentialAction).toBeDefined()
   })
 
-  it('builds a Service schema', () => {
+  // The site is the buyer now, not a directory of other buyers, so the block
+  // describes the business itself and carries the number people call.
+  it('builds an Organization schema for the business', () => {
     expect(buildServiceSchema()).toEqual({
       '@context': 'https://schema.org',
-      '@type': 'Service',
-      serviceType: 'Diabetic Test Strip Buyer Directory',
-      provider: { '@type': 'Organization', name: 'Cash For Test Strips USA' },
+      '@type': 'Organization',
+      name: 'Cash For Test Strips USA',
+      url: 'https://cash4teststripsusa.com',
+      telephone: OWNER_PHONE,
+      email: 'sell@cash4teststripsusa.com',
       areaServed: 'United States',
+      description:
+        'Buys sealed, unexpired diabetic test strips, CGM sensors and pump supplies by mail from any US state, and in person through local buyers.',
     })
+  })
+
+  it('service schema carries the business phone', () => {
+    const s = buildServiceSchema() as Record<string, unknown>
+    expect(s.telephone).toBe('518-278-6008')
+    expect(s['@type']).toBe('Organization')
   })
 })
 

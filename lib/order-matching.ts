@@ -2,7 +2,7 @@ import { supabase } from './supabase'
 import type { Company } from './types'
 
 const COMPANY_FIELDS =
-  'id, name, slug, url, email, city, owner_name, states, payment_methods, accepted_brands, rating, description, featured, phone'
+  'id, name, slug, url, email, city, owner_name, states, payment_methods, accepted_brands, rating, description, featured, phone, mail_in'
 
 export async function matchBuyersForState(stateCode: string): Promise<Company[]> {
   const { data, error } = await supabase
