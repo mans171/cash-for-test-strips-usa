@@ -1,10 +1,22 @@
 "use client"
 
-import { useRouter } from "next/navigation"
+import { Suspense } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { LoginForm } from "@/app/components/LoginForm"
+import { safeNextPath } from "@/lib/next-path"
 
 export default function LoginPage() {
-  const router = useRouter()
+  return (
+    <Suspense fallback={null}>
+      <LoginPageContent />
+    </Suspense>
+  )
+}
 
-  return <LoginForm onSuccess={() => router.push("/")} />
+function LoginPageContent() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const next = safeNextPath(searchParams.get("next"))
+
+  return <LoginForm onSuccess={() => router.push(next)} />
 }

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { OWNER_PHONE } from '@/lib/owner'
 import { STATE_LABELS } from '@/lib/states'
 import { HONEYPOT_FIELD } from '@/lib/honeypot'
+import { OrdersNudge } from '@/app/components/OrdersNudge'
 
 const INPUT = 'w-full border border-gray-200 rounded-lg px-3 py-2 text-sm'
 const LABEL = 'block text-sm font-medium text-gray-700 mb-1'
@@ -45,6 +46,9 @@ export function BulkEnquiryForm() {
           We&apos;ll be in touch to talk through what you have and what we can pay for it. If
           you&apos;d rather not wait, call {OWNER_PHONE}.
         </p>
+        <div className="mt-4">
+          <OrdersNudge />
+        </div>
       </div>
     )
   }

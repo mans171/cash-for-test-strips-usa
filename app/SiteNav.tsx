@@ -57,6 +57,9 @@ export default function SiteNav() {
           {!loading && (
             user ? (
               <div className="flex items-center gap-3">
+                <Link href="/orders" className="hover:text-white transition-colors">
+                  My orders
+                </Link>
                 <span className="text-xs text-white/40">{user.email}</span>
                 <button
                   type="button"
@@ -124,6 +127,14 @@ export default function SiteNav() {
           ))}
           {!loading && (
             user ? (
+              <>
+              <Link
+                href="/orders"
+                onClick={() => setOpen(false)}
+                className="py-2 text-sm font-medium text-white/80 hover:text-white transition-colors"
+              >
+                My orders
+              </Link>
               <button
                 type="button"
                 onClick={handleLogout}
@@ -131,6 +142,7 @@ export default function SiteNav() {
               >
                 Log out ({user.email})
               </button>
+              </>
             ) : (
               <Link
                 href="/login"

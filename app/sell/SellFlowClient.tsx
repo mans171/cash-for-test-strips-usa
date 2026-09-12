@@ -12,6 +12,7 @@ import { fetchOwnProfileContact } from "@/lib/profile-lookup";
 import { HONEYPOT_FIELD } from "@/lib/honeypot";
 import { OWNER_PHONE, PUBLIC_EMAIL } from "@/lib/owner";
 import { honorsBonus, BONUS_FORM_COPY } from "@/lib/bonus";
+import { OrdersNudge } from "@/app/components/OrdersNudge";
 
 type Stage = "build" | "results" | "sent";
 
@@ -295,6 +296,7 @@ export function SellFlowClient() {
             <p className="text-sm text-gray-500">They&apos;ll reach out to you directly to arrange your sale.</p>
           </>
         )}
+        <OrdersNudge />
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
           <h2 className="font-semibold text-gray-900 mb-2">Your Order</h2>
           <div className="flex flex-col gap-1">
