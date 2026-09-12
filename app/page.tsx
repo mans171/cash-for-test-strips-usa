@@ -23,6 +23,9 @@ const POPULAR_STATES = ["NY", "TX", "FL", "CA", "PA", "NC", "OH", "GA", "MA", "N
 // Typed once here rather than inline in three CTAs. The stored format is
 // hyphenated for humans; a tel: href wants the digits alone.
 const TEL_HREF = `tel:${OWNER_PHONE.replace(/-/g, '')}`;
+// The same line receives SMS, and a photo of the box is the fastest quote we
+// can give, so the secondary CTA opens a text rather than a call.
+const SMS_HREF = `sms:${OWNER_PHONE.replace(/\D/g, '')}`;
 
 // What we buy — listed by the names printed on the box, because that is what a
 // seller reads off the carton. No prices anywhere: quotes happen in the DM.
@@ -68,11 +71,11 @@ export default async function HomePage() {
     },
     {
       q: 'How fast will I get paid?',
-      a: 'Local pickups are paid on the spot, the same day you text us. Mail-in sellers are paid the day the box arrives and is verified. Payment is sent via PayPal, Zelle, Venmo, check, or cash — your choice.',
+      a: 'Local buyers often pay on the spot, the same day. Mail-in sellers are paid the day the box arrives and is verified. Payment is sent via PayPal, Zelle, Venmo, check, or cash — your choice.',
     },
     {
       q: 'How does the process work?',
-      a: `Text a photo of your boxes to ${OWNER_PHONE} and we reply with a quote, usually within the hour. If you are selling by mail we email you a prepaid shipping label at no cost, and you get paid the day it arrives. If a local buyer covers your area, you can meet them the same day instead.`,
+      a: `Text a photo of your boxes to ${OWNER_PHONE} and we reply with a quote, usually the same day. If you are selling by mail we email you a prepaid shipping label at no cost, and you get paid the day it arrives. If a local buyer covers your area, you can meet them the same day instead.`,
     },
     {
       q: 'What if my strips are expired or the box has been opened?',
@@ -108,7 +111,8 @@ export default async function HomePage() {
             </span>
           </h1>
           <p className="text-base sm:text-lg text-white/70 max-w-2xl mx-auto mb-8">
-            Sealed, unexpired boxes only. Text a photo of what you have and get a quote back fast.
+            Sealed boxes only. Some expired CGM sensors and pods still qualify. Text a photo of
+            what you have and get a quote back fast.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-8">
@@ -118,12 +122,12 @@ export default async function HomePage() {
             >
               Call or text {OWNER_PHONE}
             </a>
-            <Link
-              href="/sell"
+            <a
+              href={SMS_HREF}
               className="text-white/80 font-bold text-sm px-5 py-3.5 underline decoration-electric decoration-2 underline-offset-4 hover:text-electric transition-colors"
             >
-              Sell by mail →
-            </Link>
+              Text a photo for a quote →
+            </a>
           </div>
 
           <form action="/directory" method="get" className="max-w-md mx-auto">
@@ -158,11 +162,11 @@ export default async function HomePage() {
       {/* Trust bar */}
       <section className="border-y border-gray-100 bg-white py-5">
         <div className="max-w-5xl mx-auto px-4 flex flex-wrap justify-center gap-x-8 gap-y-2 text-sm text-gray-600 font-medium">
-          <span>✓ Sealed &amp; unexpired only</span>
+          <span>✓ Sealed boxes only. Some expired CGM sensors and pods still qualify.</span>
           <span>✓ Free shipping label for mail-in</span>
           <span>✓ PayPal · Zelle · Check · Cash</span>
           <span>✓ Dexcom · Libre · Omnipod · OneTouch · Contour · Accu-Chek</span>
-          <span>✓ Local pickup in {localBuyerCount ?? 29}+ cities</span>
+          <span>✓ Local pickup through {localBuyerCount ?? 29} buyers</span>
         </div>
       </section>
 
@@ -207,7 +211,7 @@ export default async function HomePage() {
               {
                 step: "2",
                 title: "Get a quote",
-                body: "We reply with a firm number, usually within the hour.",
+                body: "We reply with a firm number, usually the same day.",
               },
               {
                 step: "3",
@@ -232,7 +236,7 @@ export default async function HomePage() {
         <section className="py-16 px-4">
           <div className="max-w-5xl mx-auto">
             <div className="flex items-center justify-between mb-8">
-              <h2 className="text-2xl font-bold text-gray-900">Local buyers who pay same day</h2>
+              <h2 className="text-2xl font-bold text-gray-900">Buyers who offer local pickup</h2>
               <Link href="/directory" className="text-sm text-cash font-medium hover:underline">
                 See all buyers →
               </Link>
