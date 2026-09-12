@@ -15,6 +15,7 @@ import { COMPANY_COLUMNS } from "@/lib/company-columns";
 import { BuyerCard } from "@/app/components/BuyerCard";
 import { ContactButtons } from "@/app/components/ContactButtons";
 import { honorsBonus, BONUS_MENTION_COPY } from "@/lib/bonus";
+import { isIndexableProfile } from "@/lib/company-index";
 import { MonogramAvatar, VerifiedBadge, FeaturedBadge, PinIcon } from "@/app/components/ui";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -23,7 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const { data } = await supabase
     .from("companies")
-    .select("name, city, states, description")
+    .select("name, city, states, description, phone, url, mail_in")
     .eq("slug", slug)
     .single();
 
@@ -36,6 +37,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       data.description ??
       `${data.name} buys unused diabetic test strips for cash${stateLabel ? ` in ${stateLabel}` : ""}.`,
     alternates: { canonical: `https://cash4teststripsusa.com/company/${slug}` },
+    ...(isIndexableProfile(data) ? {} : { robots: { index: false, follow: true } }),
   };
 }
 

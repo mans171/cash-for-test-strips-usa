@@ -4,6 +4,7 @@ import { STATE_BLOG_POSTS } from '@/lib/blog-posts'
 import { STATE_LABELS } from '@/lib/states'
 import { POST_REGISTRY } from '@/lib/posts'
 import { publishableCityTargets } from '@/lib/city-page-content'
+import { isIndexableProfile } from '@/lib/company-index'
 import type { Company } from '@/lib/types'
 
 const BASE_URL = 'https://cash4teststripsusa.com'
@@ -61,7 +62,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // buyers, so a buyer who leaves the network drops out of both at once.
   const { data: companies } = await supabase
     .from('companies')
-    .select('slug, lat, lng')
+    .select('slug, lat, lng, phone, url, mail_in')
     .eq('mail_in', false)
 
   // A city page 404s when no buyer is within CITY_BUYER_RADIUS_MI — the
@@ -76,11 +77,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }))
 
-  const companyRoutes: MetadataRoute.Sitemap = (companies ?? []).map((c) => ({
-    url: `${BASE_URL}/company/${c.slug}`,
-    changeFrequency: 'monthly',
-    priority: 0.6,
-  }))
+  const companyRoutes: MetadataRoute.Sitemap = (companies ?? [])
+    .filter(isIndexableProfile)
+    .map((c) => ({
+      url: `${BASE_URL}/company/${c.slug}`,
+      changeFrequency: 'monthly',
+      priority: 0.6,
+    }))
 
   return [...staticRoutes, ...registryRoutes, ...stateRoutes, ...cityRoutes, ...companyRoutes]
 }
