@@ -17,3 +17,7 @@ export const BULK_MIN_PIECES = 100
  *  list every state would look like it "routes to a buyer" and would cc the
  *  same inbox twice. See lib/bulk-routing.ts. */
 export const HOUSE_EMAILS = [OWNER_EMAIL, 'sell@cash4teststripsusa.com'] as const
+
+/** Numbers that ring the business itself. A listing carrying one of these is
+ *  answered by the house, which is why the $10 bonus can be promised on it. */
+export const HOUSE_PHONES = [OWNER_PHONE, '518-779-9751'] as const

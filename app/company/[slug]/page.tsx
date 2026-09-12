@@ -14,6 +14,7 @@ import { getZipCentroid } from "@/lib/zip-lookup";
 import { COMPANY_COLUMNS } from "@/lib/company-columns";
 import { BuyerCard } from "@/app/components/BuyerCard";
 import { ContactButtons } from "@/app/components/ContactButtons";
+import { honorsBonus, BONUS_MENTION_COPY } from "@/lib/bonus";
 import { MonogramAvatar, VerifiedBadge, FeaturedBadge, PinIcon } from "@/app/components/ui";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -426,6 +427,9 @@ export default async function CompanyPage({ params }: Props) {
           <h2 className="font-black text-lg mb-1">Ready to sell to {company.name.split(" ")[0]}?</h2>
           <p className="text-sm text-white/60 mb-4">Reach out directly — no account needed.</p>
           <ContactButtons company={company} size="page" />
+          {honorsBonus(company) && (
+            <p className="text-xs text-emerald-300 font-semibold mt-3">💵 {BONUS_MENTION_COPY}</p>
+          )}
         </div>
       </div>
 

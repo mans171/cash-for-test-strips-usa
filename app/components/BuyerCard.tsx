@@ -5,6 +5,7 @@ import { Chip, VerifiedBadge, FeaturedBadge, MonogramAvatar, PinIcon, btnSeconda
 import { ContactButtons } from "./ContactButtons"
 import { hasAnyContact } from "@/lib/company-contact"
 import { hasProfilePage } from "@/lib/company-profile"
+import { honorsBonus, BONUS_MENTION_COPY } from "@/lib/bonus"
 
 export function BuyerCard({
   company,
@@ -84,6 +85,9 @@ export function BuyerCard({
             </Link>
           )}
           {showContact && <ContactButtons company={company} />}
+          {showContact && honorsBonus(company) && (
+            <p className="text-[11px] text-emerald-700 font-semibold">💵 {BONUS_MENTION_COPY}</p>
+          )}
         </div>
       )}
     </div>

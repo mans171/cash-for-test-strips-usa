@@ -11,6 +11,7 @@ import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import { fetchOwnProfileContact } from "@/lib/profile-lookup";
 import { HONEYPOT_FIELD } from "@/lib/honeypot";
 import { OWNER_PHONE } from "@/lib/owner";
+import { honorsBonus, BONUS_FORM_COPY } from "@/lib/bonus";
 
 type Stage = "build" | "results" | "sent";
 
@@ -392,6 +393,11 @@ export function SellFlowClient() {
                 <div>
                   <p className="font-medium text-gray-900">{c.name}</p>
                   {c.city && <p className="text-xs text-gray-400">{c.city}</p>}
+                  {/* Only this card's own buttons submit to this buyer, so the
+                      bonus is gated per card, not on the step as a whole. */}
+                  {honorsBonus(c) && (
+                    <p className="text-[11px] text-emerald-700 font-semibold mt-1">💵 {BONUS_FORM_COPY}</p>
+                  )}
                 </div>
                 {(c.email || c.phone) && (
                   <div className="flex gap-2 shrink-0">
