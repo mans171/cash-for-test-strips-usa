@@ -7,6 +7,7 @@ import type { OrderItem } from '@/lib/types'
 import { OWNER_EMAIL } from '@/lib/owner'
 import { isHoneypotTripped } from '@/lib/honeypot'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
 const VALID_CONDITIONS = new Set(['sealed', 'unsealed'])
 const MAX_ITEMS = 50
@@ -43,10 +44,17 @@ export async function POST(request: Request) {
     // broken or missing cookie must never block a submission, so any failure
     // here resolves to null rather than throwing into the 500 handler.
     let userId: string | null = null
+    // The lead insert has to run through the SESSION-BOUND client when it
+    // carries a user_id: leads_insert_public checks `user_id = auth.uid()`, and
+    // the module-level anon client has no session, so auth.uid() would be null
+    // and Postgres would refuse the row. Stays null for anonymous submissions,
+    // which keeps the anon path byte-for-byte what it was.
+    let sessionClient: SupabaseClient | null = null
     try {
       const server = await createServerSupabaseClient()
       const { data } = await server.auth.getUser()
       userId = data?.user?.id ?? null
+      if (userId) sessionClient = server
     } catch (sessionError) {
       console.warn('[POST /api/leads] session read failed, continuing anonymously', sessionError)
     }
@@ -81,16 +89,19 @@ export async function POST(request: Request) {
     const trimmedPhone = typeof phone === 'string' && phone.trim() ? phone.trim() : undefined
     const trimmedEmail = typeof email === 'string' && email.trim() ? email.trim() : undefined
 
-    const lead = await createLead({
-      items: items as OrderItem[],
-      matchedCompanyId,
-      channel,
-      sourcePage: sourcePage ?? null,
-      name: name.trim(),
-      email: trimmedEmail,
-      phone: trimmedPhone,
-      userId,
-    })
+    const lead = await createLead(
+      {
+        items: items as OrderItem[],
+        matchedCompanyId,
+        channel,
+        sourcePage: sourcePage ?? null,
+        name: name.trim(),
+        email: trimmedEmail,
+        phone: trimmedPhone,
+        userId,
+      },
+      sessionClient ?? undefined
+    )
 
     if (channel === 'sms') {
       const message = buildQuoteMessage(items as OrderItem[], name.trim())

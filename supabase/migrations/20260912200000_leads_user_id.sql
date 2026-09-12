@@ -14,15 +14,21 @@ create index if not exists leads_user_id_idx on public.leads (user_id);
 --
 -- An anonymous submission carries a null user_id and is accepted exactly as
 -- before. A signed-in submission may only stamp its own id.
+--
+-- NOTE for callers: a row carrying a user_id only passes this check when it is
+-- inserted through the client that holds that session. The module-level anon
+-- client has no session, so auth.uid() is null there — see lib/leads.ts.
+--
+-- Both drops below make the file safe to replay: Postgres has no
+-- `create policy if not exists`.
 drop policy if exists "leads_insert_anon" on public.leads;
+drop policy if exists "leads_insert_public" on public.leads;
 create policy "leads_insert_public"
   on public.leads for insert
   with check (user_id is null or user_id = auth.uid());
 
 -- Reading is new and scoped to the row's owner. Anonymous rows carry a null
 -- user_id, and `null = auth.uid()` is null (not true), so they stay unreadable.
--- Dropped first so this file is safe to replay: Postgres has no
--- `create policy if not exists`.
 drop policy if exists "leads_select_own" on public.leads;
 create policy "leads_select_own"
   on public.leads for select

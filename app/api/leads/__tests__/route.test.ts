@@ -29,13 +29,33 @@ vi.mock('@/lib/email', async (importOriginal) => {
 // case in this file behaves today.
 const mockGetUser = vi.fn()
 
+// Every insert this stub client is asked to perform, in order. The route hands
+// it to createLead ONLY when a session exists, so this array is also the proof
+// of which client did the writing.
+const serverClientInserts: Array<{ table: string; payload: Record<string, unknown> }> = []
+
 beforeEach(() => {
   mockGetUser.mockReset()
   mockGetUser.mockResolvedValue({ data: { user: null }, error: null })
+  serverClientInserts.length = 0
 })
 
 vi.mock('@/lib/supabase/server', () => ({
-  createServerSupabaseClient: async () => ({ auth: { getUser: () => mockGetUser() } }),
+  createServerSupabaseClient: async () => ({
+    auth: { getUser: () => mockGetUser() },
+    // A signed-in lead MUST be inserted through the session-bound client:
+    // leads_insert_public checks `user_id = auth.uid()`, and the anon client
+    // has no session. There is no real session to bind here, so record the
+    // payload and delegate the write to the service-role client — the row
+    // still lands, so the read-back and the cleanup below work unchanged,
+    // and the recorded payload proves the route routed the insert here.
+    from: (table: string) => ({
+      insert: (payload: Record<string, unknown>) => {
+        serverClientInserts.push({ table, payload })
+        return supabaseAdmin.from(table).insert(payload)
+      },
+    }),
+  }),
 }))
 
 const { POST } = await import('../route')
@@ -326,6 +346,13 @@ describe('POST /api/leads', () => {
     expect(response.status).toBe(200)
     cleanupLeadIds.push(body.leadId)
 
+    // The insert went through the session-bound client, not the anon one, and
+    // carried the id. Both halves matter: with the anon client auth.uid() is
+    // null and leads_insert_public would refuse the row outright.
+    expect(serverClientInserts).toHaveLength(1)
+    expect(serverClientInserts[0].table).toBe('leads')
+    expect(serverClientInserts[0].payload.user_id).toBe(userId)
+
     const { data: lead, error } = await supabaseAdmin
       .from('leads')
       .select('user_id')
@@ -352,6 +379,10 @@ describe('POST /api/leads', () => {
     expect(response.status).toBe(200)
     expect(body.leadId).toBeDefined()
     cleanupLeadIds.push(body.leadId)
+
+    // No session, so the anon client did the writing — exactly as before this
+    // feature existed.
+    expect(serverClientInserts).toHaveLength(0)
 
     const { data: lead } = await supabaseAdmin
       .from('leads')

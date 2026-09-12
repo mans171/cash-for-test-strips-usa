@@ -6,11 +6,14 @@ import { pickBulkRecipient } from '@/lib/bulk-routing'
 import { STATE_LABELS } from '@/lib/states'
 import { isHoneypotTripped } from '@/lib/honeypot'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
 // PUBLIC ON PURPOSE. A reseller gives us their details and asks us to call;
 // making them create an account first would cost enquiries and protects
-// nobody. RLS (leads_insert_anon) already permits the anonymous insert. The
-// only bot guard is the honeypot below.
+// nobody. RLS (leads_insert_public) permits the insert: an anonymous row
+// carries a null user_id, which the policy accepts. A signed-in reseller's row
+// carries their own id and must go through the session-bound client below. The
+// only bot guard is the honeypot.
 
 const MAX_LEN = 2000
 
@@ -38,10 +41,15 @@ export async function POST(request: Request) {
     // either — any failure reading the session resolves to null rather than
     // failing an enquiry that has already been filled in.
     let userId: string | null = null
+    // See the leads insert below: a row carrying a user_id only passes
+    // leads_insert_public when it is inserted through the client that holds
+    // that session, because the policy compares against auth.uid().
+    let sessionClient: SupabaseClient | null = null
     try {
       const server = await createServerSupabaseClient()
       const { data } = await server.auth.getUser()
       userId = data?.user?.id ?? null
+      if (userId) sessionClient = server
     } catch (sessionError) {
       console.warn('[bulk-leads] session read failed, continuing anonymously', sessionError)
     }
@@ -100,7 +108,10 @@ export async function POST(request: Request) {
       .join('\n')
 
     const id = crypto.randomUUID()
-    const { error } = await supabase.from('leads').insert({
+    // Anonymous enquiry: the anon client, exactly as before. Signed-in
+    // enquiry: the session-bound client, or the RLS check refuses the row.
+    const leadsClient = sessionClient ?? supabase
+    const { error } = await leadsClient.from('leads').insert({
       id,
       name,
       email,
