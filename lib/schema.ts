@@ -1,6 +1,6 @@
 // lib/schema.ts
 
-import { OWNER_PHONE } from './owner'
+import { OWNER_PHONE, PUBLIC_EMAIL } from './owner'
 
 export type FaqItem = { question: string; answer: string }
 
@@ -128,7 +128,7 @@ export function buildServiceSchema(): Record<string, unknown> {
     name: 'Cash For Test Strips USA',
     url: 'https://cash4teststripsusa.com',
     telephone: OWNER_PHONE,
-    email: 'sell@cash4teststripsusa.com',
+    email: PUBLIC_EMAIL,
     areaServed: 'United States',
     description:
       'Buys sealed, unexpired diabetic test strips, CGM sensors and pump supplies by mail from any US state, and in person through local buyers.',

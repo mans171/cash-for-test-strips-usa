@@ -1,6 +1,5 @@
 import type { MetadataRoute } from 'next'
 import { supabase } from '@/lib/supabase'
-import { STATE_BLOG_POSTS } from '@/lib/blog-posts'
 import { STATE_LABELS } from '@/lib/states'
 import { POST_REGISTRY } from '@/lib/posts'
 import { publishableCityTargets } from '@/lib/city-page-content'
@@ -8,6 +7,9 @@ import { isIndexableProfile } from '@/lib/company-index'
 import type { Company } from '@/lib/types'
 
 const BASE_URL = 'https://cash4teststripsusa.com'
+
+// Date the hand-written state guides moved onto the state pages (2026-09-12). Bump when their content next changes.
+const STATE_GUIDES_MODIFIED = '2026-09-12'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
@@ -52,7 +54,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .filter((code) => code !== 'CANADA')
     .map((code) => ({
       url: `${BASE_URL}/sell-test-strips/${code.toLowerCase()}`,
-      lastModified: STATE_BLOG_POSTS.find((p) => p.stateCode === code)?.datePublished,
+      lastModified: STATE_GUIDES_MODIFIED,
       changeFrequency: 'monthly',
       priority: 0.7,
     }))

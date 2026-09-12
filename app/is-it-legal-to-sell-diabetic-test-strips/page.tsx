@@ -129,7 +129,7 @@ export default function IsItLegalPage() {
         Yes. The federal rules above apply everywhere. A few states add resale or consumer protection
         statutes that touch medical supplies, but no state bans the private sale of sealed,
         personally owned diabetic test strips. See{' '}
-        <Link href="/blog" className="text-emerald-600 hover:underline">your state&apos;s guide</Link>{' '}
+        <Link href="/sell-test-strips" className="text-emerald-600 hover:underline">your state&apos;s guide</Link>{' '}
         for local context.
       </p>
 

@@ -4,7 +4,7 @@ import { supabaseAdmin } from '@/lib/supabase-admin'
 // Real SMTP sends must never happen from a test run — mock the one function
 // that actually talks to the mail server, same precedent as
 // lib/__tests__/email.test.ts mocking nodemailer directly. Everything else
-// in this route (session check, lead creation, company lookup) stays real.
+// in this route (honeypot handling, lead creation, company lookup) stays real.
 const mockSendEmailOrThrow = vi.fn()
 
 beforeEach(() => {

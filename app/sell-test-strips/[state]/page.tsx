@@ -254,14 +254,14 @@ export default async function StatePage({ params }: Props) {
       {guide && (
         <section className="mt-12 pt-8 border-t border-gray-100 max-w-3xl">
           <h2 className="text-2xl font-extrabold text-gray-900 mb-4">{guide.heading}</h2>
-          {guide.lead.map((p) => (
-            <p key={p} className="text-gray-700 leading-relaxed mb-4">{p}</p>
+          {guide.lead.map((p, i) => (
+            <p key={i} className="text-gray-700 leading-relaxed mb-4">{p}</p>
           ))}
-          {guide.sections.map((s) => (
-            <div key={s.heading} className="mt-8">
+          {guide.sections.map((s, i) => (
+            <div key={i} className="mt-8">
               <h3 className="text-xl font-bold text-gray-900 mb-3">{s.heading}</h3>
-              {s.paragraphs.map((p) => (
-                <p key={p} className="text-gray-700 leading-relaxed mb-4">{p}</p>
+              {s.paragraphs.map((p, i) => (
+                <p key={i} className="text-gray-700 leading-relaxed mb-4">{p}</p>
               ))}
             </div>
           ))}

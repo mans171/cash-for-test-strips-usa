@@ -190,7 +190,7 @@ export default async function HomePage() {
           </div>
           <p className="text-sm text-gray-600 text-center mt-10">
             Not sure?{" "}
-            <a href={TEL_HREF} className="font-bold text-cash hover:underline">
+            <a href={SMS_HREF} className="font-bold text-cash hover:underline">
               Text a photo of the box to {OWNER_PHONE}.
             </a>
           </p>

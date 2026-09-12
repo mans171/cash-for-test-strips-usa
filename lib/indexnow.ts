@@ -31,7 +31,7 @@ export const CHANGED_WITHIN_DAYS = 2
 export type ChangedInput = {
   /** now, injected so this is testable without a clock */
   nowMs: number
-  /** registry + state blog posts: slug and the date the content last changed */
+  /** registry posts: slug and the date the content last changed */
   posts: Array<{ slug: string; changedAt: string | null }>
   /** buyers: their profile page, plus the state/city pages they unlock */
   companies: Array<{ slug: string; states: string[]; createdAt: string | null }>
