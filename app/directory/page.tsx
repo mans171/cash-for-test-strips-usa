@@ -15,6 +15,7 @@ import { isValidZip } from "@/lib/geo";
 import { getZipCentroid, tierCompanies, type CompanyWithMiles } from "@/lib/zip-lookup";
 import { COMPANY_COLUMNS } from "@/lib/company-columns";
 import { hubStateCodes } from "@/lib/hub-page-content";
+import { PUBLIC_EMAIL } from "@/lib/owner";
 
 const HUB_STATE_CODES = hubStateCodes();
 
@@ -140,7 +141,7 @@ export default async function DirectoryPage({
           <p className="text-lg font-medium mb-2">No buyers found</p>
           <p className="text-sm">
             Try clearing the state filter or{" "}
-            <a href="mailto:feldon.richards@gmail.com" className="text-cash hover:underline">contact us</a> to add your area.
+            <a href={`mailto:${PUBLIC_EMAIL}`} className="text-cash hover:underline">contact us</a> to add your area.
           </p>
         </div>
       ) : (

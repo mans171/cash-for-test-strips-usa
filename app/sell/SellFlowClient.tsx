@@ -10,7 +10,7 @@ import { useUser } from "@/lib/auth-client";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import { fetchOwnProfileContact } from "@/lib/profile-lookup";
 import { HONEYPOT_FIELD } from "@/lib/honeypot";
-import { OWNER_PHONE } from "@/lib/owner";
+import { OWNER_PHONE, PUBLIC_EMAIL } from "@/lib/owner";
 import { honorsBonus, BONUS_FORM_COPY } from "@/lib/bonus";
 
 type Stage = "build" | "results" | "sent";
@@ -380,7 +380,7 @@ export function SellFlowClient() {
         {cards.length === 0 ? (
           <p className="text-sm text-gray-500">
             We couldn&apos;t find a buyer for your area right now. Email{" "}
-            <a href="mailto:feldon.richards@gmail.com" className="text-cash hover:underline">feldon.richards@gmail.com</a>{" "}
+            <a href={`mailto:${PUBLIC_EMAIL}`} className="text-cash hover:underline">{PUBLIC_EMAIL}</a>{" "}
             or call <a href={`tel:${OWNER_PHONE.replace(/\D/g, "")}`} className="text-cash hover:underline">{OWNER_PHONE}</a> directly and we&apos;ll help you sell your strips.
           </p>
         ) : (
