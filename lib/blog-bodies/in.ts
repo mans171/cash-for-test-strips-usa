@@ -49,7 +49,7 @@ export const IN: PostBody = {
       heading: "Everything that is still in date: what has to be true",
       paragraphs: [
         "The box has to be factory-sealed and unopened, in its original packaging. An opened box cannot be resold at any price, because nobody downstream can establish what happened to it once the seal went. This is the single most common reason a parcel gets returned.",
-        "The supplies cannot have been obtained through a government-covered programme — those cannot be resold. A pharmacy label carrying your own name is not a problem and does not need removing; what matters is who paid, not whose name is on the sticker.",
+        "The supplies cannot have been obtained through a government-covered program — those cannot be resold. A pharmacy label carrying your own name is not a problem and does not need removing; what matters is who paid, not whose name is on the sticker.",
         "Test strips want six months or more before the expiry date. Under that, value falls away sharply. The brands bought are FreeStyle Lite, Contour Next in all versions, Accu-Chek Guide, Aviva and SmartView, OneTouch Verio and Ultra, and True Metrix. A 100-count box is worth meaningfully more than two 50-count boxes of the same strip, which is worth knowing before you split anything up.",
         "On the CGM side: Dexcom G6 sensors and transmitters, G7 sensors and receivers, and FreeStyle Libre 1, 2 and 3 in US retail versions only — sensors bought abroad cannot be resold here. Some sealed Medtronic and Tandem components as well, though those are worth a call rather than an assumption.",
       ],

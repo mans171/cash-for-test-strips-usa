@@ -46,8 +46,8 @@ export const DE: PostBody = {
     {
       heading: "Answer the question of who paid before anything else",
       paragraphs: [
-        "Supplies obtained through a government-covered programme cannot be resold. With more than a fifth of the state over 65, this is the single condition most likely to rule out a Delaware clear-out, and it is worth establishing before you spend any time sorting boxes.",
-        "The pharmacy that filled the prescriptions can usually tell you. So can the paperwork that turns up during a clear-out — explanation-of-benefits letters and pharmacy receipts generally make it obvious which programme was paying.",
+        "Supplies obtained through a government-covered program cannot be resold. With more than a fifth of the state over 65, this is the single condition most likely to rule out a Delaware clear-out, and it is worth establishing before you spend any time sorting boxes.",
+        "The pharmacy that filled the prescriptions can usually tell you. So can the paperwork that turns up during a clear-out — explanation-of-benefits letters and pharmacy receipts generally make it obvious which program was paying.",
         "If it came through private insurance or was paid for at retail, it is fine. A pharmacy label with your relative's name printed on it changes nothing and does not need peeling off. Nobody will ask you to account for how the supplies came to be in the house.",
         "If you genuinely cannot establish it either way, say that on the phone rather than guessing. It is an ordinary question and it is asked constantly.",
       ],

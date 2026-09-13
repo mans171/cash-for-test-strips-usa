@@ -51,7 +51,7 @@ export const RI: PostBody = {
       heading: "What makes a box sellable",
       paragraphs: [
         "Factory-sealed and unopened, in the original packaging. An opened box cannot be resold at any price — nobody downstream can verify how it was stored, and this is the most common reason a parcel is refused or a settled price gets reopened.",
-        "Not obtained through a government benefit programme. Supplies paid for that way cannot legally be resold. Private insurance or paid for yourself is fine, and a pharmacy label with a name on it makes no difference.",
+        "Not obtained through a government benefit program. Supplies paid for that way cannot legally be resold. Private insurance or paid for yourself is fine, and a pharmacy label with a name on it makes no difference.",
         "For test strips, at least six months before the expiry date. Under that, value falls off quickly.",
         "Check the count before writing off a small stack. A 100-count box is worth meaningfully more than two 50-count boxes of the same brand.",
       ],
@@ -89,8 +89,8 @@ export const RI: PostBody = {
       a: "Two things are: Omnipod pods (5, DASH and Classic) and Dexcom G7 sensors, both at a reduced rate. Expired test strips and expired Dexcom G6 sensors are not worth selling.",
     },
     {
-      q: "A government programme paid for my supplies. Can I sell them?",
-      a: "No. Supplies covered by a government programme cannot be resold. Anything received through private insurance or paid for yourself is fine.",
+      q: "A government program paid for my supplies. Can I sell them?",
+      a: "No. Supplies covered by a government program cannot be resold. Anything received through private insurance or paid for yourself is fine.",
     },
     {
       q: "Which part of Rhode Island has the highest diabetes rate?",

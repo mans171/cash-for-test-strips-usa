@@ -9,7 +9,7 @@ import { createServerSupabaseClient } from '@/lib/supabase/server'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 // PUBLIC ON PURPOSE. A reseller gives us their details and asks us to call;
-// making them create an account first would cost enquiries and protects
+// making them create an account first would cost inquiries and protects
 // nobody. RLS (leads_insert_public) permits the insert: an anonymous row
 // carries a null user_id, which the policy accepts. A signed-in reseller's row
 // carries their own id and must go through the session-bound client below. The
@@ -39,7 +39,7 @@ export async function POST(request: Request) {
     // If the reseller happens to be signed in, stamp the lead with their id so
     // they can see it later under My Orders. Signing in is NOT required here
     // either — any failure reading the session resolves to null rather than
-    // failing an enquiry that has already been filled in.
+    // failing an inquiry that has already been filled in.
     let userId: string | null = null
     // See the leads insert below: a row carrying a user_id only passes
     // leads_insert_public when it is inserted through the client that holds
@@ -76,7 +76,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Please choose your state' }, { status: 400 })
     }
 
-    // Who gets this enquiry: the state's own buyer if it has a real inbox of
+    // Who gets this inquiry: the state's own buyer if it has a real inbox of
     // its own, otherwise the house. Anon client on purpose - RLS already lets
     // it read active rows, and nothing here is written outside `leads`.
     const { data: companyRows, error: companyError } = await supabase
@@ -86,7 +86,7 @@ export async function POST(request: Request) {
       .eq('mail_in', false)
       .contains('states', [state])
     // A lookup failure silently routes to the house, which is the right
-    // behaviour for the seller but hides a real outage — so say so in the log.
+    // behavior for the seller but hides a real outage — so say so in the log.
     if (companyError) {
       console.error('[bulk-leads] buyer lookup failed', companyError.message)
     }
@@ -96,7 +96,7 @@ export async function POST(request: Request) {
     // columns: `leads` is shared with the consumer flow and this is the only
     // caller that has these fields.
     const notes = [
-      'BULK SELLER ENQUIRY',
+      'BULK SELLER INQUIRY',
       'State: ' + state,
       location && 'Location: ' + location,
       quantity && 'Approx pieces: ' + quantity,
@@ -108,8 +108,8 @@ export async function POST(request: Request) {
       .join('\n')
 
     const id = crypto.randomUUID()
-    // Anonymous enquiry: the anon client, exactly as before. Signed-in
-    // enquiry: the session-bound client, or the RLS check refuses the row.
+    // Anonymous inquiry: the anon client, exactly as before. Signed-in
+    // inquiry: the session-bound client, or the RLS check refuses the row.
     const leadsClient = sessionClient ?? supabase
     const { error } = await leadsClient.from('leads').insert({
       id,
@@ -122,18 +122,18 @@ export async function POST(request: Request) {
     })
     if (error) {
       console.error('bulk lead insert failed', error.message)
-      return NextResponse.json({ error: 'Could not save your enquiry' }, { status: 500 })
+      return NextResponse.json({ error: 'Could not save your inquiry' }, { status: 500 })
     }
 
-    // The enquiry is already saved, so a mail failure must NOT fail the
+    // The inquiry is already saved, so a mail failure must NOT fail the
     // request - the seller has done their part and the row is the record.
     // sendEmail (not sendEmailOrThrow) swallows its own errors by design.
     await sendEmail({
       to: recipient.to,
       cc: recipient.cc ?? undefined,
-      subject: 'Bulk seller enquiry - ' + name + ' (' + state + ')',
+      subject: 'Bulk seller inquiry - ' + name + ' (' + state + ')',
       html: [
-        '<h2>Bulk seller enquiry</h2>',
+        '<h2>Bulk seller inquiry</h2>',
         '<p><strong>' + escapeHtml(name) + '</strong></p>',
         '<p>Phone: ' + escapeHtml(phone) + '<br>Email: ' + escapeHtml(email) + '</p>',
         '<p>State: ' + escapeHtml(STATE_LABELS[state]) + '</p>',

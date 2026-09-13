@@ -115,7 +115,7 @@ export default async function StatePage({ params }: Props) {
     if (mailIn) options.push("mail your sealed boxes to a national mail-in buyer from anywhere in the state");
     if (nearestMiles !== null) {
       options.push(
-        `drive to the nearest in-person buyer, about ${nearestMiles} miles from the centre of ${label}`
+        `drive to the nearest in-person buyer, about ${nearestMiles} miles from the center of ${label}`
       );
     }
     if (options.length === 0) return `No buyer is based in ${label} yet — we are adding buyers state by state.`;
@@ -197,7 +197,7 @@ export default async function StatePage({ params }: Props) {
               </h2>
               <p className="text-gray-600 max-w-2xl mb-5 text-sm leading-relaxed">
                 If you would rather be paid on the spot, these are the nearest buyers who meet
-                sellers in person. Distances are measured from the centre of {label}, so your own
+                sellers in person. Distances are measured from the center of {label}, so your own
                 drive may be shorter or longer.
               </p>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">

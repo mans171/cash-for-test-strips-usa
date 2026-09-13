@@ -64,7 +64,7 @@ export const WV: PostBody = {
       heading: "What has to be true for a box to be sellable",
       paragraphs: [
         "Factory-sealed and unopened, in original packaging. An opened box cannot be resold at any price, because nobody downstream can verify how it was stored. This is the most common reason a parcel is refused or a settled figure gets reopened.",
-        "Not obtained through a government-covered programme — supplies paid for that way cannot be resold. Private insurance or paid at retail is fine, and a pharmacy label with a name on it is irrelevant and does not need removing. Nobody will ask you to explain how the supplies came to be in the house.",
+        "Not obtained through a government-covered program — supplies paid for that way cannot be resold. Private insurance or paid at retail is fine, and a pharmacy label with a name on it is irrelevant and does not need removing. Nobody will ask you to explain how the supplies came to be in the house.",
         "For test strips, at least six months before the expiry date. The qualifying brands are FreeStyle Lite, Contour Next, Accu-Chek Guide, Aviva and SmartView, OneTouch Verio and Ultra, and True Metrix. On the CGM side it is Dexcom G6 sensors and transmitters, G7 sensors and receivers, and FreeStyle Libre 1, 2 and 3 in US retail versions only.",
         "Count matters more than people expect. A 100-count box is worth meaningfully more than two 50-count boxes of the same brand, and ten or more boxes earns a better per-box rate. A mixed lot is quoted as one lot and does not need sorting by brand.",
       ],
@@ -93,8 +93,8 @@ export const WV: PostBody = {
       a: "Two: Omnipod pods (5, DASH and Classic) and Dexcom G7 sensors, both at a reduced rate. Expired test strips and expired Dexcom G6 sensors are not worth selling, and expired strips should not be resold by anyone because degraded strips give inaccurate readings.",
     },
     {
-      q: "My father's supplies came through a government programme. Can I still sell them?",
-      a: "No. Supplies obtained through a government-covered programme cannot be resold. Anything covered by private insurance or paid for at retail is fine. If you cannot tell which it was, the pharmacy that filled the prescription can usually confirm it.",
+      q: "My father's supplies came through a government program. Can I still sell them?",
+      a: "No. Supplies obtained through a government-covered program cannot be resold. Anything covered by private insurance or paid for at retail is fine. If you cannot tell which it was, the pharmacy that filled the prescription can usually confirm it.",
     },
     {
       q: "How much do I need before it is worth a phone call?",

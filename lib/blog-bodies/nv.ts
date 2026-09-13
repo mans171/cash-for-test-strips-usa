@@ -57,7 +57,7 @@ export const NV: PostBody = {
       heading: "What decides whether a box qualifies",
       paragraphs: [
         "The seal. Factory-sealed and unopened, in its original packaging. An opened box has no value at all, because nothing about it can be verified by whoever holds it next.",
-        "Who paid. Supplies obtained through a government-covered programme cannot be resold. A pharmacy label with your own name on it is ordinary and has no bearing on anything — that is a different question.",
+        "Who paid. Supplies obtained through a government-covered program cannot be resold. A pharmacy label with your own name on it is ordinary and has no bearing on anything — that is a different question.",
         "The date. Test strips want at least six months of life remaining. Beyond the two expiry exceptions above, an out-of-date box is not worth posting.",
         "Nevada also has one of the higher uninsured rates in the country, with 14.5% of working-age adults uncovered, which is a large part of why sealed supplies find a second buyer at all.",
       ],
@@ -86,7 +86,7 @@ export const NV: PostBody = {
       a: "Omnipod pods (5, DASH and Classic) and Dexcom G7 sensors do, at a reduced rate. Expired test strips and expired Dexcom G6 sensors do not, wherever in the state you are.",
     },
     {
-      q: "What if my boxes were paid for by a government programme?",
+      q: "What if my boxes were paid for by a government program?",
       a: "Then they cannot be resold. That applies to any government-funded coverage, and it is about who paid rather than what is written on the pharmacy label. Supplies you bought retail or that came through private insurance are fine.",
     },
     {

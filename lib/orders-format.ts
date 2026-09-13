@@ -4,7 +4,7 @@ import type { OrderItem } from './types'
  *  unit-tested without a Supabase session or a React renderer. */
 
 /** "3 × Dexcom G7 sensors · 2 × OneTouch Verio".
- *  A lead's `items` column is nullable (bulk enquiries carry none) and rows
+ *  A lead's `items` column is nullable (bulk inquiries carry none) and rows
  *  written before the product catalog settled can hold a blank brand, so both
  *  cases fall back rather than rendering a bare count. A count that is
  *  missing or not a number renders as "?" rather than "NaN"/"undefined". */
@@ -16,7 +16,7 @@ export function summarizeItems(items: OrderItem[] | null): string {
   return parts.length > 0 ? parts.join(' · ') : 'No items listed'
 }
 
-/** Which form the lead came from. The bulk enquiry has no item list, so the
+/** Which form the lead came from. The bulk inquiry has no item list, so the
  *  source page is the only reliable signal. */
 export function orderKind(lead: { items: unknown; source_page: string | null }): 'quote' | 'bulk' {
   return lead.source_page === '/sell-test-strips-in-bulk' ? 'bulk' : 'quote'

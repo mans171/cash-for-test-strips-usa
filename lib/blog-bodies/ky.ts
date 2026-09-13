@@ -2,7 +2,7 @@ import type { PostBody } from "./types"
 
 /**
  * Kentucky — no in-state buyer. Structured as a triage: bin it, sell it, or
- * ring first. The expiry question is the organising principle rather than one
+ * ring first. The expiry question is the organizing principle rather than one
  * section of six, because the sorting decision is what a Kentucky reader is
  * actually standing in front of when they search this.
  *
@@ -36,7 +36,7 @@ export const KY: PostBody = {
         "Anything that has been opened. The factory seal is the whole basis on which a box can be resold, because it is the only thing that lets the next person establish what has and has not happened to the contents. An opened box is worth nothing rather than a reduced amount, and no story about why it was opened changes that.",
         "Expired test strips. This is the one place where the standard advice is correct — a strip past its date can return an unreliable reading, and an unreliable blood glucose reading is a safety matter. We will not buy them and nobody responsible should.",
         "Expired Dexcom G6 sensors. G6 is specifically excluded from the expiry exceptions below, which surprises people who assume all Dexcom stock behaves the same way.",
-        "Anything obtained through a government-covered programme, whatever its condition. Supplies paid for that way cannot be resold. This is about who paid rather than what is on the label; ordinary pharmacy labelling with your own name on it is not a problem at all.",
+        "Anything obtained through a government-covered program, whatever its condition. Supplies paid for that way cannot be resold. This is about who paid rather than what is on the label; ordinary pharmacy labelling with your own name on it is not a problem at all.",
       ],
     },
     {

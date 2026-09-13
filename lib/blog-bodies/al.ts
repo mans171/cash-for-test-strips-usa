@@ -57,7 +57,7 @@ export const AL: PostBody = {
       heading: "The three pass-or-fail checks",
       paragraphs: [
         "Seal first. Factory-sealed, unopened, in the original box. An opened box cannot be resold at any price, because nobody downstream can verify what happened to it after it was opened. This is the most common reason a parcel comes back.",
-        "Source second. Supplies obtained through a government-covered programme cannot be resold, and no amount of condition changes that. A pharmacy label with your own name printed on it is not a problem and never has been — that is a different question from who paid.",
+        "Source second. Supplies obtained through a government-covered program cannot be resold, and no amount of condition changes that. A pharmacy label with your own name printed on it is not a problem and never has been — that is a different question from who paid.",
         "Dates third. For test strips, aim for at least six months of life left. Below that the value falls away quickly, because whoever uses them next needs a realistic window in which to do it.",
       ],
     },
@@ -86,7 +86,7 @@ export const AL: PostBody = {
     },
     {
       q: "My supplies came on a prescription with my name on the label. Is that a problem?",
-      a: "The label is not the issue. What matters is whether a government programme paid for them, because supplies obtained that way cannot be resold. A pharmacy label with your name on it is ordinary and expected.",
+      a: "The label is not the issue. What matters is whether a government program paid for them, because supplies obtained that way cannot be resold. A pharmacy label with your name on it is ordinary and expected.",
     },
     {
       q: "Can I send different brands together?",

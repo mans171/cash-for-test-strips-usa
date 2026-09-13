@@ -9,7 +9,7 @@ import type { PostBody } from "./types"
  * line, not a map, and the honest thing to tell a reader in the mountains or
  * west of the Divide is that the two listings do not help them at all.
  *
- * Kansas carries the same generated angle and is a neighbouring state with a
+ * Kansas carries the same generated angle and is a neighboring state with a
  * similar profile, so it is deliberately built on something else entirely —
  * the split inside a single metro area. This one is built on geography.
  *
@@ -100,8 +100,8 @@ export const CO: PostBody = {
       a: "No. Expired Omnipod pods, in the 5, DASH and Classic versions, are one of only two things bought past their date, at a reduced rate. Expired Dexcom G7 sensors are the other. Everything else past date, including all test strips and expired G6 sensors, genuinely is not saleable.",
     },
     {
-      q: "My supplies came through a government programme. Can I still sell them?",
-      a: "No. Supplies obtained through a government-covered programme cannot be resold, and that applies in Colorado as it does everywhere else. If you bought them retail or they came through private insurance, that is a different situation — and a pharmacy label with your own name printed on it does not affect anything either way.",
+      q: "My supplies came through a government program. Can I still sell them?",
+      a: "No. Supplies obtained through a government-covered program cannot be resold, and that applies in Colorado as it does everywhere else. If you bought them retail or they came through private insurance, that is a different situation — and a pharmacy label with your own name printed on it does not affect anything either way.",
     },
   ],
 }

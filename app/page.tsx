@@ -255,7 +255,7 @@ export default async function HomePage() {
 
           All 50 states are linked from here, not the 10 they used to be. The
           homepage is the strongest internal-link source on the site, and the 40
-          states it skipped were reachable only via other states' neighbour
+          states it skipped were reachable only via other states' neighbor
           links — which is why most of them sat in Google's "Discovered —
           currently not indexed" bucket with no referring page detected.
 

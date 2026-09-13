@@ -59,7 +59,7 @@ export const WA: PostBody = {
         "Test strips: FreeStyle Lite, Contour Next across its versions, Accu-Chek Guide, Aviva and SmartView, OneTouch Verio and Ultra, and True Metrix. Box count is not a detail — one 100-count box is worth meaningfully more than two 50-count boxes of the same strip, so a lot should never be broken up to make it look tidier.",
         "CGM: Dexcom G6 sensors and transmitters, G7 sensors and receivers, and FreeStyle Libre 1, 2 and 3. Libre carries one restriction that matters in a border state — US retail versions only, and sensors bought outside the country cannot be resold here whatever condition they are in.",
         "Pumps and pods: Omnipod 5, DASH and Classic pods. Pods rather than controllers. Some sealed Medtronic and Tandem components as well, which are worth a call rather than an assumption about what qualifies.",
-        "Two conditions apply across all of it. The packaging has to be factory-sealed and unopened, because an opened box cannot be verified by anyone downstream and therefore has no value. And the supplies cannot have been obtained through a government-covered programme, because supplies paid for that way cannot be resold. A pharmacy label with your name on it is not a problem and never has been.",
+        "Two conditions apply across all of it. The packaging has to be factory-sealed and unopened, because an opened box cannot be verified by anyone downstream and therefore has no value. And the supplies cannot have been obtained through a government-covered program, because supplies paid for that way cannot be resold. A pharmacy label with your name on it is not a problem and never has been.",
       ],
     },
     {

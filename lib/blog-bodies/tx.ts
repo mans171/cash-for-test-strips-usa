@@ -51,7 +51,7 @@ export const TX: PostBody = {
       heading: "What decides whether a box is worth anything",
       paragraphs: [
         "The seal has to be unbroken — factory-sealed, original packaging. An opened box cannot be resold at any price, because nobody downstream can verify how it was stored. This is far and away the most common reason a parcel comes back.",
-        "It cannot have been bought through a government-covered programme. Supplies paid for that way cannot legally be resold. Supplies you got through private insurance or paid for yourself are fine, and a pharmacy label with your name on it changes nothing.",
+        "It cannot have been bought through a government-covered program. Supplies paid for that way cannot legally be resold. Supplies you got through private insurance or paid for yourself are fine, and a pharmacy label with your name on it changes nothing.",
         "For test strips, at least six months should remain before the expiry date. Under that and the value drops quickly, because whoever ends up using them needs time to actually get through the box.",
         "Box count matters more than most people expect. A 100-count box is worth meaningfully more than two 50-count boxes of the same brand, so it is worth checking what you actually have before deciding a small pile is not worth a phone call.",
       ],
@@ -89,8 +89,8 @@ export const TX: PostBody = {
       a: "Yes. Omnipod 5, DASH and Classic pods are accepted past their expiry date at a reduced rate, as are expired Dexcom G7 sensors. Those are the only two exceptions — everything else has to be in date.",
     },
     {
-      q: "My supplies came through a government programme. Can I sell them?",
-      a: "No. Supplies paid for by a government programme cannot be resold. Supplies you received through private insurance or paid for yourself are fine.",
+      q: "My supplies came through a government program. Can I sell them?",
+      a: "No. Supplies paid for by a government program cannot be resold. Supplies you received through private insurance or paid for yourself are fine.",
     },
     {
       q: "Can I sell FreeStyle Libre sensors I bought in Mexico?",

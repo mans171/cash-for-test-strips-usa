@@ -16,7 +16,7 @@ import type { RegistryPost } from "./types"
  * business states correctly on every state page.
  *
  * Product facts checked against lib/product-catalog.ts on 2026-09-07: the
- * catalogue lists G6 receivers, G6 sensors, G6 transmitters, G7 10-day
+ * catalog lists G6 receivers, G6 sensors, G6 transmitters, G7 10-day
  * sensors, G7 15-day sensors and G7 receivers. Nothing here claims a line
  * that is not in it.
  *
@@ -130,7 +130,7 @@ sorting before you get a number.</p>
     },
     {
       q: "I have a hundred or more pieces. Is that handled differently?",
-      a: "Yes. A lot that size is a bulk enquiry rather than an individual sale, mixed generations and dates are expected, and nothing needs sorting first. Start on the bulk page.",
+      a: "Yes. A lot that size is a bulk inquiry rather than an individual sale, mixed generations and dates are expected, and nothing needs sorting first. Start on the bulk page.",
     },
   ],
 }

@@ -61,7 +61,7 @@ export function OrdersList({ orders }: { orders: OrderRow[] }) {
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <span className="text-xs font-medium text-gray-500">{formatDate(order.created_at)}</span>
               <span className="text-[11px] font-semibold uppercase tracking-wide bg-gray-100 text-gray-600 rounded-full px-2.5 py-1">
-                {kind === 'bulk' ? 'Bulk enquiry' : 'Quote request'}
+                {kind === 'bulk' ? 'Bulk inquiry' : 'Quote request'}
               </span>
             </div>
 

@@ -88,7 +88,7 @@ export const MO: PostBody = {
     },
     {
       q: "Does it matter that I would be crossing a state line to sell?",
-      a: "The conditions that decide a sale are about the supplies rather than the geography — sealed packaging, not obtained through a government-covered programme, dates with room left. Our legality page covers the broader question in the detail it deserves, with the appropriate caveats.",
+      a: "The conditions that decide a sale are about the supplies rather than the geography — sealed packaging, not obtained through a government-covered program, dates with room left. Our legality page covers the broader question in the detail it deserves, with the appropriate caveats.",
     },
     {
       q: "I am in St. Louis. Is anything closer than posting it?",
@@ -104,7 +104,7 @@ export const MO: PostBody = {
     },
     {
       q: "The pharmacy label has my name and my address on it. Should I peel it off?",
-      a: "No need. That label is not a problem and removing it is not expected. The question that decides eligibility is whether the supplies came through a government-covered programme, and you are not asked to account for anything beyond that.",
+      a: "No need. That label is not a problem and removing it is not expected. The question that decides eligibility is whether the supplies came through a government-covered program, and you are not asked to account for anything beyond that.",
     },
   ],
 }

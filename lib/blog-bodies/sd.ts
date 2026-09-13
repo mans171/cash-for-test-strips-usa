@@ -49,7 +49,7 @@ export const SD: PostBody = {
     {
       heading: "There is no buyer in South Dakota, and the nearest is 428 miles out",
       paragraphs: [
-        "Nothing is listed anywhere in the state. The nearest buyer to the centre of South Dakota is roughly 428 miles away, which is shorter than the equivalent figure from North Dakota or Montana and still an entirely impractical drive for a box of test strips.",
+        "Nothing is listed anywhere in the state. The nearest buyer to the center of South Dakota is roughly 428 miles away, which is shorter than the equivalent figure from North Dakota or Montana and still an entirely impractical drive for a box of test strips.",
         "That is the honest position, and it is worth saying plainly because plenty of pages on this subject imply a local presence they do not have. With 375 ZIP codes across the state and no concentrated urban demand, there has never been much of a commercial case for a shop here.",
         "What is left is post, which works perfectly well from Watertown or Spearfish and costs the seller nothing, provided the sale is set up properly at the start rather than after the parcel has gone.",
       ],
@@ -59,7 +59,7 @@ export const SD: PostBody = {
       paragraphs: [
         "Test strips: FreeStyle Lite, Contour Next in all versions, Accu-Chek Guide, Aviva and SmartView, OneTouch Verio and Ultra, True Metrix. Continuous monitoring: Dexcom G6 sensors and transmitters, G7 sensors and receivers, FreeStyle Libre 1, 2 and 3. Omnipod pods in the 5, DASH and Classic versions. Some sealed Medtronic and Tandem components as well, though those warrant a call rather than an assumption.",
         "Every one of those has to be factory-sealed and unopened in the original packaging. An opened box is worth nothing whatever is inside it, because nobody further along the chain can establish how it was stored. That is the most common reason a shipment is turned down.",
-        "None of it can have been obtained through a government-covered programme — supplies paid for that way cannot be resold. A pharmacy label carrying your name is fine and is not what the question is about.",
+        "None of it can have been obtained through a government-covered program — supplies paid for that way cannot be resold. A pharmacy label carrying your name is fine and is not what the question is about.",
         "Test strips want six months or more before their expiry date, and box size is worth checking before you decide what to send: a 100-count box is worth meaningfully more than two 50-count boxes of the same brand. FreeStyle Libre has one extra condition — US retail versions only, so sensors bought abroad cannot be resold here.",
       ],
     },
@@ -97,8 +97,8 @@ export const SD: PostBody = {
       a: "Yes, at a reduced rate, and the same applies to expired Omnipod 5, DASH and Classic pods. Expired G6 sensors do not qualify, and neither do expired test strips, which are genuinely not worth sending regardless of brand or quantity.",
     },
     {
-      q: "My supplies came through a government programme. Does that stop the sale?",
-      a: "Yes. Supplies obtained through a government-covered programme cannot be resold, and condition does not change that. If the boxes were filled under private insurance or bought retail, that is a different situation, and the name on the pharmacy label makes no difference either way.",
+      q: "My supplies came through a government program. Does that stop the sale?",
+      a: "Yes. Supplies obtained through a government-covered program cannot be resold, and condition does not change that. If the boxes were filled under private insurance or bought retail, that is a different situation, and the name on the pharmacy label makes no difference either way.",
     },
     {
       q: "How long does the whole thing take from South Dakota?",

@@ -122,7 +122,7 @@ export function BulkEnquiryForm() {
         disabled={status === 'sending'}
         className="bg-gray-900 text-white rounded-lg px-4 py-2.5 font-semibold text-sm disabled:opacity-60"
       >
-        {status === 'sending' ? 'Sending…' : 'Send enquiry'}
+        {status === 'sending' ? 'Sending…' : 'Send inquiry'}
       </button>
       <p className="text-xs text-gray-500">
         Prefer to talk? Call {OWNER_PHONE}. We quote per lot, so the more accurate your description,

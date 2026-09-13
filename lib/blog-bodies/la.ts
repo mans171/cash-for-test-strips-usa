@@ -51,7 +51,7 @@ export const LA: PostBody = {
       heading: "What comes out of the pile before it ships",
       paragraphs: [
         "Any box that has been opened. The factory seal is the reason a box can be resold at all — it is what allows the next person to establish that nothing has been altered. An opened box is worth nothing, not a reduced amount, and this is the most common reason a parcel comes back.",
-        "Anything obtained through a government-covered programme, which cannot be resold whatever its condition. A pharmacy label with your own name on it is entirely ordinary and does not affect the sale; the question is who paid, not what is printed on the sticker.",
+        "Anything obtained through a government-covered program, which cannot be resold whatever its condition. A pharmacy label with your own name on it is entirely ordinary and does not affect the sale; the question is who paid, not what is printed on the sticker.",
         "Test strips with less than six months before expiry, where the value falls away sharply. And FreeStyle Libre sensors that are not US retail versions — sensors bought outside the country cannot be resold here regardless of date or condition.",
       ],
     },

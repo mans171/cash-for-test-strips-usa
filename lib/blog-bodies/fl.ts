@@ -36,7 +36,7 @@ export const FL: PostBody = {
       paragraphs: [
         "The seal decides most of it. Factory-sealed, unopened boxes in their original packaging can be sold. Anything opened cannot, at any price, because nobody downstream can verify how it was handled. If a box was opened and one strip taken, that box is finished.",
         "A pharmacy label with your relative's name on it does not matter and does not need removing. It does not affect the sale and nobody will ask you to explain how the supplies came to be there.",
-        "What does matter: supplies obtained through a government-covered programme cannot be resold. For an older relative in Florida that is worth checking, because it is common — if you are not sure, the pharmacy that filled it can usually tell you, or ask us and we will talk it through.",
+        "What does matter: supplies obtained through a government-covered program cannot be resold. For an older relative in Florida that is worth checking, because it is common — if you are not sure, the pharmacy that filled it can usually tell you, or ask us and we will talk it through.",
         "Expiry dates rule out most of the rest, with two exceptions covered below.",
       ],
     },
@@ -78,10 +78,10 @@ export const FL: PostBody = {
   faqs: [
     {
       q: "The boxes have my mother's name on the pharmacy label. Is that a problem?",
-      a: "No. A prescription label does not affect the sale and does not need to be removed. What matters is that the box is sealed and that the supplies were not obtained through a government-covered programme.",
+      a: "No. A prescription label does not affect the sale and does not need to be removed. What matters is that the box is sealed and that the supplies were not obtained through a government-covered program.",
     },
     {
-      q: "How do I find out whether the supplies came through a government programme?",
+      q: "How do I find out whether the supplies came through a government program?",
       a: "The pharmacy that filled the prescription can usually tell you, and the paperwork in the house often shows it. If you cannot establish it either way, say so when you call rather than guessing — it is a normal question and it does not cause offence.",
     },
     {

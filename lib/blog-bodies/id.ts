@@ -42,7 +42,7 @@ export const ID: PostBody = {
       heading: "The two disqualifiers, which are absolute",
       paragraphs: [
         "The seal has to be intact. Factory-sealed, unopened, in the manufacturer's original packaging. An opened box is worth nothing at all, because nobody downstream has any way to know how it was stored or what happened to it. This is not a grading question with a lower tier — it is the difference between an item and no item.",
-        "And the supplies cannot have been obtained through a government-covered programme. Stock paid for that way cannot be resold. If yours came through private insurance or you bought it retail, that is a different situation entirely, and a pharmacy label with your name printed on it is irrelevant — nobody is asking you to account for how you came to have them.",
+        "And the supplies cannot have been obtained through a government-covered program. Stock paid for that way cannot be resold. If yours came through private insurance or you bought it retail, that is a different situation entirely, and a pharmacy label with your name printed on it is irrelevant — nobody is asking you to account for how you came to have them.",
         "FreeStyle Libre carries one extra condition worth flagging separately: US retail versions only. Sensors purchased outside the country cannot be resold here, whatever state they are in.",
       ],
     },
@@ -90,7 +90,7 @@ export const ID: PostBody = {
       a: "No. Offers are set by brand, count, expiry dates and condition. Rexburg reading 4.3% and Caldwell reading 11.6% describes who lives there, not what a sealed box of Contour Next is worth.",
     },
     {
-      q: "I bought Libre sensors while travelling outside the US. Can I sell them?",
+      q: "I bought Libre sensors while traveling outside the US. Can I sell them?",
       a: "No. FreeStyle Libre has to be the US retail version. Sensors bought abroad cannot be resold here regardless of condition or how recently they were purchased, and this catches people out often enough to be worth checking the packaging.",
     },
     {

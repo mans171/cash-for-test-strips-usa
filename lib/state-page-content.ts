@@ -43,7 +43,7 @@ function nearestStates(stateCode: string): string[] {
 }
 
 /**
- * States with no land neighbours (AK, HI) mapped to the mainland state that
+ * States with no land neighbors (AK, HI) mapped to the mainland state that
  * must link back to them.
  *
  * Without this, they end up orphaned: distance-based padding is not symmetric,
@@ -58,7 +58,7 @@ const ISLAND_ANCHORS: Record<string, string> = Object.fromEntries(
 )
 
 /**
- * Sibling links for the footer. Land neighbours first (genuinely relevant to
+ * Sibling links for the footer. Land neighbors first (genuinely relevant to
  * someone near a state line), then nearest states by centroid distance to fill
  * the quota.
  *
@@ -130,7 +130,7 @@ export function buildStateFaqs({
     q: `Is it legal to sell diabetic test strips in ${label}?`,
     a:
       `Reselling unused, unexpired, unopened test strips you own is generally permitted in ${label}, ` +
-      `and no state law specifically bans it. Strips paid for by a government programme cannot be resold, ` +
+      `and no state law specifically bans it. Strips paid for by a government program cannot be resold, ` +
       `and boxes must be sealed and in original packaging. This is general information, not legal advice — ` +
       `consult an attorney about your situation.`,
   })
@@ -181,7 +181,7 @@ export function buildStateFaqs({
         q: `Are there any test strip buyers in ${label}?`,
         a:
           `Not yet — no buyer on this directory is based in ${label}. The closest is ${closest.name}` +
-          `${closest.city ? ` in ${closest.city}` : ""}, roughly ${Math.round(closest.miles)} miles from the centre of the state` +
+          `${closest.city ? ` in ${closest.city}` : ""}, roughly ${Math.round(closest.miles)} miles from the center of the state` +
           `${hasMailIn ? ", and you can also mail your strips in from anywhere in the US" : ""}.`,
       })
       faqs.push({

@@ -12,7 +12,7 @@ import { joinList } from "./state-page-content"
  * Context: as of 2026-08-31, 39 URLs sat in Google's "Discovered — currently
  * not indexed" bucket, every one of them reporting "Referring page: None
  * detected". The state pages were reachable only from a 10-state list on the
- * homepage plus each state's own 8 neighbour links, so most of the set had no
+ * homepage plus each state's own 8 neighbor links, so most of the set had no
  * inbound path short enough for Google to bother crawling. This hub exists to
  * give all 77 geo pages a single, shallow, crawlable parent.
  *
@@ -194,7 +194,7 @@ export function stateFactLine(state: HubState, hasMailIn: boolean): string {
 
   if (state.diabetesPrevalence !== null) {
     // toFixed(1) so a whole-number reading renders "13.0%" alongside its
-    // neighbours' "11.2%" rather than a bare "13%".
+    // neighbors' "11.2%" rather than a bare "13%".
     parts.push(`${state.diabetesPrevalence.toFixed(1)}% adult diabetes rate`)
   }
 
@@ -259,7 +259,7 @@ export function buildHubFaqs({
     q: "Is it legal to sell diabetic test strips?",
     a:
       `Reselling unused, unexpired, unopened test strips you paid for yourself is generally permitted, ` +
-      `and no state law specifically bans it. Strips paid for by a government programme cannot be resold, ` +
+      `and no state law specifically bans it. Strips paid for by a government program cannot be resold, ` +
       `and boxes must be sealed and in original packaging. This is general information, not legal advice — ` +
       `consult an attorney about your situation.`,
   })

@@ -25,7 +25,7 @@ export const VT: PostBody = {
 
   lead: [
     "Vermont is an unusual case in this market. 22.8% of residents are 65 or over, one of the largest shares anywhere, so sealed supplies do turn up when a house is cleared. But only 8.8% of Vermont adults have diagnosed diabetes, well below the national rate of 12.1%, and there are 648,358 people in the state in total.",
-    "Put those together and you get a particular problem. This is not something Vermonters do routinely. There is no neighbour who has sold before, no local shop with a reputation to protect, and no buyer anywhere in the state. You are almost certainly assessing a company you found on the internet, once, with nothing to compare it against.",
+    "Put those together and you get a particular problem. This is not something Vermonters do routinely. There is no neighbor who has sold before, no local shop with a reputation to protect, and no buyer anywhere in the state. You are almost certainly assessing a company you found on the internet, once, with nothing to compare it against.",
     "So this page is mostly about how to judge that, rather than about how to package a box.",
   ],
 
@@ -52,7 +52,7 @@ export const VT: PostBody = {
       heading: "The conditions that apply wherever you sell",
       paragraphs: [
         "Boxes must be factory-sealed and unopened, in original packaging. An opened box has no resale value at any price, because nobody downstream can establish how it was stored. This is the most common reason a parcel comes back.",
-        "Supplies obtained through a government-covered programme cannot be resold. Anything covered by private insurance or bought at retail is fine, and a pharmacy label with someone's name on it makes no difference and does not need peeling off — a buyer who tells you to remove it is telling you something about themselves.",
+        "Supplies obtained through a government-covered program cannot be resold. Anything covered by private insurance or bought at retail is fine, and a pharmacy label with someone's name on it makes no difference and does not need peeling off — a buyer who tells you to remove it is telling you something about themselves.",
         "Test strips want at least six months before their expiry date, and the qualifying brands are FreeStyle Lite, Contour Next, Accu-Chek Guide, Aviva and SmartView, OneTouch Verio and Ultra, and True Metrix. FreeStyle Libre sensors qualify in US retail versions only.",
         "Two details that work in your favour: a 100-count box is worth meaningfully more than two 50-count boxes of the same brand, and ten or more boxes earns a better per-box rate. A mixed lot is quoted as one lot and does not need separating by type.",
       ],

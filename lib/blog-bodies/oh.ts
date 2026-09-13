@@ -50,7 +50,7 @@ export const OH: PostBody = {
       heading: "What has to be true before a box is worth anything",
       paragraphs: [
         "It has to be factory-sealed and unopened, in original packaging. An opened box is finished whatever is left inside it, because nobody downstream can verify how it was stored. This is the most common reason a parcel gets refused.",
-        "It cannot have come through a government-covered programme. Supplies paid for that way cannot legally be resold. Private insurance or paid for yourself is fine, and a pharmacy label with your name on it changes nothing.",
+        "It cannot have come through a government-covered program. Supplies paid for that way cannot legally be resold. Private insurance or paid for yourself is fine, and a pharmacy label with your name on it changes nothing.",
         "For test strips, at least six months should remain before the expiry date. Below that the value falls off quickly.",
         "Box count is worth checking before you write off a small stack — a 100-count box is worth meaningfully more than two 50-count boxes of the same brand.",
       ],
@@ -87,8 +87,8 @@ export const OH: PostBody = {
       a: "Expired G7 sensors, yes, at a reduced rate. Expired G6 sensors, no. Sealed in-date G6 sensors, transmitters, G7 sensors and receivers are all bought normally.",
     },
     {
-      q: "My supplies came through a government programme. Can I sell them?",
-      a: "No. Supplies a government programme paid for cannot be resold. Anything you received through private insurance or paid for yourself is fine.",
+      q: "My supplies came through a government program. Can I sell them?",
+      a: "No. Supplies a government program paid for cannot be resold. Anything you received through private insurance or paid for yourself is fine.",
     },
     {
       q: "Is it worth driving to Toledo from Cincinnati?",

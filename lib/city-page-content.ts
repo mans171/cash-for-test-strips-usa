@@ -61,7 +61,7 @@ export function siblingCities(citySlug: string, limit = 6, publishable?: CityTar
   const byDistance = (a: CityTarget, b: CityTarget) =>
     haversineMiles(cityCenter(current), cityCenter(a)) - haversineMiles(cityCenter(current), cityCenter(b))
 
-  // `publishable` omitted keeps the old behaviour for any caller that has no
+  // `publishable` omitted keeps the old behavior for any caller that has no
   // buyer list to hand; the city page always passes one, so live pages never
   // link to a target that would 404.
   const others = pool.filter((c) => c.slug !== citySlug)

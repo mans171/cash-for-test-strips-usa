@@ -4,7 +4,7 @@ import type { PostBody } from "./types"
  * Alaska — built on distance and time, not on a demand gap.
  *
  * Alaska is the outlier on two axes at once. The nearest buyer is 1,642 miles
- * from the state's centre, which is by a wide margin the longest gap on this
+ * from the state's center, which is by a wide margin the longest gap on this
  * site and settles the in-person question before it is asked. And the state is
  * unusually *flat*: 1.9 points between its highest and lowest city, the
  * narrowest spread of any state in the data. Most state posts can be built on
@@ -24,7 +24,7 @@ export const AK: PostBody = {
     "The nearest test strip buyer is about 1,642 miles from the middle of Alaska, so post is the only route. What that changes about timing, verification and the two expired items most guides tell you to bin.",
 
   lead: [
-    "There is no test strip buyer operating anywhere in Alaska, and the nearest one to the centre of the state is roughly 1,642 miles away. That is not a drive anyone is making, in either direction, and no amount of rewording changes it. Alaska is the furthest any state on this site sits from an in-person option.",
+    "There is no test strip buyer operating anywhere in Alaska, and the nearest one to the center of the state is roughly 1,642 miles away. That is not a drive anyone is making, in either direction, and no amount of rewording changes it. Alaska is the furthest any state on this site sits from an in-person option.",
     "Which means the whole of this comes down to posting a parcel and getting paid for it. That is a smaller subject than it sounds, but it has more moving parts from here than it does from Ohio, mostly because of time. This page is about those parts: when the clock starts, what has to be agreed before anything leaves your house, and the one sorting mistake that is expensive everywhere and worse here.",
   ],
 
@@ -58,7 +58,7 @@ export const AK: PostBody = {
       heading: "What has to be true before a box is worth sending at all",
       paragraphs: [
         "The seal has to be intact — factory-sealed, unopened, original packaging. An opened box cannot be resold at any price, because nobody downstream can know how it was stored. This is the most common reason a parcel comes back, and from Alaska it is the most expensive mistake in the list.",
-        "The supplies cannot have come through a government-covered programme. Stock paid for that way cannot be resold. If yours came through your own insurance, or you bought it retail, that is a different matter, and a pharmacy label with your name printed on it does not affect anything either way.",
+        "The supplies cannot have come through a government-covered program. Stock paid for that way cannot be resold. If yours came through your own insurance, or you bought it retail, that is a different matter, and a pharmacy label with your name printed on it does not affect anything either way.",
         "Test strips should have at least six months left before expiry. Below that the value falls away sharply, because whoever uses them next needs time to actually get through the box. And a 100-count box is worth meaningfully more than two 50-count boxes of the same brand, which is worth knowing before you decide what is worth the postage.",
         "FreeStyle Libre has one further condition that catches people out: US retail versions only. Sensors bought outside the country cannot be resold here regardless of how perfect their condition is.",
       ],
@@ -76,7 +76,7 @@ export const AK: PostBody = {
   faqs: [
     {
       q: "Is there a buyer in Anchorage or Fairbanks?",
-      a: "No. There is no buyer listed anywhere in Alaska, and the nearest one is about 1,642 miles from the centre of the state. Post is the only honest answer from here. If a buyer ever sets up in state, they will appear on the Alaska page rather than being implied on this one.",
+      a: "No. There is no buyer listed anywhere in Alaska, and the nearest one is about 1,642 miles from the center of the state. Post is the only honest answer from here. If a buyer ever sets up in state, they will appear on the Alaska page rather than being implied on this one.",
     },
     {
       q: "How long will the whole thing take from Alaska?",
@@ -96,7 +96,7 @@ export const AK: PostBody = {
     },
     {
       q: "The outer shipping box got damaged in transit. Does that ruin it?",
-      a: "Not in itself. What matters is the condition of the manufacturer's sealed boxes inside, not the carton they travelled in. If one of the inner seals was broken along the way, that item cannot be resold, which is why photographing the sealed boxes before packing them is worth the five minutes it takes.",
+      a: "Not in itself. What matters is the condition of the manufacturer's sealed boxes inside, not the carton they traveled in. If one of the inner seals was broken along the way, that item cannot be resold, which is why photographing the sealed boxes before packing them is worth the five minutes it takes.",
     },
   ],
 }
