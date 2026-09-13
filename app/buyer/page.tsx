@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { BuyerPortalClient } from "./BuyerPortalClient";
+import { pageTitle } from "@/lib/title";
 
 export const metadata: Metadata = {
-  title: "Manage Your Buyer Listing — Cash4TestStripsUSA",
+  title: pageTitle("Manage Your Listing"),
   description: "Claim or create your buyer listing on Cash4TestStripsUSA.",
   // Login-gated page: Google rejected it on 2026-09-01 ("Discovered – currently
   // not indexed"). Explicitly noindex so crawlers stop queuing it and it

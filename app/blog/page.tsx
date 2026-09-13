@@ -3,9 +3,10 @@ import type { Metadata } from "next";
 import { STATE_BLOG_POSTS } from "@/lib/blog-posts";
 import { bodyFor } from "@/lib/blog-bodies";
 import { POST_REGISTRY } from "@/lib/posts";
+import { pageTitle } from "@/lib/title";
 
 export const metadata: Metadata = {
-  title: "Blog — How to Sell Diabetic Test Strips for Cash by State",
+  title: pageTitle("Selling Diabetic Supplies: Guides"),
   description:
     "State-by-state guides on how to sell unused diabetic test strips for cash. Find local buyers, learn what's accepted, and get paid fast via PayPal, Zelle, or check.",
   alternates: { canonical: 'https://cash4teststripsusa.com/blog' },

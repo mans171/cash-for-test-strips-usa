@@ -8,9 +8,14 @@ import { PUBLIC_EMAIL } from "@/lib/owner";
 const geist = Geist({ subsets: ["latin"], variable: "--font-geist-sans" });
 
 export const metadata: Metadata = {
+  // The template is deliberately a bare "%s": it used to append
+  // " | Cash For Test Strips USA" to every page, which pushed 660 titles past
+  // the 60-character budget (company pages reached 119). Pages now build their
+  // own title with pageTitle() from lib/title.ts, which appends the brand only
+  // when it fits.
   title: {
-    default: "Cash For Test Strips USA — Sell Diabetic Test Strips Near You",
-    template: "%s | Cash For Test Strips USA",
+    default: "Cash For Test Strips USA — Sell Diabetic Test Strips",
+    template: "%s",
   },
   description:
     "Find local cash buyers for unused diabetic test strips. Get paid fast via PayPal, Zelle, or check. Serving buyers in all 50 states.",

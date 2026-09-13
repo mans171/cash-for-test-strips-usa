@@ -10,9 +10,10 @@ import { btnOnDark } from "@/app/components/ui";
 import { COMPANY_COLUMNS } from "@/lib/company-columns";
 import { REGIONS, REGION_ORDER } from "@/lib/hub-page-content";
 import { OWNER_PHONE } from "@/lib/owner";
+import { pageTitle } from "@/lib/title";
 
 export const metadata: Metadata = {
-  title: "We Buy Diabetic Test Strips — Mail-In or Same-Day Local | Cash For Test Strips USA",
+  title: pageTitle("We Buy Diabetic Test Strips | Mail-In or Local"),
   description:
     "Cash For Test Strips USA buys sealed, unexpired diabetic test strips, Dexcom and Libre sensors and Omnipod supplies. Mail in from any state or meet a local buyer. Call or text 518-278-6008.",
   alternates: { canonical: 'https://cash4teststripsusa.com' },

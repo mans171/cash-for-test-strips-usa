@@ -17,6 +17,7 @@ import {
   publishableCityTargets,
   siblingCities,
 } from "@/lib/city-page-content";
+import { pageTitle } from "@/lib/title";
 
 type Props = { params: Promise<{ state: string; city: string }> };
 
@@ -33,11 +34,11 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { state, city } = await params;
   const target = findTarget(state, city);
-  if (!target) return { title: "City Not Found" };
+  if (!target) return { title: pageTitle("City Not Found") };
 
   const pageUrl = `https://cash4teststripsusa.com/sell-test-strips/${state.toLowerCase()}/${city}`;
   return {
-    title: `Sell Diabetic Test Strips in ${target.name}, ${target.state} — Cash Buyers Near You`,
+    title: pageTitle(`Sell Test Strips in ${target.name}, ${target.state}`),
     description: `Verified buyers near ${target.name}, ${target.state} pay cash for unused diabetic test strips via PayPal, Zelle, or check. Compare real distances and contact a buyer in minutes.`,
     alternates: { canonical: pageUrl },
   };

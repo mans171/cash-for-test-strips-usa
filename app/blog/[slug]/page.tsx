@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { POST_REGISTRY, getRegistryPost } from "@/lib/posts";
 import { buildFaqPageSchema, buildArticleSchema, buildBreadcrumbSchema } from "@/lib/schema";
 import { JsonLd } from "@/app/components/JsonLd";
+import { pageTitle } from "@/lib/title";
 
 /**
  * Non-state blog posts only.
@@ -26,12 +27,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
 
   const registryPost = getRegistryPost(slug);
-  if (!registryPost) return { title: "Post Not Found" };
+  if (!registryPost) return { title: pageTitle("Post Not Found") };
+  // shortTitle is the <title>-only override for posts whose headline runs past
+  // the 60-character budget; the H1 below still renders the full title.
+  const metaTitle = pageTitle(registryPost.shortTitle ?? registryPost.title);
   return {
-    title: registryPost.title,
+    title: metaTitle,
     description: registryPost.description,
     alternates: { canonical: `https://cash4teststripsusa.com/blog/${registryPost.slug}` },
-    openGraph: { title: registryPost.title, description: registryPost.description, type: "article" },
+    openGraph: { title: metaTitle, description: registryPost.description, type: "article" },
   };
 }
 

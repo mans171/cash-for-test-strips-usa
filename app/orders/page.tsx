@@ -2,9 +2,10 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { OrdersList, type OrderRow } from './OrdersList'
+import { pageTitle } from "@/lib/title";
 
 export const metadata: Metadata = {
-  title: 'My orders | Cash For Test Strips USA',
+  title: pageTitle("My Orders"),
   // Per-user content. Also disallowed in app/robots.ts.
   robots: { index: false, follow: false },
 }
