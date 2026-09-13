@@ -17,7 +17,7 @@ import {
   publishableCityTargets,
   siblingCities,
 } from "@/lib/city-page-content";
-import { pageTitle } from "@/lib/title";
+import { pageTitle, cityTitle } from "@/lib/title";
 
 type Props = { params: Promise<{ state: string; city: string }> };
 
@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const pageUrl = `https://cash4teststripsusa.com/sell-test-strips/${state.toLowerCase()}/${city}`;
   return {
-    title: pageTitle(`Sell Test Strips in ${target.name}, ${target.state}`),
+    title: pageTitle(cityTitle(target.name, target.state)),
     description: `Verified buyers near ${target.name}, ${target.state} pay cash for unused diabetic test strips via PayPal, Zelle, or check. Compare real distances and contact a buyer in minutes.`,
     alternates: { canonical: pageUrl },
   };

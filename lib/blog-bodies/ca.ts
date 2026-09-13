@@ -90,7 +90,7 @@ export const CA: PostBody = {
     },
     {
       q: "My supplies came through a government programme. Can I sell them?",
-      a: "No. California's public coverage counts as a government programme, and supplies obtained that way cannot be resold. Anything you got through private insurance or paid for yourself is fine.",
+      a: "No. Supplies obtained through a government-covered programme cannot be resold, and California's public coverage counts as one. Anything you got through private insurance or paid for yourself is fine.",
     },
     {
       q: "Is San Diego worth driving to from Orange County?",

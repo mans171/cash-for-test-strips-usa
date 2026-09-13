@@ -57,7 +57,7 @@ end up holding these rather than simply reversing the order.</p>
 part that gets people wrong, and it is worth being exact about, because the
 answer depends entirely on which kind of insurance.</p>
 
-<p>Supplies obtained through <strong>a government programme cannot be resold</strong>.
+<p>Supplies obtained through a government program <strong>cannot be resold</strong>.
 That is a firm line and it applies no matter how they came to be sitting in your
 cupboard.</p>
 

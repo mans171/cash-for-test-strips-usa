@@ -90,7 +90,7 @@ export const TX: PostBody = {
     },
     {
       q: "My supplies came through a government programme. Can I sell them?",
-      a: "No. Supplies funded through a public benefit programme cannot be resold. Supplies you received through private insurance or paid for yourself are fine.",
+      a: "No. Supplies paid for by a government programme cannot be resold. Supplies you received through private insurance or paid for yourself are fine.",
     },
     {
       q: "Can I sell FreeStyle Libre sensors I bought in Mexico?",

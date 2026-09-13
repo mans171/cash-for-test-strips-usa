@@ -63,7 +63,7 @@ export const GA: PostBody = {
       heading: "What makes a box sellable",
       paragraphs: [
         "Factory-sealed and unopened, in original packaging. An opened box cannot be resold at any price, because nobody downstream can verify how it was stored. This is the most common reason a parcel is refused.",
-        "Not covered by a government programme. Supplies a public programme paid for cannot legally be resold. Private insurance or paid for yourself is fine, and a pharmacy label carrying your name changes nothing.",
+        "Not covered by a government programme. Supplies paid for by a public programme cannot legally be resold. Private insurance or paid for yourself is fine, and a pharmacy label carrying your name changes nothing.",
         "For test strips, at least six months before the expiry date. Under that, value drops off quickly because whoever ends up using them needs time to get through the box.",
         "Check the count before deciding a small stack is not worth a call. A 100-count box is worth meaningfully more than two 50-count boxes of the same brand.",
       ],

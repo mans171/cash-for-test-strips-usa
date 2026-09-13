@@ -13,7 +13,7 @@ import { pageTitle } from "@/lib/title";
 const PAGE_URL = 'https://cash4teststripsusa.com/sell-test-strips-in-bulk'
 
 export const metadata: Metadata = {
-  title: pageTitle("Sell Test Strips in Bulk"),
+  title: pageTitle("Sell Diabetic Test Strips in Bulk"),
   description:
     'We buy sealed diabetic test strips and CGM supplies in bulk from resellers, pharmacies and medical supply businesses. ' +
     BULK_MIN_PIECES +
@@ -32,7 +32,7 @@ const FAQS = [
   },
   {
     q: 'What condition do they need to be in?',
-    a: 'Factory sealed, unopened, in original packaging, and unexpired. Opened boxes cannot be resold at any price. Supplies obtained through a government programme cannot be resold at all.',
+    a: 'Factory sealed, unopened, in original packaging, and unexpired. Opened boxes cannot be resold at any price. Supplies obtained through a government program cannot be resold at all.',
   },
   {
     q: 'How fast do you pay?',

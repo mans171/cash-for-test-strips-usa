@@ -43,7 +43,7 @@ export const NC: PostBody = {
       heading: "What makes a box sellable",
       paragraphs: [
         "Factory-sealed and unopened, in the original packaging. An opened box cannot be resold at any price — nobody downstream can verify how it was stored, and this is comfortably the most common reason a parcel gets refused.",
-        "Not paid for by a government programme. Supplies covered that way cannot legally be resold. Private insurance or out of pocket is fine, and a pharmacy label with your name on it makes no difference.",
+        "Not paid for by a government programme. Supplies paid for that way cannot legally be resold. Private insurance or out of pocket is fine, and a pharmacy label with your name on it makes no difference.",
         "For test strips, at least six months before the expiry date. Under that, value drops quickly.",
         "Box count is worth checking before you dismiss a small stack — a 100-count box is worth meaningfully more than two 50-count boxes of the same brand.",
       ],
@@ -90,7 +90,7 @@ export const NC: PostBody = {
     },
     {
       q: "My supplies were covered by a government programme. Can I sell them?",
-      a: "No. Supplies a government programme paid for cannot be resold. Anything received through private insurance or paid for yourself is fine.",
+      a: "No. Supplies paid for by a government programme cannot be resold. Anything received through private insurance or paid for yourself is fine.",
     },
     {
       q: "Is in person better than posting?",

@@ -635,7 +635,7 @@ export function emphasisTierTables(angle: PostAngle): Array<"strips" | "cgm"> {
  */
 export function requirements(angle: PostAngle): { heading: string; intro: string; items: string[] } {
   const sealed = "The boxes are in their original, sealed packaging"
-  const notPublic = "They were not purchased using a government programme"
+  const notPublic = "They were not paid for by a government programme"
   const dated =
     "They have at least 6 months before expiration — except Omnipod pods and Dexcom G7 sensors, which we take expired"
 

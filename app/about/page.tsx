@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { pageTitle } from "@/lib/title";
 
 export const metadata: Metadata = {
-  title: pageTitle("About Cash For Test Strips USA"),
+  title: pageTitle("About Cash For Test Strips USA", { brand: false }),
   description:
     "Cash For Test Strips USA connects sellers of unused diabetic supplies with vetted local buyers nationwide. Learn how the network works.",
   alternates: { canonical: 'https://cash4teststripsusa.com/about' },
@@ -63,7 +63,7 @@ export default function AboutPage() {
         We accept sealed, unexpired, U.S. retail diabetic supplies in original packaging. That
         includes test strips from OneTouch, FreeStyle, Accu-Chek, Contour, and True Metrix; CGM
         sensors and supplies from Dexcom, FreeStyle Libre, and Omnipod; and infusion sets, lancets, and
-        other supplies. We do not accept supplies purchased through a government programme, which cannot
+        other supplies. We do not accept supplies purchased through a government program, which cannot
         legally be resold.
       </p>
       <p className="text-gray-600 leading-relaxed mb-6">

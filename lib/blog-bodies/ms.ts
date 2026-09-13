@@ -89,7 +89,7 @@ export const MS: PostBody = {
   faqs: [
     {
       q: "My supplies came through a government programme. Is there any way to sell them?",
-      a: "No. Supplies obtained through a government-covered programme cannot be resold, and there is no version of that which works. If part of what you are holding came through a programme and part was bought retail, the retail portion can still be sold — it is worth ringing to sort out which is which rather than sending the lot.",
+      a: "No. Supplies obtained through a government-covered programme cannot be resold, and there is no version of that which works. If part of what you are holding came through a government programme and part was bought retail, the retail portion can still be sold — it is worth ringing to sort out which is which rather than sending the lot.",
     },
     {
       q: "Who actually ends up using the supplies I send?",

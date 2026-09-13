@@ -13,7 +13,7 @@ import { buildStateFaqs, joinList, nearestBuyers, siblingStates, statePageH1 } f
 import { publishableCityTargets } from "@/lib/city-page-content";
 import { bodyFor } from "@/lib/blog-bodies";
 import { STATE_BLOG_POSTS } from "@/lib/blog-posts";
-import { pageTitle } from "@/lib/title";
+import { pageTitle, stateTitle } from "@/lib/title";
 
 // Canada is excluded here on purpose: this route is the US state directory and
 // is enumerated as such in app/sitemap.ts.
@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const guide = bodyFor(code);
 
   return {
-    title: pageTitle(`Sell Diabetic Test Strips in ${label}`),
+    title: pageTitle(stateTitle(label)),
     description:
       guide?.metaDescription ??
       `Find cash buyers for unused diabetic test strips in ${label}. Get paid fast via PayPal, Zelle, or check. Browse local buyers near you.`,

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { BRAND, TITLE_MAX, pageTitle, companyTitle } from "../title"
+import { BRAND, TITLE_MAX, pageTitle, companyTitle, stateTitle, cityTitle } from "../title"
 import { STATE_LABELS } from "../states"
 import { CITY_TARGETS } from "../city-geo"
 import { POST_REGISTRY } from "../posts"
@@ -53,10 +53,18 @@ describe("companyTitle", () => {
     )
   })
 
-  it("falls back to the city when the name is too long", () => {
+  it("keeps a name that repeats the keyword when it still fits", () => {
+    // The location form would be "Test Strip Buyer in Philadelphia, PA", which
+    // a second Philadelphia buyer would produce byte-for-byte. The name wins.
     expect(
       companyTitle("Cash For Test Strips - Philadelphia, PA", "Philadelphia", "PA")
-    ).toBe("Test Strip Buyer in Philadelphia, PA")
+    ).toBe("Cash For Test Strips - Philadelphia, PA — Test Strip Buyer")
+  })
+
+  it("falls back to the city when the name is too long", () => {
+    expect(
+      companyTitle("Zaks Diabetic Supply BuyBack - Silver Spring, MD", "Silver Spring", "MD")
+    ).toBe("Test Strip Buyer in Silver Spring, MD")
   })
 
   it("falls back to the state when there is no city", () => {
@@ -93,14 +101,14 @@ describe("companyTitle", () => {
 
 describe("every generated page title fits the budget", () => {
   it.each(Object.values(STATE_LABELS))("state page: %s", (label) => {
-    const title = pageTitle(`Sell Diabetic Test Strips in ${label}`)
+    const title = pageTitle(stateTitle(label))
     expect(title.length).toBeLessThanOrEqual(TITLE_MAX)
   })
 
   it.each(CITY_TARGETS.map((t) => [t.name, t.state] as const))(
     "city page: %s, %s",
     (name, state) => {
-      const title = pageTitle(`Sell Test Strips in ${name}, ${state}`)
+      const title = pageTitle(cityTitle(name, state))
       expect(title.length).toBeLessThanOrEqual(TITLE_MAX)
     }
   )
@@ -117,11 +125,11 @@ describe("every generated page title fits the budget", () => {
     "We Buy Diabetic Test Strips | Mail-In or Local",
     "Sell Diabetic Test Strips: All 50 States",
     "Test Strip Buyer Directory",
-    "Selling Diabetic Supplies: Guides",
+    "How to Sell Diabetic Test Strips: Guides",
     "About Cash For Test Strips USA",
     "Get a Quote for Your Test Strips",
-    "Sell Test Strips in Bulk",
-    "What Are Diabetic Test Strips Worth?",
+    "Sell Diabetic Test Strips in Bulk",
+    "How Much Are Diabetic Test Strips Worth? 2026 Guide",
     "Where to Sell Diabetic Test Strips in Albany, NY",
     "My Orders",
     "Manage Your Listing",

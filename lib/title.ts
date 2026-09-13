@@ -52,16 +52,16 @@ export function pageTitle(core: string, opts?: { brand?: boolean }): string {
  *
  * Buyer names are user-supplied and unbounded — many already end in their own
  * city and state ("Cash For Test Strips - Philadelphia, PA"), which is exactly
- * what produced the 119-character titles. Two things send a page to the
- * location form instead of the name:
+ * what produced the 119-character titles.
  *
- *  1. the name plus " — Test Strip Buyer" would overflow, or
- *  2. the name already says "test strip", so the suffix would spend a third of
- *     a 60-character title repeating the keyword.
- *
- * Either way the primary keyword stays first and the title stays unique by
- * city. The suffixed name is kept whenever there is no location to fall back
- * to, because "Test Strip Buyer" alone would collide across every such page.
+ * The name comes first whenever `"<name> — Test Strip Buyer"` fits inside
+ * TITLE_MAX, even when the name already contains "test strip": repeating the
+ * keyword costs a few characters, but the location form
+ * ("Test Strip Buyer in Philadelphia, PA") is NOT unique — two buyers in one
+ * city would produce byte-identical titles, which is a worse SEO problem than
+ * a duplicated keyword. The location form is the fallback for names that do
+ * not fit, and the bare "Test Strip Buyer" the last resort when there is no
+ * location to fall back to either.
  */
 export function companyTitle(
   name: string,
@@ -69,15 +69,23 @@ export function companyTitle(
   state: string | null | undefined
 ): string {
   const suffixed = `${name.trim()} — Test Strip Buyer`
+  if (suffixed.length <= TITLE_MAX) return suffixed
+
   const where = [city?.trim(), state?.trim()].filter(Boolean).join(", ")
   const located = where ? `Test Strip Buyer in ${where}` : null
-  const repeatsKeyword = /test\s*strip/i.test(name)
+  if (located && located.length <= TITLE_MAX) return located
 
-  if (located && located.length <= TITLE_MAX && (repeatsKeyword || suffixed.length > TITLE_MAX)) {
-    return located
-  }
-  if (suffixed.length <= TITLE_MAX) return suffixed
   return "Test Strip Buyer"
+}
+
+/** The core for a state landing page ("…in North Carolina" is the longest). */
+export function stateTitle(label: string): string {
+  return `Sell Diabetic Test Strips in ${label}`
+}
+
+/** The core for a city landing page (the longest real target is 49 chars). */
+export function cityTitle(city: string, st: string): string {
+  return `Sell Diabetic Test Strips in ${city}, ${st}`
 }
 
 function isTestEnv(): boolean {

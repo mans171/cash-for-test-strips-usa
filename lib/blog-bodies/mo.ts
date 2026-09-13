@@ -57,7 +57,7 @@ export const MO: PostBody = {
       heading: "What has to be true before any of it is sellable",
       paragraphs: [
         "Sealed. Factory-sealed, unopened, original packaging. An opened box has no value to anyone, because there is no way for the next person to establish what happened to it after the seal went. Opening a box to check the contents destroys the thing that made it worth checking.",
-        "Not government-funded. Supplies obtained through public coverage cannot be resold, and no buyer can make an exception for you. A pharmacy label with your own name on it is a different matter entirely and is not an obstacle — what counts is who paid, not what the sticker says.",
+        "Not government-funded. Supplies paid for by public coverage cannot be resold, and no buyer can make an exception for you. A pharmacy label with your own name on it is a different matter entirely and is not an obstacle — what counts is who paid, not what the sticker says.",
         "In date, with room to spare. Test strips want at least six months before expiry, because whoever ends up with them needs time to actually get through the box. And the counts matter: one 100-count box is worth meaningfully more than two 50-count boxes of the same strip, so do not break lots up.",
         "The brands: FreeStyle Lite, Contour Next, Accu-Chek Guide, Aviva and SmartView, OneTouch Verio and Ultra, True Metrix. Dexcom G6 sensors and transmitters, G7 sensors and receivers. FreeStyle Libre 1, 2 and 3 in US retail versions only. Omnipod 5, DASH and Classic pods, pods rather than controllers. Some sealed Medtronic and Tandem components.",
       ],

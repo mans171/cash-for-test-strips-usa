@@ -5,6 +5,6 @@ const ROOTS = ['lib/blog-bodies', 'lib/posts', 'lib/hub-page-content.ts', 'lib/b
 function files(p: string): string[] { try { return readdirSync(p).filter(f => f.endsWith('.ts') || f.endsWith('.tsx')).map(f => join(p, f)) } catch { return [p] } }
 describe('site copy never names government programs', () => {
   for (const f of ROOTS.flatMap(files)) {
-    it(f, () => { expect(readFileSync(f, 'utf8')).not.toMatch(/medicare|medicaid/i) })
+    it(f, () => { expect(readFileSync(f, 'utf8')).not.toMatch(/medicare|medicaid|medi-cal|ahcccs|tricare/i) })
   }
 })

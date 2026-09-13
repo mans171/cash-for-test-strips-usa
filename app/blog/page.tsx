@@ -6,7 +6,7 @@ import { POST_REGISTRY } from "@/lib/posts";
 import { pageTitle } from "@/lib/title";
 
 export const metadata: Metadata = {
-  title: pageTitle("Selling Diabetic Supplies: Guides"),
+  title: pageTitle("How to Sell Diabetic Test Strips: Guides"),
   description:
     "State-by-state guides on how to sell unused diabetic test strips for cash. Find local buyers, learn what's accepted, and get paid fast via PayPal, Zelle, or check.",
   alternates: { canonical: 'https://cash4teststripsusa.com/blog' },

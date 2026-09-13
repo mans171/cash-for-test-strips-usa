@@ -60,7 +60,7 @@ else, so pull them out of the bag before anything goes in the skip.</p>
 <p>One rule does apply regardless of who is selling. Supplies obtained through
 a government-covered programme cannot be resold. That is about the funding route rather
 than about the person holding them, and a great many older people's supplies
-came through exactly those programmes.</p>
+came through exactly that route.</p>
 
 <h2>Do not open anything</h2>
 

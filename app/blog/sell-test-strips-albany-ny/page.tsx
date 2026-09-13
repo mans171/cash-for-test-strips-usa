@@ -51,7 +51,7 @@ const FAQS = [
   },
   {
     q: "Is it legal to sell diabetic test strips in New York?",
-    a: "Reselling unused, unexpired, unopened supplies you own is generally permitted in New York, and no state law specifically bans it. Supplies paid for by a government programme cannot be resold. This is general information, not legal advice — consult an attorney about your situation.",
+    a: "Reselling unused, unexpired, unopened supplies you own is generally permitted in New York, and no state law specifically bans it. Supplies paid for by a government program cannot be resold. This is general information, not legal advice — consult an attorney about your situation.",
   },
 ];
 

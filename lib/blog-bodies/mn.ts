@@ -43,7 +43,7 @@ export const MN: PostBody = {
       paragraphs: [
         "If you filled the prescription yourself, you usually already know, and the pharmacy receipt or the explanation of benefits from the time will say which plan paid. That is the cleanest answer and takes a minute to check.",
         "If you cannot find the paperwork, the pharmacy that filled it can tell you which plan was billed. You do not need to explain why you are asking, and it is a routine question for them.",
-        "The awkward version is inherited supplies — a parent's cupboard cleared after a move into care or after a death. If the person was on government coverage, that is very likely how the supplies were filled, and the honest answer is usually that those boxes cannot be sold. It is worth checking rather than assuming in either direction, but do not talk yourself into a conclusion you would not want tested.",
+        "The awkward version is inherited supplies — a parent's cupboard cleared after a move into care or after a death. If the person was covered by a government programme, that is very likely how the supplies were filled, and the honest answer is usually that those boxes cannot be sold. It is worth checking rather than assuming in either direction, but do not talk yourself into a conclusion you would not want tested.",
         "If you genuinely cannot establish it, say so when you ask for a figure rather than after the parcel has arrived. That conversation is much easier had at the start.",
       ],
     },
@@ -85,7 +85,7 @@ export const MN: PostBody = {
     },
     {
       q: "The boxes have my late mother's name on the pharmacy label. Does that stop the sale?",
-      a: "The name on the label is not the issue. What matters is whether the supplies were obtained through a government-covered programme, and if she was on government coverage that is the likely answer. It is worth establishing before you send anything rather than after it arrives.",
+      a: "The name on the label is not the issue. What matters is whether the supplies were obtained through a government-covered programme, and if she was covered by a government programme that is the likely answer. It is worth establishing before you send anything rather than after it arrives.",
     },
     {
       q: "Is there really no buyer in Minneapolis or St. Paul?",
