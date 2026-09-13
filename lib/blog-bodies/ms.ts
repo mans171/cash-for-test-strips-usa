@@ -61,10 +61,10 @@ export const MS: PostBody = {
     {
       heading: "The question of who paid, and why it matters more here",
       paragraphs: [
-        "Supplies obtained through a government-covered programme cannot be resold. That rule applies everywhere, but it is worth stating plainly in a state where a large share of prescriptions run through public programmes, because it is the condition most likely to disqualify what you are holding.",
-        "It is about the programme the supplies came through, not about you. If you paid retail, or the supplies came through private insurance, or they were given to you by a relative who paid for them privately, that is a different situation and the sale is straightforward.",
+        "Supplies obtained through a government-covered program cannot be resold. That rule applies everywhere, but it is worth stating plainly in a state where a large share of prescriptions run through public programs, because it is the condition most likely to disqualify what you are holding.",
+        "It is about the program the supplies came through, not about you. If you paid retail, or the supplies came through private insurance, or they were given to you by a relative who paid for them privately, that is a different situation and the sale is straightforward.",
         "A pharmacy label with a name printed on it is not the problem people assume it is. Nobody is asked to explain how a box came into their possession. What matters is the funding route, the seal being intact, and the date on the end of the box.",
-        "If you are not sure which programme paid for something — and in a house where somebody has died and left a cupboard full of boxes, that is a common position to be in — ring and ask rather than sending it and hoping.",
+        "If you are not sure which program paid for something — and in a house where somebody has died and left a cupboard full of boxes, that is a common position to be in — ring and ask rather than sending it and hoping.",
       ],
     },
     {
@@ -88,8 +88,8 @@ export const MS: PostBody = {
 
   faqs: [
     {
-      q: "My supplies came through a government programme. Is there any way to sell them?",
-      a: "No. Supplies obtained through a government-covered programme cannot be resold, and there is no version of that which works. If part of what you are holding came through a government programme and part was bought retail, the retail portion can still be sold — it is worth ringing to sort out which is which rather than sending the lot.",
+      q: "My supplies came through a government program. Is there any way to sell them?",
+      a: "No. Supplies obtained through a government-covered program cannot be resold, and there is no version of that which works. If part of what you are holding came through a government program and part was bought retail, the retail portion can still be sold — it is worth ringing to sort out which is which rather than sending the lot.",
     },
     {
       q: "Who actually ends up using the supplies I send?",
@@ -105,7 +105,7 @@ export const MS: PostBody = {
     },
     {
       q: "The boxes belonged to a relative who has died. Can I still sell them?",
-      a: "Yes, provided the supplies were not obtained through a government-covered programme and the boxes are still factory-sealed. A pharmacy label carrying their name does not prevent a sale. If you cannot work out how a particular prescription was funded, ask before sending it.",
+      a: "Yes, provided the supplies were not obtained through a government-covered program and the boxes are still factory-sealed. A pharmacy label carrying their name does not prevent a sale. If you cannot work out how a particular prescription was funded, ask before sending it.",
     },
   ],
 }

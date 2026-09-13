@@ -71,7 +71,7 @@ to photograph the contents.</p>
 <p>The <a href="/sell-test-strips">state pages</a> show who is nearest to you
 and whether an in-person handover is realistic. Because pods come in volume, a
 switch often leaves a hundred pieces or more behind — that is a
-<a href="/sell-test-strips-in-bulk">bulk enquiry</a> rather than an individual
+<a href="/sell-test-strips-in-bulk">bulk inquiry</a> rather than an individual
 sale, and mixed generations and mixed dates are expected.</p>
 `,
   faqs: [

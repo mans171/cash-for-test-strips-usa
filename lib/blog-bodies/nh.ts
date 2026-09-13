@@ -56,7 +56,7 @@ export const NH: PostBody = {
       heading: "The checks that decide whether a box counts at all",
       paragraphs: [
         "Sealed and unopened, in original packaging. An opened box has no value whatsoever, because the seal is the only thing that lets the next person establish what has happened to the contents. If you are photographing boxes for a quote, photograph the outside with the date visible and leave them shut.",
-        "Not obtained through a government-covered programme, since supplies paid for that way cannot be resold. A pharmacy label carrying your own name is normal and irrelevant to the sale — the question is who paid, not what is printed on the box.",
+        "Not obtained through a government-covered program, since supplies paid for that way cannot be resold. A pharmacy label carrying your own name is normal and irrelevant to the sale — the question is who paid, not what is printed on the box.",
         "And for FreeStyle Libre specifically, US retail versions only. Sensors bought abroad cannot be resold here at any date or condition.",
       ],
     },
@@ -85,7 +85,7 @@ export const NH: PostBody = {
     },
     {
       q: "I am clearing a relative's house. Where do I start?",
-      a: "Separate anything opened, which cannot be sold, and set aside anything you know came through a government-covered programme. Then list what is left by brand, count and expiry date, and check pods and G7 sensors before discarding anything on date alone.",
+      a: "Separate anything opened, which cannot be sold, and set aside anything you know came through a government-covered program. Then list what is left by brand, count and expiry date, and check pods and G7 sensors before discarding anything on date alone.",
     },
     {
       q: "Does mixing brands in one parcel reduce what I get?",

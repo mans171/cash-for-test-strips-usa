@@ -5,7 +5,7 @@ import type { LatLng } from "./geo"
  * 50 miles, confirmed against live Supabase `companies` data on 2026-08-15
  * (Atlanta added 2026-09-07 on the same rule: Nova Diabetic Supply in
  * Lawrenceville is 26.5mi from downtown, and 132 Georgia ZIPs sit within 30mi
- * of the centre — both measured live, not estimated)
+ * of the center — both measured live, not estimated)
  * (not the earlier planning-doc estimates in docs/seo/2026-08-12-metro-target-map.md,
  * which explicitly required re-verification before publishing).
  *

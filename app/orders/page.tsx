@@ -26,7 +26,7 @@ export default async function OrdersPage() {
     return (
       <Shell>
         <p className="text-gray-600 text-sm mb-6">
-          Sign in to see the quote requests and bulk enquiries you&apos;ve submitted.
+          Sign in to see the quote requests and bulk inquiries you&apos;ve submitted.
         </p>
         <div className="flex flex-wrap gap-3">
           <Link

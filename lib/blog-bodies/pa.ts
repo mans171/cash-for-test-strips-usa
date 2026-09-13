@@ -47,7 +47,7 @@ export const PA: PostBody = {
       heading: "What makes a box sellable",
       paragraphs: [
         "Factory-sealed and unopened, in the original packaging. An opened box cannot be resold at any price — nobody downstream can verify how it was stored, and this is the most common reason a parcel is refused or a price is reopened.",
-        "Not obtained through a government-covered programme. Supplies paid for that way cannot legally be resold. Private insurance or out of pocket is fine, and a pharmacy label with your name on it makes no difference at all.",
+        "Not obtained through a government-covered program. Supplies paid for that way cannot legally be resold. Private insurance or out of pocket is fine, and a pharmacy label with your name on it makes no difference at all.",
         "For test strips, at least six months before the expiry date. Under that, value drops away quickly, because whoever ends up using them needs time to get through the box.",
         "Check the box count before you decide a small stack is not worth the call. A 100-count box is worth meaningfully more than two 50-count boxes of the same brand.",
       ],
@@ -93,8 +93,8 @@ export const PA: PostBody = {
       a: "Yes, at a reduced rate — Omnipod 5, DASH and Classic. Expired Dexcom G7 sensors too. Those are the only two exceptions; everything else must be in date, and test strips should have at least six months left.",
     },
     {
-      q: "My supplies came through a government programme. Can I sell them?",
-      a: "No. Supplies covered by a government programme cannot be resold. Anything received through private insurance or paid for yourself is fine.",
+      q: "My supplies came through a government program. Can I sell them?",
+      a: "No. Supplies covered by a government program cannot be resold. Anything received through private insurance or paid for yourself is fine.",
     },
     {
       q: "Is it worth driving from Erie to Pittsburgh?",

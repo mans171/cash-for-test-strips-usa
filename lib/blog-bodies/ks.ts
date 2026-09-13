@@ -9,7 +9,7 @@ import type { PostBody } from "./types"
  * belt — read between 9.2% and 9.7%. The state's widest gap runs through a
  * handful of suburbs, and the only listed buyer sits in the middle of it.
  *
- * Colorado shares the generated angle and is a neighbouring state of similar
+ * Colorado shares the generated angle and is a neighboring state of similar
  * profile, so it is built on the Front Range corridor instead. This post keeps
  * brand detail late and short, and leads on the metro split and on bulk lots,
  * which is what a 704-ZIP-code state with one listing actually needs.
@@ -72,7 +72,7 @@ export const KS: PostBody = {
       heading: "What will get a box turned down",
       paragraphs: [
         "Three things, and all three are pass or fail rather than negotiable. The seal has to be factory-intact in the original packaging. An opened box is worth nothing to anybody, because nobody downstream can verify what happened to it while it was open, and this is the single most common reason a parcel gets returned.",
-        "The supplies cannot have come through a government-covered programme. Those cannot be resold. Retail purchases and private insurance are a different matter, and a pharmacy label with your own name on it makes no difference — you are not being asked to account for how you came to have them.",
+        "The supplies cannot have come through a government-covered program. Those cannot be resold. Retail purchases and private insurance are a different matter, and a pharmacy label with your own name on it makes no difference — you are not being asked to account for how you came to have them.",
         "And in-date test strips should have six months or more left before expiry. Under six months the tier falls away quickly, because the person who eventually uses them needs a usable window in which to do it.",
       ],
     },

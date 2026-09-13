@@ -60,7 +60,7 @@ export const HI: PostBody = {
       heading: "What else has to be true for a box to qualify",
       paragraphs: [
         "It has to be factory-sealed and unopened, in its original packaging. An opened box cannot be resold at any price, because nobody downstream has any way to know how it was stored. This is the most common reason a parcel is refused anywhere in the country.",
-        "It cannot have been obtained through a government-covered programme. Those supplies cannot be resold. Anything covered by private insurance or paid for at retail is fine, and a pharmacy label with a name on it makes no difference and does not need removing.",
+        "It cannot have been obtained through a government-covered program. Those supplies cannot be resold. Anything covered by private insurance or paid for at retail is fine, and a pharmacy label with a name on it makes no difference and does not need removing.",
         "Box count is worth checking before you decide a small stack is not worth the effort. A 100-count box is worth meaningfully more than two 50-count boxes of the same brand, so what looks like an equivalent pile often is not.",
         "Quantity helps. Ten or more boxes earns a better per-box rate, and a mixed lot of different brands and types is quoted as one lot rather than item by item. Given the shipping distance, one larger consignment is much better than three small ones.",
       ],

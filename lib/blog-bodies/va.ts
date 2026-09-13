@@ -14,7 +14,7 @@ import type { PostBody } from "./types"
  *
  * That is a different construction from the other no-buyer pages: not distance
  * (Montana), not rurality (Iowa), not scale (Illinois), but a state whose two
- * halves belong to two different neighbours' markets. The Arlington 7.3% /
+ * halves belong to two different neighbors' markets. The Arlington 7.3% /
  * Portsmouth 16.1% spread reinforces it rather than being the point.
  *
  * No distances are quoted, because none are in the brief.
@@ -22,7 +22,7 @@ import type { PostBody } from "./types"
  * Figures: CDC BRFSS 2023 via lib/state-health-data.ts. No dollar amounts.
  */
 export const VA: PostBody = {
-  label: "The state's two ends look to two neighbours",
+  label: "The state's two ends look to two neighbors",
   title: "Selling Diabetic Test Strips in Virginia: Where the Nearest Buyers Are",
   heading: "Selling Diabetic Test Strips in Virginia",
   metaDescription:
@@ -30,7 +30,7 @@ export const VA: PostBody = {
 
   lead: [
     "Virginia has 8.7 million people, 903 ZIP codes, and nobody based inside it. The buyer who covers Virginia is across the Potomac in Silver Spring, Maryland. There is nobody in Richmond, nobody in Virginia Beach and nobody in Arlington, and for a state of this size that is unusual — it is the first thing anyone searching this should be told.",
-    "What Virginia does have is neighbours. The northern suburbs sit inside the Washington commuter belt, where the nearest listing is across the Potomac in Silver Spring, Maryland. Hampton Roads and the southside look the other way, towards the North Carolina listings. The middle of the state looks at nothing in particular. That is why this page is organised by which part of Virginia you are in rather than by a single answer.",
+    "What Virginia does have is neighbors. The northern suburbs sit inside the Washington commuter belt, where the nearest listing is across the Potomac in Silver Spring, Maryland. Hampton Roads and the southside look the other way, towards the North Carolina listings. The middle of the state looks at nothing in particular. That is why this page is organized by which part of Virginia you are in rather than by a single answer.",
   ],
 
   sections: [
@@ -62,7 +62,7 @@ export const VA: PostBody = {
       heading: "The rules that apply everywhere in the state",
       paragraphs: [
         "The box must be factory-sealed and unopened. An opened box is worth nothing, not less — once the seal is gone there is no way for the next holder to establish anything about it.",
-        "Supplies obtained through a government-covered programme cannot be resold, and no condition or date changes that. A pharmacy label with your name printed on it is a separate matter entirely and does not affect the sale.",
+        "Supplies obtained through a government-covered program cannot be resold, and no condition or date changes that. A pharmacy label with your name printed on it is a separate matter entirely and does not affect the sale.",
         "Test strips should have six months or more before expiry. Below that the value drops off sharply, because the next person needs time to actually use them.",
         "Around 8.7% of working-age Virginians are uninsured, a little below the national picture, and 17.8% of the state is 65 or over. Those two figures describe most of the people on both sides of this market.",
       ],

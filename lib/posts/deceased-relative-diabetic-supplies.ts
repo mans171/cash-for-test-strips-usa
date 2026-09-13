@@ -101,7 +101,7 @@ brands and mixed dates are expected there and nothing needs sorting first.</p>
     },
     {
       q: "There is a lot of it. Is that handled differently?",
-      a: "A hundred pieces or more is a bulk enquiry rather than an individual sale. Mixed brands and dates are normal at that size and nothing needs separating beforehand.",
+      a: "A hundred pieces or more is a bulk inquiry rather than an individual sale. Mixed brands and dates are normal at that size and nothing needs separating beforehand.",
     },
   ],
 }

@@ -49,7 +49,7 @@ export const NY: PostBody = {
       heading: "What has to be true before anything can be sold",
       paragraphs: [
         "The box has to be factory-sealed and unopened. An opened box is finished, whatever is left inside it, because nobody downstream can verify how it was stored. This is the single most common reason a parcel is refused.",
-        "It cannot have come through a government-covered programme. Supplies paid for that way cannot be resold. Private insurance or out of pocket is fine, and a pharmacy label with your name on it does not affect anything.",
+        "It cannot have come through a government-covered program. Supplies paid for that way cannot be resold. Private insurance or out of pocket is fine, and a pharmacy label with your name on it does not affect anything.",
         "For test strips, at least six months should remain before expiry. Less and the value falls away quickly, because the person who ends up using them needs time to work through the box.",
         "Count matters too. A 100-count box is worth noticeably more than two 50-count boxes of the same brand, which is why it is worth checking what you have rather than assuming a small stack is not worth a call.",
       ],
@@ -87,8 +87,8 @@ export const NY: PostBody = {
       a: "Expired G7 sensors, yes, at a reduced rate. Expired G6 sensors, no. Sealed and in-date G6 sensors and transmitters are all bought normally.",
     },
     {
-      q: "My supplies came through a government programme. Can I sell them?",
-      a: "No. Supplies covered by a government programme cannot be resold. Anything you received through private insurance or paid for yourself is fine.",
+      q: "My supplies came through a government program. Can I sell them?",
+      a: "No. Supplies covered by a government program cannot be resold. Anything you received through private insurance or paid for yourself is fine.",
     },
     {
       q: "Is it better to sell in person or by post?",

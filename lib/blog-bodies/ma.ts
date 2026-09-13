@@ -33,9 +33,9 @@ export const MA: PostBody = {
     {
       heading: "The distinction that matters most in this state",
       paragraphs: [
-        "Supplies obtained through a government-covered programme cannot be resold. That is a hard line and no condition, date or brand changes it. If a public programme paid for the box, it is out.",
+        "Supplies obtained through a government-covered program cannot be resold. That is a hard line and no condition, date or brand changes it. If a public program paid for the box, it is out.",
         "Supplies that came through private or employer health insurance are a different matter and are not excluded. Neither are supplies you paid for retail at a pharmacy counter. The vast majority of what changes hands in Massachusetts falls into those categories, which is why the state's coverage rate is a feature of this market rather than an obstacle to it.",
-        "The thing that trips people up is the pharmacy label. A sticker with your name, your prescriber and a fill date on it looks official and looks like it might be a problem. It is not. It is completely ordinary, it appears on nearly every box anyone sells, and it tells you nothing about which programme paid. If you are unsure which applies to you, that is a five-minute call to 518-278-6008 rather than a reason to bin anything.",
+        "The thing that trips people up is the pharmacy label. A sticker with your name, your prescriber and a fill date on it looks official and looks like it might be a problem. It is not. It is completely ordinary, it appears on nearly every box anyone sells, and it tells you nothing about which program paid. If you are unsure which applies to you, that is a five-minute call to 518-278-6008 rather than a reason to bin anything.",
       ],
     },
     {
@@ -75,14 +75,14 @@ export const MA: PostBody = {
   faqs: [
     {
       q: "My supplies came through my employer's health plan. Can I sell them?",
-      a: "Private and employer insurance are not the exclusion. Government coverage is — supplies obtained through a public programme cannot be resold. Retail purchases are fine as well.",
+      a: "Private and employer insurance are not the exclusion. Government coverage is — supplies obtained through a public program cannot be resold. Retail purchases are fine as well.",
     },
     {
       q: "There is a pharmacy label with my name on it. Does that stop the sale?",
-      a: "No, and it never has. Ordinary prescription labelling appears on almost every box that gets sold. The only source question that matters is which programme paid.",
+      a: "No, and it never has. Ordinary prescription labelling appears on almost every box that gets sold. The only source question that matters is which program paid.",
     },
     {
-      q: "Is the Boston buyer worth travelling to from Springfield?",
+      q: "Is the Boston buyer worth traveling to from Springfield?",
       a: "For most lots, no. That is across the state, and the prepaid label costs nothing. The in-person option is genuinely useful for the Boston area and less so the further west you are.",
     },
     {
@@ -91,7 +91,7 @@ export const MA: PostBody = {
     },
     {
       q: "I am clearing a parent's flat and do not know how anything was paid for.",
-      a: "Set aside anything you know came through a government programme, and ring 518-278-6008 about the rest rather than guessing in either direction. Keep every box sealed while you work through it.",
+      a: "Set aside anything you know came through a government program, and ring 518-278-6008 about the rest rather than guessing in either direction. Keep every box sealed while you work through it.",
     },
   ],
 }

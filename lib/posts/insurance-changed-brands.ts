@@ -124,7 +124,7 @@ size and do not need sorting first.</p>
     },
     {
       q: "A plan change left my pharmacy with a lot of the old line. Is that different?",
-      a: "Yes, that is a bulk enquiry rather than an individual sale. Mixed brands and mixed dates are normal at that size and nothing needs sorting beforehand. Start on the bulk page.",
+      a: "Yes, that is a bulk inquiry rather than an individual sale. Mixed brands and mixed dates are normal at that size and nothing needs sorting beforehand. Start on the bulk page.",
     },
   ],
 }

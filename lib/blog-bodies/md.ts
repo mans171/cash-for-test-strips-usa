@@ -56,7 +56,7 @@ export const MD: PostBody = {
       heading: "What disqualifies a box regardless of what is in it",
       paragraphs: [
         "An opened box. Factory seal intact, original packaging, no exceptions. Once a carton has been opened there is no way for anyone downstream to verify what happened to it, and its value goes to zero rather than merely dropping.",
-        "Supplies obtained through a government-covered programme, which cannot be resold. This is about who paid, not about what is printed on the label — a pharmacy label carrying your own name is entirely normal and does not affect anything.",
+        "Supplies obtained through a government-covered program, which cannot be resold. This is about who paid, not about what is printed on the label — a pharmacy label carrying your own name is entirely normal and does not affect anything.",
         "Test strips with less than six months of life left, and any expired item other than Omnipod pods and Dexcom G7 sensors. Those two exceptions are the whole list; nothing else past its date is worth posting.",
       ],
     },
@@ -85,7 +85,7 @@ export const MD: PostBody = {
     },
     {
       q: "Does a pharmacy label with my name on it stop the sale?",
-      a: "No. The only source question that matters is whether a government programme paid for the supplies, because those cannot be resold. Ordinary prescription labelling is expected and changes nothing.",
+      a: "No. The only source question that matters is whether a government program paid for the supplies, because those cannot be resold. Ordinary prescription labelling is expected and changes nothing.",
     },
     {
       q: "Should I split a large lot into several parcels?",

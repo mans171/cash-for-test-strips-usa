@@ -71,7 +71,7 @@ export const STATE_CENTROIDS: Record<string, LatLng> = {
  * state page links to a different set of siblings — previously all 50 pages
  * hardcoded the same 12 links, leaving 38 states with no internal links at all.
  *
- * Non-contiguous states (AK, HI) have no land neighbours; callers fall back to
+ * Non-contiguous states (AK, HI) have no land neighbors; callers fall back to
  * nearest-by-distance for those.
  */
 export const STATE_NEIGHBORS: Record<string, string[]> = {

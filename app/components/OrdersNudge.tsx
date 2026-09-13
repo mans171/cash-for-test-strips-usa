@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { useUser } from "@/lib/auth-client"
 
-/** Shown after a quote request or bulk enquiry is submitted. Signing in is
+/** Shown after a quote request or bulk inquiry is submitted. Signing in is
  *  never required to submit — this is an optional way to keep track.
  *
  *  A lead sent while signed OUT carries no user_id, so signing up afterwards

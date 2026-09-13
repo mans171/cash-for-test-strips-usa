@@ -85,7 +85,7 @@ function rankPhrase(n: number): string {
  * A plain hash of the state code was tried first and was not good enough:
  * Maine and Vermont both carry the estate angle and collided on the same
  * bucket, leaving them 92% identical. Deriving the bucket from a state's
- * position *within its own angle group* guarantees that neighbouring buckets
+ * position *within its own angle group* guarantees that neighboring buckets
  * differ exactly where the duplication actually occurs. Deterministic, since
  * the angle map is frozen and the sort is by code.
  */
@@ -285,7 +285,7 @@ export function angleSection(
         paragraphs: [
           `${stateName} has buyers listed on this directory who take supplies in person, which means you can hand over a box and walk away with cash the same day rather than waiting on a shipment to arrive and clear.`,
           cities.length
-            ? `Most in-person activity clusters around the larger population centres — ${cityList} among them. If you are outside those areas, a prepaid shipping label costs you nothing and payment still lands within 24 hours of verification.`
+            ? `Most in-person activity clusters around the larger population centers — ${cityList} among them. If you are outside those areas, a prepaid shipping label costs you nothing and payment still lands within 24 hours of verification.`
             : `If you are not near a listed buyer, a prepaid shipping label costs you nothing and payment still lands within 24 hours of verification.`,
         ],
       }
@@ -316,7 +316,7 @@ export function angleSection(
         )
       }
       paras.push(
-        `What can be sold: unopened, unexpired boxes with the factory seal intact. A pharmacy label with your relative's name on it does not prevent a sale. What cannot: anything opened, anything past its date apart from Omnipod pods and Dexcom G7 sensors, and anything bought through a government-covered programme.`
+        `What can be sold: unopened, unexpired boxes with the factory seal intact. A pharmacy label with your relative's name on it does not prevent a sale. What cannot: anything opened, anything past its date apart from Omnipod pods and Dexcom G7 sensors, and anything bought through a government-covered program.`
       )
       return { heading: `What to Do With Supplies Left Behind`, paragraphs: paras }
     }
@@ -326,7 +326,7 @@ export function angleSection(
         heading: `Dexcom Sensors, Transmitters and Receivers`,
         paragraphs: [
           `Dexcom is one of the strongest-paying categories, and it is the one where the expiry rule differs from everything else. We buy sealed G6 sensors, G6 transmitters, G7 sensors and G7 receivers from sellers across ${stateName}.`,
-          `The exception worth knowing: expired G7 sensors still have value. Most buyers will not touch anything past its date, so these get thrown away constantly. If you have G7 sensors that have run out, check before discarding them — that is money most people bin without realising.`,
+          `The exception worth knowing: expired G7 sensors still have value. Most buyers will not touch anything past its date, so these get thrown away constantly. If you have G7 sensors that have run out, check before discarding them — that is money most people bin without realizing.`,
         ],
       }
 
@@ -335,7 +335,7 @@ export function angleSection(
         heading: `FreeStyle Libre — Which Versions We Buy`,
         paragraphs: [
           `We buy sealed FreeStyle Libre 1, 2 and 3 sensors from sellers throughout ${stateName}. All three generations still have a market, so an older sensor is not automatically worthless.`,
-          `One qualifier that catches people out: US retail versions only. Libre sensors bought abroad, or supplied through a programme that is not US retail, cannot be resold here regardless of condition. Check the box before you ship — it saves a wasted parcel.`,
+          `One qualifier that catches people out: US retail versions only. Libre sensors bought abroad, or supplied through a program that is not US retail, cannot be resold here regardless of condition. Check the box before you ship — it saves a wasted parcel.`,
         ],
       }
 
@@ -379,7 +379,7 @@ export function angleSection(
     case "worth": {
       const paras = [
         `What a box pays comes down to three things: the brand, how many boxes you have, and how much time is left before the expiry date. Brand is the biggest single factor, which is why the tables below rank by tier rather than quoting one flat figure.`,
-        `Read the tiers within their own category. A mid-tier CGM sensor can still pay more per box than a top-tier test strip — the tiers rank brands against others of the same type, not across the whole catalogue.`,
+        `Read the tiers within their own category. A mid-tier CGM sensor can still pay more per box than a top-tier test strip — the tiers rank brands against others of the same type, not across the whole catalog.`,
       ]
       if (h?.uninsuredRate != null) {
         paras.push(
@@ -492,7 +492,7 @@ export function angleLabel(angle: PostAngle): string {
 }
 
 // ---------------------------------------------------------------------------
-// Product catalogue, scoped to the post's angle
+// Product catalog, scoped to the post's angle
 // ---------------------------------------------------------------------------
 
 export type ProductCategory = {
@@ -503,7 +503,7 @@ export type ProductCategory = {
 }
 
 /**
- * The full catalogue. Previously every one of these six blocks was rendered on
+ * The full catalog. Previously every one of these six blocks was rendered on
  * all 50 posts, which by itself accounted for a large share of the identical
  * text between them. Posts now expand only the categories their angle is
  * actually about and summarise the rest, which cuts the shared bulk and makes
@@ -572,15 +572,15 @@ export const PRODUCT_CATEGORIES: ProductCategory[] = [
 ]
 
 /**
- * Which catalogue category this post expands in full — exactly one.
+ * Which catalog category this post expands in full — exactly one.
  *
- * Measured, not assumed: with two categories expanded, the catalogue was a
+ * Measured, not assumed: with two categories expanded, the catalog was a
  * single 2,573-character run identical between any two posts sharing an
  * emphasis set — about 46% of the page, and the largest single reason Maine and
  * Vermont still measured 92% alike. Product angles keep the category they are
  * named after; the rest rotate within their angle group so that two states
  * sharing an angle do not expand the same list. Everything else is one summary
- * line pointing at the price guide, which is where the full catalogue belongs.
+ * line pointing at the price guide, which is where the full catalog belongs.
  */
 export function emphasisCategories(angle: PostAngle, stateCode: string): string[] {
   switch (angle) {
@@ -635,7 +635,7 @@ export function emphasisTierTables(angle: PostAngle): Array<"strips" | "cgm"> {
  */
 export function requirements(angle: PostAngle): { heading: string; intro: string; items: string[] } {
   const sealed = "The boxes are in their original, sealed packaging"
-  const notPublic = "They were not paid for by a government programme"
+  const notPublic = "They were not paid for by a government program"
   const dated =
     "They have at least 6 months before expiration — except Omnipod pods and Dexcom G7 sensors, which we take expired"
 
@@ -760,7 +760,7 @@ export function postFaqs(
     case "estate":
       faqs.push({
         q: `The boxes have my relative's name on the pharmacy label. Can they still be sold?`,
-        a: `Yes. A prescription label with a name on it does not affect the sale, as long as the box is sealed and the supplies were not obtained through a government-covered programme.`,
+        a: `Yes. A prescription label with a name on it does not affect the sale, as long as the box is sealed and the supplies were not obtained through a government-covered program.`,
       })
       break
     case "dexcom":
@@ -834,7 +834,7 @@ export function postFaqs(
 
   faqs.push({
     q: `What condition do the boxes need to be in?`,
-    a: `Factory-sealed and unopened. Partial boxes, opened packaging and broken seals cannot be resold. Supplies bought through a government programme cannot be resold either.`,
+    a: `Factory-sealed and unopened. Partial boxes, opened packaging and broken seals cannot be resold. Supplies bought through a government program cannot be resold either.`,
   })
 
   return faqs

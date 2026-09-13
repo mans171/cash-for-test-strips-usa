@@ -35,7 +35,7 @@ export const NE: PostBody = {
         "More parcels are refused over this than over everything else combined, so it is worth spending a moment on rather than skimming. A box of test strips or sensors is resellable because it is factory-sealed. The seal is what tells the next person that nothing has been swapped, split, stored badly or handled at all since it left the manufacturer.",
         "Remove the seal and you have not reduced the value of the box, you have removed it. There is no discount tier for an opened box, no allowance for one that was opened but untouched, and no way to reseal it that anyone will accept. This is not a rule invented to catch sellers out. It is the only reason the item can be sold at all.",
         "The practical consequence is one that people get wrong constantly: do not open a box to photograph the contents. Photograph the outside, with the expiry date and lot number readable. If a buyer asks you to open a box to prove what is inside, they are asking you to destroy the thing they are buying.",
-        "The one thing that does not matter is the pharmacy label. A sticker with your name and your prescriber on it is entirely ordinary and affects nothing. Who paid is a separate question, and supplies obtained through a government-covered programme cannot be resold regardless of condition.",
+        "The one thing that does not matter is the pharmacy label. A sticker with your name and your prescriber on it is entirely ordinary and affects nothing. Who paid is a separate question, and supplies obtained through a government-covered program cannot be resold regardless of condition.",
       ],
     },
     {

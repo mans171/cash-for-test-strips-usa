@@ -34,7 +34,7 @@ export const NM: PostBody = {
       paragraphs: [
         "The short answer is that a sealed box is a sealed box. A factory-sealed carton of test strips that has never been opened is the same product it was on the pharmacy shelf, and the person who ends up with it is usually someone paying out of their own pocket because no plan is paying for them.",
         "That is why the seal rule is absolute rather than fussy. Once a box has been opened, nobody downstream can be sure what happened to it, and the entire basis on which the next person can trust it disappears. An opened box is worth nothing, and no explanation of why it was opened changes that.",
-        "It is also why government-covered supplies are excluded. Where a public programme has already paid for the item, it cannot be resold. That has nothing to do with how carefully you have looked after it. A pharmacy label with your name on it, by contrast, is completely ordinary and affects nothing.",
+        "It is also why government-covered supplies are excluded. Where a public program has already paid for the item, it cannot be resold. That has nothing to do with how carefully you have looked after it. A pharmacy label with your name on it, by contrast, is completely ordinary and affects nothing.",
       ],
     },
     {
@@ -82,7 +82,7 @@ export const NM: PostBody = {
     },
     {
       q: "My relative has died and I am clearing the house. Can I sell what I find?",
-      a: "Yes, provided the boxes are sealed and were not obtained through a government-covered programme. You are not asked to account for how the supplies came to be in the house. Check dates before discarding anything — Omnipod pods and Dexcom G7 sensors still have value past expiry.",
+      a: "Yes, provided the boxes are sealed and were not obtained through a government-covered program. You are not asked to account for how the supplies came to be in the house. Check dates before discarding anything — Omnipod pods and Dexcom G7 sensors still have value past expiry.",
     },
     {
       q: "Do expired Dexcom sensors count?",

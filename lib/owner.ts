@@ -1,4 +1,4 @@
-/** Where enquiries that belong to the business itself are sent, as opposed to
+/** Where inquiries that belong to the business itself are sent, as opposed to
  *  a matched buyer. Extracted 2026-09-07 when the bulk-seller form needed it —
  *  it was previously a private constant inside app/api/leads/route.ts, so a
  *  second caller would have duplicated the address. One definition. */

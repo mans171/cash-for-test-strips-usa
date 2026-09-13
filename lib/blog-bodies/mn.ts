@@ -6,7 +6,7 @@ import type { PostBody } from "./types"
  * Only 7.5% of working-age Minnesotans are uninsured, one of the lowest rates
  * in the country. Nearly everything in a Minnesotan medicine cupboard therefore
  * arrived through a plan of some kind, which makes the single disqualifying
- * question — was this paid for by a government programme — the one that decides most
+ * question — was this paid for by a government program — the one that decides most
  * sales here. Every other state post treats that as one bullet in a checklist.
  * This one makes it the spine and gives it the space to be answered properly.
  *
@@ -25,7 +25,7 @@ export const MN: PostBody = {
     "Minnesota is one of the best-insured states, with 7.5% of working-age adults uninsured — which makes where your supplies came from the question that decides most sales. Plus what to do with no buyer in state.",
 
   lead: [
-    "Minnesota is the largest state in this directory with no buyer anywhere inside it. Nearly 5.8 million people, 881 ZIP codes, and not one listed place to hand a box over. The nearest buyer to the centre of the state is about 446 miles away, which settles the in-person question without much discussion.",
+    "Minnesota is the largest state in this directory with no buyer anywhere inside it. Nearly 5.8 million people, 881 ZIP codes, and not one listed place to hand a box over. The nearest buyer to the center of the state is about 446 miles away, which settles the in-person question without much discussion.",
     "But the more useful Minnesotan fact is a different one. Only 7.5% of working-age adults here are uninsured, among the lowest rates in the country. Almost everything sitting unused in a Minnesotan cupboard arrived through a plan of some kind — and which plan it was is the question that decides whether it can be sold at all. Most guides give that one line. It deserves more than one line here.",
   ],
 
@@ -33,9 +33,9 @@ export const MN: PostBody = {
     {
       heading: "Where the supplies came from matters more than what they are",
       paragraphs: [
-        "Supplies obtained through a government-covered programme cannot be resold. That is the rule, it has no exceptions, and it applies regardless of how new the boxes are, how many you have or how perfect their condition is. Everything else on this page is secondary to it.",
+        "Supplies obtained through a government-covered program cannot be resold. That is the rule, it has no exceptions, and it applies regardless of how new the boxes are, how many you have or how perfect their condition is. Everything else on this page is secondary to it.",
         "What does not matter, and worries people far more than it should, is the pharmacy label. A label with your own name on it is fine. Nobody is asking you to explain how you came to have supplies, and a printed label is not evidence of anything in itself. The question is about who paid, not whose name is on the box.",
-        "In a state where the great majority of people are covered, that distinction does real work. Supplies bought retail, or filled through employer or private insurance, are in a different category from supplies filled under a government programme, and only you can tell which of those you are holding.",
+        "In a state where the great majority of people are covered, that distinction does real work. Supplies bought retail, or filled through employer or private insurance, are in a different category from supplies filled under a government program, and only you can tell which of those you are holding.",
       ],
     },
     {
@@ -43,7 +43,7 @@ export const MN: PostBody = {
       paragraphs: [
         "If you filled the prescription yourself, you usually already know, and the pharmacy receipt or the explanation of benefits from the time will say which plan paid. That is the cleanest answer and takes a minute to check.",
         "If you cannot find the paperwork, the pharmacy that filled it can tell you which plan was billed. You do not need to explain why you are asking, and it is a routine question for them.",
-        "The awkward version is inherited supplies — a parent's cupboard cleared after a move into care or after a death. If the person was covered by a government programme, that is very likely how the supplies were filled, and the honest answer is usually that those boxes cannot be sold. It is worth checking rather than assuming in either direction, but do not talk yourself into a conclusion you would not want tested.",
+        "The awkward version is inherited supplies — a parent's cupboard cleared after a move into care or after a death. If the person was covered by a government program, that is very likely how the supplies were filled, and the honest answer is usually that those boxes cannot be sold. It is worth checking rather than assuming in either direction, but do not talk yourself into a conclusion you would not want tested.",
         "If you genuinely cannot establish it, say so when you ask for a figure rather than after the parcel has arrived. That conversation is much easier had at the start.",
       ],
     },
@@ -60,7 +60,7 @@ export const MN: PostBody = {
       paragraphs: [
         "Statewide, 10.1% of adults have diagnosed diabetes on the CDC's 2023 BRFSS estimates, against 12.1% nationally, with 18.3% of the population aged 65 or over.",
         "The internal spread is narrow. St. Paul reads 10.5% and Plymouth 7.0% — 3.5 points between the state's highest and lowest cities, where a comparable state might run to eight or ten. Minneapolis is 7.4%, lower than Duluth at 10.0%, lower than Blaine at 10.3%, and lower than Brooklyn Park at 9.7%. Rochester sits at 9.2%, Bloomington 8.9%, Woodbury 9.4%, Maple Grove 7.2%.",
-        "Two Minnesotan cities differ by less than the margin you would find between neighbouring suburbs in Michigan or Connecticut. There is no concentrated pocket of demand for a buyer to build a shop around, which is a large part of why nobody has, despite the population.",
+        "Two Minnesotan cities differ by less than the margin you would find between neighboring suburbs in Michigan or Connecticut. There is no concentrated pocket of demand for a buyer to build a shop around, which is a large part of why nobody has, despite the population.",
       ],
     },
     {
@@ -76,8 +76,8 @@ export const MN: PostBody = {
 
   faqs: [
     {
-      q: "My insurance paid for these, but it was not a government programme. Is that fine?",
-      a: "Yes. The restriction is specific to supplies obtained through a government-covered programme. Private or employer coverage, or paying retail yourself, does not create the same problem, and in a state as well insured as Minnesota that covers most sellers.",
+      q: "My insurance paid for these, but it was not a government program. Is that fine?",
+      a: "Yes. The restriction is specific to supplies obtained through a government-covered program. Private or employer coverage, or paying retail yourself, does not create the same problem, and in a state as well insured as Minnesota that covers most sellers.",
     },
     {
       q: "How do I find out which plan actually paid?",
@@ -85,11 +85,11 @@ export const MN: PostBody = {
     },
     {
       q: "The boxes have my late mother's name on the pharmacy label. Does that stop the sale?",
-      a: "The name on the label is not the issue. What matters is whether the supplies were obtained through a government-covered programme, and if she was covered by one that is the likely answer. It is worth establishing before you send anything rather than after it arrives.",
+      a: "The name on the label is not the issue. What matters is whether the supplies were obtained through a government-covered program, and if she was covered by one that is the likely answer. It is worth establishing before you send anything rather than after it arrives.",
     },
     {
       q: "Is there really no buyer in Minneapolis or St. Paul?",
-      a: "None listed, in either city or anywhere else in the state, which is unusual for a state of this size. The nearest is roughly 446 miles from the centre of Minnesota. If that changes, the buyer will appear on the Minnesota page rather than being hinted at here.",
+      a: "None listed, in either city or anywhere else in the state, which is unusual for a state of this size. The nearest is roughly 446 miles from the center of Minnesota. If that changes, the buyer will appear on the Minnesota page rather than being hinted at here.",
     },
     {
       q: "Do you buy expired Omnipod pods?",

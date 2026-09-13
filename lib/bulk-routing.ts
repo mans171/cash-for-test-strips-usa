@@ -41,7 +41,7 @@ function findBuyer(
   return [...qualifying].sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''))[0]
 }
 
-/** Who a bulk enquiry from `stateCode` should go to: the state's dedicated
+/** Who a bulk inquiry from `stateCode` should go to: the state's dedicated
  *  buyer (cc the house) or, when there isn't one, the house alone. */
 export function pickBulkRecipient(
   stateCode: string,
