@@ -38,7 +38,7 @@ export const OR: PostBody = {
       heading: "A state line that is not a distance",
       paragraphs: [
         "A buyer based in another state usually means a long drive or no drive at all. In Oregon it means crossing a river inside one metropolitan area, which is a trip a large number of Portlanders already make regularly for entirely ordinary reasons.",
-        "Nothing about selling supplies changes when you cross into Washington. The same conditions apply on either bank: the boxes have to be factory-sealed, they cannot have come through Medicare or Medicaid, and in-date strips want at least six months left on them. You are not doing anything different by driving over the bridge.",
+        "Nothing about selling supplies changes when you cross into Washington. The same conditions apply on either bank: the boxes have to be factory-sealed, they cannot have come through a government-covered programme, and in-date strips want at least six months left on them. You are not doing anything different by driving over the bridge.",
         "Ring first and agree a number before you go. Describe what you have accurately — brand, box count, quantity, expiry dates as printed — because a figure quoted against a rough description is a figure that moves when someone sees the boxes.",
       ],
     },
@@ -63,7 +63,7 @@ export const OR: PostBody = {
       heading: "Three checks before you drive anywhere",
       paragraphs: [
         "The seal first. Factory-sealed, unopened, in original packaging. An opened box has no resale value at all, because nobody downstream can verify what happened to it while it was open. Do not open one to photograph the contents — photograph the sealed box with the date and lot number visible instead.",
-        "The funding route second. Supplies obtained through Medicare or Medicaid cannot be resold. Retail purchases and private insurance are fine. A pharmacy label with your own name on it changes nothing and is not something anyone will query.",
+        "The funding route second. Supplies obtained through a government-covered programme cannot be resold. Retail purchases and private insurance are fine. A pharmacy label with your own name on it changes nothing and is not something anyone will query.",
         "The dates third. In-date test strips should have six months or more of shelf life left. Below six months the tier drops sharply, because whoever ends up using them needs a usable window to get through the box.",
       ],
     },
@@ -89,7 +89,7 @@ export const OR: PostBody = {
   faqs: [
     {
       q: "Can I really sell to a buyer in another state?",
-      a: "Yes, and for Portland-area readers it is the most practical option available. The Vancouver listing is across the Columbia from Portland. The conditions are identical to those anywhere else: sealed boxes, not obtained through Medicare or Medicaid, and enough shelf life left on any strips.",
+      a: "Yes, and for Portland-area readers it is the most practical option available. The Vancouver listing is across the Columbia from Portland. The conditions are identical to those anywhere else: sealed boxes, not obtained through a government-covered programme, and enough shelf life left on any strips.",
     },
     {
       q: "Is the drive over the bridge worth it for a couple of boxes?",

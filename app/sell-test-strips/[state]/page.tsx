@@ -13,6 +13,7 @@ import { buildStateFaqs, joinList, nearestBuyers, siblingStates, statePageH1 } f
 import { publishableCityTargets } from "@/lib/city-page-content";
 import { bodyFor } from "@/lib/blog-bodies";
 import { STATE_BLOG_POSTS } from "@/lib/blog-posts";
+import { pageTitle, stateTitle } from "@/lib/title";
 
 // Canada is excluded here on purpose: this route is the US state directory and
 // is enumerated as such in app/sitemap.ts.
@@ -26,16 +27,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { state } = await params;
   const code = state.toUpperCase();
   const label = STATE_LABELS[code];
-  if (!label) return { title: "State Not Found" };
+  if (!label) return { title: pageTitle("State Not Found") };
 
   // The hand-written state guide moved here from /blog/sell-diabetic-test-
-  // strips-<state> on 2026-09-12, and it brings its own title and description
-  // with it — those are what the post ranked on. The derived pair below stays
-  // as the fallback for any state that never had a written body.
+  // strips-<state> on 2026-09-12, and it brings its own description with it —
+  // that is what the post ranked on.
+  //
+  // Its `title`, however, is deliberately IGNORED: those hand-written titles
+  // run ~57 characters before the brand and blew the 60-character budget on
+  // all 50 state pages. The derived core below is uniform, keeps the primary
+  // keyword first, and fits every state label.
   const guide = bodyFor(code);
 
   return {
-    title: guide?.title ?? `Sell Diabetic Test Strips in ${label} — Find Local Cash Buyers`,
+    title: pageTitle(stateTitle(label)),
     description:
       guide?.metaDescription ??
       `Find cash buyers for unused diabetic test strips in ${label}. Get paid fast via PayPal, Zelle, or check. Browse local buyers near you.`,

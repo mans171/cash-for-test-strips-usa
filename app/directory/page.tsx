@@ -16,11 +16,12 @@ import { getZipCentroid, tierCompanies, type CompanyWithMiles } from "@/lib/zip-
 import { COMPANY_COLUMNS } from "@/lib/company-columns";
 import { hubStateCodes } from "@/lib/hub-page-content";
 import { PUBLIC_EMAIL } from "@/lib/owner";
+import { pageTitle } from "@/lib/title";
 
 const HUB_STATE_CODES = hubStateCodes();
 
 export const metadata: Metadata = {
-  title: "Directory — Find Test Strip Buyers Near You",
+  title: pageTitle("Test Strip Buyer Directory"),
   description:
     "Browse our full directory of cash buyers for diabetic test strips. Search by ZIP code to find buyers near you.",
   // All ?state=/?zip= filtered views canonicalize to the unfiltered directory —

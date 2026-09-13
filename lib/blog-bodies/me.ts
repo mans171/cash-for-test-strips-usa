@@ -68,7 +68,7 @@ export const ME: PostBody = {
       heading: "What disqualifies a box whatever it is",
       paragraphs: [
         "The seal, first. Factory-sealed and unopened, in original packaging. An opened box cannot be sold at any price, because nobody downstream can verify how it was handled or stored. In a deep cupboard there will be several boxes someone started and abandoned, and those are the ones to set aside immediately.",
-        "Then the source. Supplies obtained through Medicare or Medicaid cannot be resold. In a state where nearly a quarter of residents are 65 or over this is worth establishing early, and the pharmacy that filled the prescriptions can usually confirm it. A pharmacy label with a name on it, by contrast, changes nothing and does not need removing.",
+        "Then the source. Supplies obtained through a government-covered programme cannot be resold. In a state where nearly a quarter of residents are 65 or over this is worth establishing early, and the pharmacy that filled the prescriptions can usually confirm it. A pharmacy label with a name on it, by contrast, changes nothing and does not need removing.",
         "Then the date, for strips specifically: at least six months before expiry. Below that the value drops away quickly, because the next person needs time to get through the box.",
       ],
     },

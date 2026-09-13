@@ -59,7 +59,7 @@ export const SD: PostBody = {
       paragraphs: [
         "Test strips: FreeStyle Lite, Contour Next in all versions, Accu-Chek Guide, Aviva and SmartView, OneTouch Verio and Ultra, True Metrix. Continuous monitoring: Dexcom G6 sensors and transmitters, G7 sensors and receivers, FreeStyle Libre 1, 2 and 3. Omnipod pods in the 5, DASH and Classic versions. Some sealed Medtronic and Tandem components as well, though those warrant a call rather than an assumption.",
         "Every one of those has to be factory-sealed and unopened in the original packaging. An opened box is worth nothing whatever is inside it, because nobody further along the chain can establish how it was stored. That is the most common reason a shipment is turned down.",
-        "None of it can have been obtained through Medicare or Medicaid — supplies paid for by those programmes cannot be resold. A pharmacy label carrying your name is fine and is not what the question is about.",
+        "None of it can have been obtained through a government-covered programme — supplies paid for that way cannot be resold. A pharmacy label carrying your name is fine and is not what the question is about.",
         "Test strips want six months or more before their expiry date, and box size is worth checking before you decide what to send: a 100-count box is worth meaningfully more than two 50-count boxes of the same brand. FreeStyle Libre has one extra condition — US retail versions only, so sensors bought abroad cannot be resold here.",
       ],
     },
@@ -97,8 +97,8 @@ export const SD: PostBody = {
       a: "Yes, at a reduced rate, and the same applies to expired Omnipod 5, DASH and Classic pods. Expired G6 sensors do not qualify, and neither do expired test strips, which are genuinely not worth sending regardless of brand or quantity.",
     },
     {
-      q: "My supplies came through Medicare. Does that stop the sale?",
-      a: "Yes. Supplies obtained through Medicare or Medicaid cannot be resold, and condition does not change that. If the boxes were filled under private insurance or bought retail, that is a different situation, and the name on the pharmacy label makes no difference either way.",
+      q: "My supplies came through a government programme. Does that stop the sale?",
+      a: "Yes. Supplies obtained through a government-covered programme cannot be resold, and condition does not change that. If the boxes were filled under private insurance or bought retail, that is a different situation, and the name on the pharmacy label makes no difference either way.",
     },
     {
       q: "How long does the whole thing take from South Dakota?",

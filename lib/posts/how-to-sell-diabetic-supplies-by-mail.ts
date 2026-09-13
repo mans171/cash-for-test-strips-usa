@@ -130,7 +130,7 @@ paying postage on items that will be turned away:</p>
   <li><strong>Opened boxes.</strong> Once a box has been opened, a buyer has no
   way to verify how the contents were stored or handled. An opened box cannot be
   sold. Do not ship it.</li>
-  <li><strong>Supplies obtained through Medicare or Medicaid.</strong> Buyers do
+  <li><strong>Supplies obtained through a government-covered program.</strong> Buyers do
   not purchase these, without exception. This is a rule buyers follow
   consistently across the industry. Set those aside rather than shipping them.</li>
   <li><strong>Expired test strips.</strong> Expired strips have no resale value.
@@ -281,8 +281,8 @@ procedure above is what makes it reliable.</p>
       a: "Ask for the specific reason and for photographs of what was received. A legitimate revision comes with concrete evidence: a broken seal, a date that differs from what you described, a count that does not match. A vague revision with no specifics is a renegotiation, not a correction — and you are entitled to have your supplies returned rather than accept a figure you did not agree to.",
     },
     {
-      q: "Can I sell diabetic supplies obtained through Medicare or Medicaid by mail?",
-      a: "No. Buyers do not purchase supplies obtained through Medicare or Medicaid, whether the transaction is in person or by mail. This is a rule buyers follow consistently. Set those supplies aside rather than shipping them.",
+      q: "Can I sell diabetic supplies obtained through a government program by mail?",
+      a: "No. Buyers do not purchase supplies obtained through a government-covered program, whether the transaction is in person or by mail. This is a rule buyers follow consistently. Set those supplies aside rather than shipping them.",
     },
     {
       q: "How long does it take to get paid for a mail-in sale?",

@@ -12,7 +12,7 @@ import type { RegistryPost } from "./types"
  *
  * Our edge on this query is the funding distinction, which is the single most
  * common misconception in this whole category: supplies bought through PRIVATE
- * insurance can be sold; supplies obtained through Medicare or Medicaid cannot.
+ * insurance can be sold; supplies obtained through a government-covered program cannot.
  * People assume "insurance paid, so it isn't mine to sell" and bin the lot.
  * The site already states this correctly on the state pages — this post makes
  * it the headline answer, because on an insurance-change query it IS the
@@ -24,6 +24,7 @@ import type { RegistryPost } from "./types"
 export const insuranceChangedBrands: RegistryPost = {
   slug: "insurance-changed-what-to-do-with-old-supplies",
   title: "Your Insurance Changed Brands. What to Do With the Old Supplies",
+  shortTitle: "Insurance Changed Brands? What to Do With Old Supplies",
   description:
     "A new plan year can leave you holding sealed boxes for a meter you no longer use. Whether you can sell supplies insurance paid for, and the one funding rule that decides it.",
   datePublished: "2026-09-24",
@@ -56,7 +57,7 @@ end up holding these rather than simply reversing the order.</p>
 part that gets people wrong, and it is worth being exact about, because the
 answer depends entirely on which kind of insurance.</p>
 
-<p>Supplies obtained through <strong>Medicare or Medicaid cannot be resold</strong>.
+<p>Supplies obtained through a government program <strong>cannot be resold</strong>.
 That is a firm line and it applies no matter how they came to be sitting in your
 cupboard.</p>
 
@@ -107,7 +108,7 @@ size and do not need sorting first.</p>
   faqs: [
     {
       q: "My insurance paid for these. Can I still sell them?",
-      a: "If they came through private insurance, an employer plan, or you paid yourself, yes. Supplies obtained through Medicare or Medicaid cannot be resold. The rule is about the funding route rather than about you, and nobody asks you to prove how a box came into your possession.",
+      a: "If they came through private insurance, an employer plan, or you paid yourself, yes. Supplies obtained through a government-covered program cannot be resold. The rule is about the funding route rather than about you, and nobody asks you to prove how a box came into your possession.",
     },
     {
       q: "Can I just use the old strips in my new meter?",

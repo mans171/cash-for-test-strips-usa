@@ -62,7 +62,7 @@ export const VA: PostBody = {
       heading: "The rules that apply everywhere in the state",
       paragraphs: [
         "The box must be factory-sealed and unopened. An opened box is worth nothing, not less — once the seal is gone there is no way for the next holder to establish anything about it.",
-        "Supplies obtained through Medicare or Medicaid cannot be resold, and no condition or date changes that. A pharmacy label with your name printed on it is a separate matter entirely and does not affect the sale.",
+        "Supplies obtained through a government-covered programme cannot be resold, and no condition or date changes that. A pharmacy label with your name printed on it is a separate matter entirely and does not affect the sale.",
         "Test strips should have six months or more before expiry. Below that the value drops off sharply, because the next person needs time to actually use them.",
         "Around 8.7% of working-age Virginians are uninsured, a little below the national picture, and 17.8% of the state is 65 or over. Those two figures describe most of the people on both sides of this market.",
       ],

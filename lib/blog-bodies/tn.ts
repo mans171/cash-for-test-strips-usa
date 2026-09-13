@@ -40,7 +40,7 @@ export const TN: PostBody = {
     {
       heading: "Two: who paid for it",
       paragraphs: [
-        "Supplies obtained through Medicare or Medicaid cannot be resold, and no condition or brand changes that. This is a restriction on the supplies themselves rather than a judgement about the seller.",
+        "Supplies obtained through a government-covered programme cannot be resold, and no condition or brand changes that. This is a restriction on the supplies themselves rather than a judgement about the seller.",
         "Supplies bought retail or received through private insurance are not affected. Nor is a pharmacy label with your own name on it — that is entirely ordinary and appears on most of what gets sold. The question is which programme paid, not what is printed on the sticker.",
         "About 11.6% of working-age Tennesseans have no health insurance, above the national picture, which is part of why a second-hand market in sealed supplies exists here at all.",
       ],

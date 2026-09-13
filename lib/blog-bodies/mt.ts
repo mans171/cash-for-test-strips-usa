@@ -39,7 +39,7 @@ export const MT: PostBody = {
       paragraphs: [
         "Setting the two expiry exceptions aside, three things decide it, and all three are pass/fail rather than negotiable.",
         "The seal has to be intact. Factory-sealed, unopened, original packaging. A box that has been opened cannot be resold at any price, because there is no way for the next person to know what happened to it. This is also the most common reason a parcel gets sent back.",
-        "It cannot have been bought through Medicare or Medicaid. Supplies paid for by those programmes cannot legally be resold. If yours came through your own insurance or you paid retail, that is fine — and a pharmacy label with your name on it does not affect anything.",
+        "It cannot have been bought through a government-covered programme. Supplies paid for that way cannot legally be resold. If yours came through your own insurance or you paid retail, that is fine — and a pharmacy label with your name on it does not affect anything.",
         "And for test strips specifically, there should be at least six months before the expiry date. Less than that and the value drops sharply, because whoever buys them next needs time to actually use them.",
       ],
     },
@@ -75,7 +75,7 @@ export const MT: PostBody = {
         "Test strips: FreeStyle Lite, Contour Next in all versions, Accu-Chek Guide, Aviva and SmartView, OneTouch Verio and Ultra, True Metrix. Box count matters more than people expect — a 100-count box is worth meaningfully more than two 50-count boxes of the same brand.",
         "CGM: Dexcom G6 sensors and transmitters, G7 sensors and receivers, and FreeStyle Libre 1, 2 and 3 sensors. Libre has one qualifier that catches people out — US retail versions only. Sensors bought abroad cannot be resold here regardless of condition.",
         "Pods and pumps: Omnipod 5, DASH and Classic pods. Pods only, not the controllers. Some sealed Medtronic and Tandem components as well, though those are worth a call rather than an assumption.",
-        "We do not buy opened boxes, anything bought through Medicare or Medicaid, or expired supplies other than the two exceptions above. If you are unsure which category yours falls into, that is a phone call, not a guess.",
+        "We do not buy opened boxes, anything bought through a government-covered programme, or expired supplies other than the two exceptions above. If you are unsure which category yours falls into, that is a phone call, not a guess.",
       ],
     },
   ],
@@ -91,7 +91,7 @@ export const MT: PostBody = {
     },
     {
       q: "What if my box has a pharmacy label with my name on it?",
-      a: "That is fine and does not affect the sale. What matters is that the box is sealed and that the supplies were not obtained through Medicare or Medicaid. You are not asked to explain how you came to have them.",
+      a: "That is fine and does not affect the sale. What matters is that the box is sealed and that the supplies were not obtained through a government-covered programme. You are not asked to explain how you came to have them.",
     },
     {
       q: "How much does shipping cost me from Montana?",

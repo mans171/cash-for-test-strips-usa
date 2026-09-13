@@ -6,7 +6,7 @@ import type { PostBody } from "./types"
  * Only 7.5% of working-age Minnesotans are uninsured, one of the lowest rates
  * in the country. Nearly everything in a Minnesotan medicine cupboard therefore
  * arrived through a plan of some kind, which makes the single disqualifying
- * question — was this Medicare or Medicaid — the one that actually decides most
+ * question — was this paid for by a government programme — the one that decides most
  * sales here. Every other state post treats that as one bullet in a checklist.
  * This one makes it the spine and gives it the space to be answered properly.
  *
@@ -18,7 +18,7 @@ import type { PostBody } from "./types"
  * no pronouncements on law — the conditions are stated, not adjudicated.
  */
 export const MN: PostBody = {
-  label: "The Medicare and Medicaid question decides most Minnesota sales",
+  label: "How the supplies were paid for decides most Minnesota sales",
   title: "Selling Diabetic Test Strips in Minnesota: The Question That Decides It",
   heading: "Selling Diabetic Test Strips in Minnesota",
   metaDescription:
@@ -33,9 +33,9 @@ export const MN: PostBody = {
     {
       heading: "Where the supplies came from matters more than what they are",
       paragraphs: [
-        "Supplies obtained through Medicare or Medicaid cannot be resold. That is the rule, it has no exceptions, and it applies regardless of how new the boxes are, how many you have or how perfect their condition is. Everything else on this page is secondary to it.",
+        "Supplies obtained through a government-covered programme cannot be resold. That is the rule, it has no exceptions, and it applies regardless of how new the boxes are, how many you have or how perfect their condition is. Everything else on this page is secondary to it.",
         "What does not matter, and worries people far more than it should, is the pharmacy label. A label with your own name on it is fine. Nobody is asking you to explain how you came to have supplies, and a printed label is not evidence of anything in itself. The question is about who paid, not whose name is on the box.",
-        "In a state where the great majority of people are covered, that distinction does real work. Supplies bought retail, or filled through employer or private insurance, are in a different category from supplies filled under Medicare or Medicaid, and only you can tell which of those you are holding.",
+        "In a state where the great majority of people are covered, that distinction does real work. Supplies bought retail, or filled through employer or private insurance, are in a different category from supplies filled under a government programme, and only you can tell which of those you are holding.",
       ],
     },
     {
@@ -43,7 +43,7 @@ export const MN: PostBody = {
       paragraphs: [
         "If you filled the prescription yourself, you usually already know, and the pharmacy receipt or the explanation of benefits from the time will say which plan paid. That is the cleanest answer and takes a minute to check.",
         "If you cannot find the paperwork, the pharmacy that filled it can tell you which plan was billed. You do not need to explain why you are asking, and it is a routine question for them.",
-        "The awkward version is inherited supplies — a parent's cupboard cleared after a move into care or after a death. If the person was on Medicare, that is very likely how the supplies were filled, and the honest answer is usually that those boxes cannot be sold. It is worth checking rather than assuming in either direction, but do not talk yourself into a conclusion you would not want tested.",
+        "The awkward version is inherited supplies — a parent's cupboard cleared after a move into care or after a death. If the person was covered by a government programme, that is very likely how the supplies were filled, and the honest answer is usually that those boxes cannot be sold. It is worth checking rather than assuming in either direction, but do not talk yourself into a conclusion you would not want tested.",
         "If you genuinely cannot establish it, say so when you ask for a figure rather than after the parcel has arrived. That conversation is much easier had at the start.",
       ],
     },
@@ -76,8 +76,8 @@ export const MN: PostBody = {
 
   faqs: [
     {
-      q: "My insurance paid for these, but it was not Medicare or Medicaid. Is that fine?",
-      a: "Yes. The restriction is specific to supplies obtained through Medicare or Medicaid. Private or employer coverage, or paying retail yourself, does not create the same problem, and in a state as well insured as Minnesota that covers most sellers.",
+      q: "My insurance paid for these, but it was not a government programme. Is that fine?",
+      a: "Yes. The restriction is specific to supplies obtained through a government-covered programme. Private or employer coverage, or paying retail yourself, does not create the same problem, and in a state as well insured as Minnesota that covers most sellers.",
     },
     {
       q: "How do I find out which plan actually paid?",
@@ -85,7 +85,7 @@ export const MN: PostBody = {
     },
     {
       q: "The boxes have my late mother's name on the pharmacy label. Does that stop the sale?",
-      a: "The name on the label is not the issue. What matters is whether the supplies were obtained through Medicare or Medicaid, and if she was on Medicare that is the likely answer. It is worth establishing before you send anything rather than after it arrives.",
+      a: "The name on the label is not the issue. What matters is whether the supplies were obtained through a government-covered programme, and if she was covered by one that is the likely answer. It is worth establishing before you send anything rather than after it arrives.",
     },
     {
       q: "Is there really no buyer in Minneapolis or St. Paul?",

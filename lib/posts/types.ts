@@ -26,8 +26,14 @@ export type PostFaq = {
 export type RegistryPost = {
   /** URL slug, no leading slash. Must be unique across state posts and other registry posts. */
   slug: string
-  /** <title> tag. Keep under 70 characters. */
+  /** <title> tag and the on-page H1. Keep under 70 characters. */
   title: string
+  /**
+   * Optional shorter <title>, used when `title` exceeds the site's
+   * 60-character title budget (lib/title.ts). The H1 still renders `title`;
+   * only the <title> tag and the OpenGraph title use this.
+   */
+  shortTitle?: string
   /** Meta description. Keep 120–160 characters. */
   description: string
   /**

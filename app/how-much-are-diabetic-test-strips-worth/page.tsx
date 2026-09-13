@@ -3,9 +3,10 @@ import { buildFaqPageSchema } from '@/lib/schema'
 import { TEST_STRIP_TIERS, CGM_TIERS } from '@/lib/tier-pricing'
 import { TierBadge } from '@/app/components/ui'
 import { JsonLd } from '@/app/components/JsonLd'
+import { pageTitle } from "@/lib/title";
 
 export const metadata: Metadata = {
-  title: 'How Much Are Diabetic Test Strips Worth? 2026 Guide',
+  title: pageTitle("How Much Are Diabetic Test Strips Worth? 2026 Guide"),
   description:
     'Brand-by-brand payout tiers for diabetic test strips and CGM supplies in 2026. See how OneTouch, FreeStyle, Accu-Chek, Contour, Dexcom, and more compare.',
   alternates: { canonical: 'https://cash4teststripsusa.com/how-much-are-diabetic-test-strips-worth' },

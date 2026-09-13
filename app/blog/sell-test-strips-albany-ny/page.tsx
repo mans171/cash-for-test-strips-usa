@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { buildArticleSchema, buildBreadcrumbSchema, buildFaqPageSchema } from "@/lib/schema";
 import { JsonLd } from "@/app/components/JsonLd";
+import { pageTitle } from "@/lib/title";
 
 /**
  * Hand-written feature post, deliberately NOT part of the STATE_BLOG_POSTS
@@ -17,7 +18,9 @@ const PUBLISHED = "2026-08-13";
 const ATSB = "https://albanyteststripsbuyer.com";
 
 export const metadata: Metadata = {
-  title: "Where to Sell Diabetic Test Strips in Albany, NY — 2026 Guide",
+  // " — 2026 Guide" pushed this to 61 characters; the OpenGraph title below
+  // keeps it, because only the <title> tag is budgeted at 60.
+  title: pageTitle("Where to Sell Diabetic Test Strips in Albany, NY"),
   description:
     "Selling unused test strips, Dexcom sensors or Omnipod pods in the Capital Region? Here is who buys them in Albany, what they pay for, and how same-day local pickup works.",
   alternates: { canonical: URL },
@@ -48,7 +51,7 @@ const FAQS = [
   },
   {
     q: "Is it legal to sell diabetic test strips in New York?",
-    a: "Reselling unused, unexpired, unopened supplies you own is generally permitted in New York, and no state law specifically bans it. Supplies paid for by Medicare or Medicaid cannot be resold. This is general information, not legal advice — consult an attorney about your situation.",
+    a: "Reselling unused, unexpired, unopened supplies you own is generally permitted in New York, and no state law specifically bans it. Supplies paid for by a government program cannot be resold. This is general information, not legal advice — consult an attorney about your situation.",
   },
 ];
 

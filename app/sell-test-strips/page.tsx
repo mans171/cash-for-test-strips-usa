@@ -15,11 +15,12 @@ import {
   type HubRegion,
   type HubState,
 } from "@/lib/hub-page-content";
+import { pageTitle } from "@/lib/title";
 
 // Canonical belongs on the page, never in the root layout — putting it in the
 // layout once made every route claim the homepage as its canonical.
 export const metadata: Metadata = {
-  title: "Sell Diabetic Test Strips — Buyers in All 50 States",
+  title: pageTitle("Sell Diabetic Test Strips: All 50 States"),
   description:
     "Find out who buys unused diabetic test strips in your state. Browse all 50 states and 27 city guides, with local buyer counts and mail-in options for states with no buyer nearby.",
   alternates: { canonical: "https://cash4teststripsusa.com/sell-test-strips" },

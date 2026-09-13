@@ -13,6 +13,7 @@ import type { RegistryPost } from "./types"
 export const deceasedRelativeDiabeticSupplies: RegistryPost = {
   slug: "deceased-relative-diabetic-supplies",
   title: "A Relative Has Died and There Are Diabetic Supplies in the House",
+  shortTitle: "Diabetic Supplies Left After a Death: What to Do",
   description:
     "What to do with sealed diabetic supplies during a clear-out: what has value, what does not, who in the family should handle it, and the one deadline that decides it.",
   datePublished: "2026-10-08",
@@ -57,9 +58,9 @@ away constantly during clear-outs on the strength of advice about something
 else, so pull them out of the bag before anything goes in the skip.</p>
 
 <p>One rule does apply regardless of who is selling. Supplies obtained through
-Medicare or Medicaid cannot be resold. That is about the funding route rather
+a government-covered program cannot be resold. That is about the funding route rather
 than about the person holding them, and a great many older people's supplies
-came through exactly those programmes.</p>
+were funded exactly that way.</p>
 
 <h2>Do not open anything</h2>
 
@@ -95,8 +96,8 @@ brands and mixed dates are expected there and nothing needs sorting first.</p>
       a: "Two things are: Omnipod pods, including 5, DASH and Classic, and Dexcom G7 sensors, both at a reduced rate. Expired test strips and expired Dexcom G6 sensors are not. Separate those two out before the rest goes.",
     },
     {
-      q: "These came through Medicare. Does that matter?",
-      a: "Yes. Supplies obtained through Medicare or Medicaid cannot be resold. It is worth checking before going further, because it is the condition most likely to apply to an older relative's stock.",
+      q: "These came through a government program. Does that matter?",
+      a: "Yes. Supplies obtained through a government-covered program cannot be resold. It is worth checking before going further, because it is the condition most likely to apply to an older relative's stock.",
     },
     {
       q: "There is a lot of it. Is that handled differently?",

@@ -58,7 +58,7 @@ export const AK: PostBody = {
       heading: "What has to be true before a box is worth sending at all",
       paragraphs: [
         "The seal has to be intact — factory-sealed, unopened, original packaging. An opened box cannot be resold at any price, because nobody downstream can know how it was stored. This is the most common reason a parcel comes back, and from Alaska it is the most expensive mistake in the list.",
-        "The supplies cannot have come through Medicare or Medicaid. Stock paid for by those programmes cannot be resold. If yours came through your own insurance, or you bought it retail, that is a different matter, and a pharmacy label with your name printed on it does not affect anything either way.",
+        "The supplies cannot have come through a government-covered programme. Stock paid for that way cannot be resold. If yours came through your own insurance, or you bought it retail, that is a different matter, and a pharmacy label with your name printed on it does not affect anything either way.",
         "Test strips should have at least six months left before expiry. Below that the value falls away sharply, because whoever uses them next needs time to actually get through the box. And a 100-count box is worth meaningfully more than two 50-count boxes of the same brand, which is worth knowing before you decide what is worth the postage.",
         "FreeStyle Libre has one further condition that catches people out: US retail versions only. Sensors bought outside the country cannot be resold here regardless of how perfect their condition is.",
       ],

@@ -32,7 +32,7 @@ export const ND: PostBody = {
       heading: "Step one: pull out what cannot be sold at all",
       paragraphs: [
         "Start by subtracting rather than counting. Anything with a broken seal comes out first. Factory-sealed, unopened, original manufacturer's packaging is the standard, and an opened box has no value at any tier because nobody downstream can verify how it was handled. This is the most common single reason a parcel is refused, and it is entirely avoidable at the kitchen table.",
-        "Next, anything obtained through Medicare or Medicaid. Supplies paid for by those programmes cannot be resold, and no amount of good condition changes that. A pharmacy label with your own name printed on it is not a problem and never has been — the question is about which plan paid, not whose name is on the box.",
+        "Next, anything obtained through a government-covered programme. Supplies paid for that way cannot be resold, and no amount of good condition changes that. A pharmacy label with your own name printed on it is not a problem and never has been — the question is about which plan paid, not whose name is on the box.",
         "Then FreeStyle Libre sensors bought outside the United States. US retail versions only, and this catches out more people than you would expect. If the packaging is not the American version, it comes out of the pile.",
         "Lastly, test strips with less than six months before expiry. They are not disqualified outright, but the value falls away sharply below that mark because whoever uses them next needs time to work through the box.",
       ],

@@ -17,6 +17,7 @@ import { ContactButtons } from "@/app/components/ContactButtons";
 import { honorsBonus, BONUS_MENTION_COPY } from "@/lib/bonus";
 import { isIndexableProfile } from "@/lib/company-index";
 import { MonogramAvatar, VerifiedBadge, FeaturedBadge, PinIcon } from "@/app/components/ui";
+import { pageTitle, companyTitle } from "@/lib/title";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -28,11 +29,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     .eq("slug", slug)
     .single();
 
-  if (!data) return { title: "Buyer Not Found" };
+  if (!data) return { title: pageTitle("Buyer Not Found") };
 
   const stateLabel = data.states[0] ? STATE_LABELS[data.states[0]] : null;
   return {
-    title: `${data.name} — Sell Test Strips${stateLabel ? ` in ${stateLabel}` : ""}`,
+    title: pageTitle(companyTitle(data.name, data.city, data.states[0] ?? null)),
     description:
       data.description ??
       `${data.name} buys unused diabetic test strips for cash${stateLabel ? ` in ${stateLabel}` : ""}.`,

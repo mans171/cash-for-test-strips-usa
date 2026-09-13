@@ -26,6 +26,7 @@ import type { RegistryPost } from "./types"
 export const oldDexcomSensorsAfterSwitching: RegistryPost = {
   slug: "old-dexcom-sensors-after-switching",
   title: "Switched to the Dexcom G7? What to Do With Your Old G6 Sensors",
+  shortTitle: "Old Dexcom G6 Sensors After Switching to the G7",
   description:
     "Moving from G6 to G7 leaves most people with sealed sensors they can never use. What they are still worth, the expiry rule almost everyone gets wrong, and what to check first.",
   datePublished: "2026-09-17",
@@ -84,8 +85,8 @@ you are holding and what the date says before anything goes in the trash.</p>
 box has been opened nobody downstream can verify what happened to it while it
 was open, so an opened box cannot be resold at any price.</li>
 <li><strong>In date</strong>, with the G7 exception above.</li>
-<li><strong>Not funded through Medicare or Medicaid.</strong> Supplies obtained
-through those programmes cannot be resold. This is about the funding route, not
+<li><strong>Not funded through a government program.</strong> Supplies obtained
+that way cannot be resold. This is about the funding route, not
 about you, and nobody is asked to prove how a box came into their possession.</li>
 <li><strong>Described accurately.</strong> Generation, box count, and the dates
 as printed. A figure quoted against a rough description is a figure that changes

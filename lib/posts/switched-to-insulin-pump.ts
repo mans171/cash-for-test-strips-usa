@@ -8,6 +8,7 @@ import type { RegistryPost } from "./types"
 export const switchedToInsulinPump: RegistryPost = {
   slug: "started-a-pump-or-cgm-leftover-test-strips",
   title: "Started a Pump or CGM? What to Do With the Leftover Test Strips",
+  shortTitle: "Leftover Test Strips After Starting a Pump or CGM",
   description:
     "Moving to a pump or continuous monitor usually leaves months of unopened strips behind. What is still worth something, what is not, and what to check first.",
   datePublished: "2026-10-15",
@@ -60,7 +61,7 @@ people read their sensor on a phone.</li>
 <p>Anything opened, for the same reason as always: once a seal is broken nobody
 downstream can verify how it was stored. Expired strips, which give inaccurate
 readings and should not be resold by anybody. And supplies obtained through
-Medicare or Medicaid, which cannot be resold regardless of condition — a rule
+a government-covered program, which cannot be resold regardless of condition — a rule
 about the funding route rather than about you.</p>
 
 <p>The two exceptions on dates are worth repeating because they come up in
@@ -92,8 +93,8 @@ comes to a hundred pieces or more the
       a: "An unopened meter or starter kit is worth asking about. Ones that have been used are not, but they arrive free with prescriptions often enough that plenty are still boxed.",
     },
     {
-      q: "My supplies came through Medicare. Can I sell them?",
-      a: "No. Supplies obtained through Medicare or Medicaid cannot be resold. The rule is about how they were funded rather than about you, and nobody is asked to prove how a box came into their possession.",
+      q: "My supplies came through a government program. Can I sell them?",
+      a: "No. Supplies obtained through a government-covered program cannot be resold. The rule is about how they were funded rather than about you, and nobody is asked to prove how a box came into their possession.",
     },
     {
       q: "Does it matter that the boxes are different brands?",
