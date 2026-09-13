@@ -47,7 +47,7 @@ on that basis alone.</p>
 <li><strong>Sealed and unopened</strong>, in the original packaging. This is not
 negotiable and it is not about the pods being expired — an opened box cannot be
 sold at any price, because nobody downstream can verify how it was stored.</li>
-<li><strong>Not funded through a government programme.</strong> Supplies obtained
+<li><strong>Not funded through a government program.</strong> Supplies obtained
 that way cannot be resold. It is about the funding route, not
 about you.</li>
 <li><strong>Described accurately.</strong> Which system, how many boxes, and the

@@ -85,7 +85,7 @@ you are holding and what the date says before anything goes in the trash.</p>
 box has been opened nobody downstream can verify what happened to it while it
 was open, so an opened box cannot be resold at any price.</li>
 <li><strong>In date</strong>, with the G7 exception above.</li>
-<li><strong>Not funded through a government programme.</strong> Supplies obtained
+<li><strong>Not funded through a government program.</strong> Supplies obtained
 that way cannot be resold. This is about the funding route, not
 about you, and nobody is asked to prove how a box came into their possession.</li>
 <li><strong>Described accurately.</strong> Generation, box count, and the dates

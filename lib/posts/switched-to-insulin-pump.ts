@@ -61,7 +61,7 @@ people read their sensor on a phone.</li>
 <p>Anything opened, for the same reason as always: once a seal is broken nobody
 downstream can verify how it was stored. Expired strips, which give inaccurate
 readings and should not be resold by anybody. And supplies obtained through
-a government-covered programme, which cannot be resold regardless of condition — a rule
+a government-covered program, which cannot be resold regardless of condition — a rule
 about the funding route rather than about you.</p>
 
 <p>The two exceptions on dates are worth repeating because they come up in
@@ -93,8 +93,8 @@ comes to a hundred pieces or more the
       a: "An unopened meter or starter kit is worth asking about. Ones that have been used are not, but they arrive free with prescriptions often enough that plenty are still boxed.",
     },
     {
-      q: "My supplies came through a government programme. Can I sell them?",
-      a: "No. Supplies obtained through a government-covered programme cannot be resold. The rule is about how they were funded rather than about you, and nobody is asked to prove how a box came into their possession.",
+      q: "My supplies came through a government program. Can I sell them?",
+      a: "No. Supplies obtained through a government-covered program cannot be resold. The rule is about how they were funded rather than about you, and nobody is asked to prove how a box came into their possession.",
     },
     {
       q: "Does it matter that the boxes are different brands?",

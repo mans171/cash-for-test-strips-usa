@@ -85,7 +85,7 @@ export const MN: PostBody = {
     },
     {
       q: "The boxes have my late mother's name on the pharmacy label. Does that stop the sale?",
-      a: "The name on the label is not the issue. What matters is whether the supplies were obtained through a government-covered programme, and if she was covered by a government programme that is the likely answer. It is worth establishing before you send anything rather than after it arrives.",
+      a: "The name on the label is not the issue. What matters is whether the supplies were obtained through a government-covered programme, and if she was covered by one that is the likely answer. It is worth establishing before you send anything rather than after it arrives.",
     },
     {
       q: "Is there really no buyer in Minneapolis or St. Paul?",

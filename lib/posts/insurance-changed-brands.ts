@@ -12,7 +12,7 @@ import type { RegistryPost } from "./types"
  *
  * Our edge on this query is the funding distinction, which is the single most
  * common misconception in this whole category: supplies bought through PRIVATE
- * insurance can be sold; supplies obtained through a government-covered programme cannot.
+ * insurance can be sold; supplies obtained through a government-covered program cannot.
  * People assume "insurance paid, so it isn't mine to sell" and bin the lot.
  * The site already states this correctly on the state pages — this post makes
  * it the headline answer, because on an insurance-change query it IS the
@@ -108,7 +108,7 @@ size and do not need sorting first.</p>
   faqs: [
     {
       q: "My insurance paid for these. Can I still sell them?",
-      a: "If they came through private insurance, an employer plan, or you paid yourself, yes. Supplies obtained through a government-covered programme cannot be resold. The rule is about the funding route rather than about you, and nobody asks you to prove how a box came into your possession.",
+      a: "If they came through private insurance, an employer plan, or you paid yourself, yes. Supplies obtained through a government-covered program cannot be resold. The rule is about the funding route rather than about you, and nobody asks you to prove how a box came into your possession.",
     },
     {
       q: "Can I just use the old strips in my new meter?",
