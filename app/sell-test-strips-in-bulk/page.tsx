@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { BulkEnquiryForm } from './BulkEnquiryForm'
 import { OWNER_PHONE, BULK_MIN_PIECES } from '@/lib/owner'
+import { pageTitle } from "@/lib/title";
 
 // Written for a RESELLER, not a consumer. Every other page on this site
 // assumes someone found a relative's cupboard; this one assumes a business
@@ -12,7 +13,7 @@ import { OWNER_PHONE, BULK_MIN_PIECES } from '@/lib/owner'
 const PAGE_URL = 'https://cash4teststripsusa.com/sell-test-strips-in-bulk'
 
 export const metadata: Metadata = {
-  title: 'Sell Diabetic Test Strips in Bulk | Cash For Test Strips USA',
+  title: pageTitle("Sell Test Strips in Bulk"),
   description:
     'We buy sealed diabetic test strips and CGM supplies in bulk from resellers, pharmacies and medical supply businesses. ' +
     BULK_MIN_PIECES +
@@ -31,7 +32,7 @@ const FAQS = [
   },
   {
     q: 'What condition do they need to be in?',
-    a: 'Factory sealed, unopened, in original packaging, and unexpired. Opened boxes cannot be resold at any price. Supplies obtained through Medicare or Medicaid cannot be resold at all.',
+    a: 'Factory sealed, unopened, in original packaging, and unexpired. Opened boxes cannot be resold at any price. Supplies obtained through a government programme cannot be resold at all.',
   },
   {
     q: 'How fast do you pay?',

@@ -1,7 +1,7 @@
 import type { PostBody } from "./types"
 
 /**
- * Arizona — built on the Medicare/Medicaid condition, because Arizona is the
+ * Arizona — built on the government-coverage condition, because Arizona is the
  * state where it disqualifies the most cupboards. 19.7% of residents are 65 or
  * over, which is where retirement-state Arizona sits in the top handful
  * nationally, and 13.2% of working-age adults have no insurance at all — one of
@@ -18,11 +18,11 @@ import type { PostBody } from "./types"
  * amounts and no pronouncement on law — the legality page carries that.
  */
 export const AZ: PostBody = {
-  label: "The Medicare question",
+  label: "The question of who paid",
   title: "Selling Diabetic Test Strips in Arizona: The Question That Decides It",
   heading: "Selling Diabetic Test Strips in Arizona",
   metaDescription:
-    "Nearly a fifth of Arizona is 65 or over, and supplies obtained through Medicare or Medicaid cannot be resold. That one condition settles more Arizona cupboards than anything else on this page.",
+    "Nearly a fifth of Arizona is 65 or over, and supplies obtained through a government-covered programme cannot be resold. That one condition settles more Arizona cupboards than anything else on this page.",
 
   lead: [
     "Arizona has two populations that matter here and they barely overlap. Just under a fifth of the state — 19.7% — is aged 65 or over, which is among the highest shares in the country and is a fair description of what Arizona has spent fifty years becoming. At the same time 13.2% of working-age Arizonans have no health insurance, which is well above the national picture.",
@@ -34,8 +34,8 @@ export const AZ: PostBody = {
     {
       heading: "How the supplies were paid for comes before everything else",
       paragraphs: [
-        "Supplies obtained through Medicare or Medicaid cannot be resold. That is not a preference and it is not something a buyer can waive for you — it is a condition on the supplies themselves, and it applies no matter how sealed the box is or how good the dates are.",
-        "In a state where 19.7% of residents are 65 or over, that rules out a large share of what is sitting in Arizona cupboards, and there is no point pretending otherwise. If a box came through a Medicare Part B or Part D benefit, or through AHCCCS, it stops there. A buyer who tells you differently is one to walk away from.",
+        "Supplies covered by a government programme cannot be resold. That is not a preference and it is not something a buyer can waive for you — it is a condition on the supplies themselves, and it applies no matter how sealed the box is or how good the dates are.",
+        "In a state where 19.7% of residents are 65 or over, that rules out a large share of what is sitting in Arizona cupboards, and there is no point pretending otherwise. If a box came through a government-funded benefit of any kind, it stops there. A buyer who tells you differently is one to walk away from.",
         "What does not disqualify anything: a pharmacy label with your own name on it. People assume that label is a problem and it is not. A retail purchase, a commercial insurance plan, a cash purchase at a chemist, supplies bought for someone who has since changed treatment — all of those are fine, and the label just shows where the box came from.",
         "If you genuinely do not know how a box was paid for, that is a phone call rather than a guess. Guessing wrong in either direction costs you: guess too cautiously and you bin something that had value, guess too loosely and you post something that gets sent back.",
       ],
@@ -87,11 +87,11 @@ export const AZ: PostBody = {
   faqs: [
     {
       q: "My box has a pharmacy label with my name and address on it. Is that a problem?",
-      a: "No. The label is not what matters. What matters is whether the supplies were obtained through Medicare or Medicaid, which cannot be resold, and whether the box is still factory-sealed. Nobody asks you to account for how you came to have them beyond that.",
+      a: "No. The label is not what matters. What matters is whether the supplies were obtained through a government-covered programme, which cannot be resold, and whether the box is still factory-sealed. Nobody asks you to account for how you came to have them beyond that.",
     },
     {
-      q: "Some of what I have came through Medicare and some I bought outright. What then?",
-      a: "Separate them and only offer the retail ones. Do not send a mixed parcel hoping it goes unnoticed — verification happens on arrival, the Medicare boxes come out, and you end up with a revised figure and a slower sale. Sorting first is faster for everyone.",
+      q: "Some of what I have came through a government programme and some I bought outright. What then?",
+      a: "Separate them and only offer the retail ones. Do not send a mixed parcel hoping it goes unnoticed — verification happens on arrival, the government-covered boxes come out, and you end up with a revised figure and a slower sale. Sorting first is faster for everyone.",
     },
     {
       q: "Is there anywhere in Phoenix or Tucson I can sell in person?",

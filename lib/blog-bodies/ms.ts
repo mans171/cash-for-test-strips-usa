@@ -24,7 +24,7 @@ export const MS: PostBody = {
   title: "Selling Diabetic Test Strips in Mississippi: Where These Supplies Actually Go",
   heading: "Selling Diabetic Test Strips in Mississippi",
   metaDescription:
-    "Greenville's diabetes rate is 22.5% — more than one adult in five. Mississippi is covered, but no buyer is based in the state. What sealed supplies are worth, why Medicaid stock can't be sold, and the two expired items to keep.",
+    "Greenville's diabetes rate is 22.5% — more than one adult in five. Mississippi is covered, but no buyer is based in the state. What sealed supplies are worth, why government-covered stock can't be sold, and the two expired items to keep.",
 
   lead: [
     "In Greenville, 22.5% of adults have diagnosed diabetes. That is more than one adult in five, and it is the highest city figure we hold for any state. Meridian reads 19.7% and Jackson 18.4%.",
@@ -59,9 +59,9 @@ export const MS: PostBody = {
       ],
     },
     {
-      heading: "The Medicaid line, and why it matters more here",
+      heading: "The question of who paid, and why it matters more here",
       paragraphs: [
-        "Supplies obtained through Medicare or Medicaid cannot be resold. That rule applies everywhere, but it is worth stating plainly in a state where a large share of prescriptions run through those programmes, because it is the condition most likely to disqualify what you are holding.",
+        "Supplies obtained through a government-covered programme cannot be resold. That rule applies everywhere, but it is worth stating plainly in a state where a large share of prescriptions run through public programmes, because it is the condition most likely to disqualify what you are holding.",
         "It is about the programme the supplies came through, not about you. If you paid retail, or the supplies came through private insurance, or they were given to you by a relative who paid for them privately, that is a different situation and the sale is straightforward.",
         "A pharmacy label with a name printed on it is not the problem people assume it is. Nobody is asked to explain how a box came into their possession. What matters is the funding route, the seal being intact, and the date on the end of the box.",
         "If you are not sure which programme paid for something — and in a house where somebody has died and left a cupboard full of boxes, that is a common position to be in — ring and ask rather than sending it and hoping.",
@@ -88,8 +88,8 @@ export const MS: PostBody = {
 
   faqs: [
     {
-      q: "My supplies came through Medicaid. Is there any way to sell them?",
-      a: "No. Supplies obtained through Medicare or Medicaid cannot be resold, and there is no version of that which works. If part of what you are holding came through a programme and part was bought retail, the retail portion can still be sold — it is worth ringing to sort out which is which rather than sending the lot.",
+      q: "My supplies came through a government programme. Is there any way to sell them?",
+      a: "No. Supplies obtained through a government-covered programme cannot be resold, and there is no version of that which works. If part of what you are holding came through a programme and part was bought retail, the retail portion can still be sold — it is worth ringing to sort out which is which rather than sending the lot.",
     },
     {
       q: "Who actually ends up using the supplies I send?",
@@ -105,7 +105,7 @@ export const MS: PostBody = {
     },
     {
       q: "The boxes belonged to a relative who has died. Can I still sell them?",
-      a: "Yes, provided the supplies were not obtained through Medicare or Medicaid and the boxes are still factory-sealed. A pharmacy label carrying their name does not prevent a sale. If you cannot work out how a particular prescription was funded, ask before sending it.",
+      a: "Yes, provided the supplies were not obtained through a government-covered programme and the boxes are still factory-sealed. A pharmacy label carrying their name does not prevent a sale. If you cannot work out how a particular prescription was funded, ask before sending it.",
     },
   ],
 }

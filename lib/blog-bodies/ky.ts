@@ -36,7 +36,7 @@ export const KY: PostBody = {
         "Anything that has been opened. The factory seal is the whole basis on which a box can be resold, because it is the only thing that lets the next person establish what has and has not happened to the contents. An opened box is worth nothing rather than a reduced amount, and no story about why it was opened changes that.",
         "Expired test strips. This is the one place where the standard advice is correct — a strip past its date can return an unreliable reading, and an unreliable blood glucose reading is a safety matter. We will not buy them and nobody responsible should.",
         "Expired Dexcom G6 sensors. G6 is specifically excluded from the expiry exceptions below, which surprises people who assume all Dexcom stock behaves the same way.",
-        "Anything obtained through Medicare or Medicaid, whatever its condition. Supplies paid for by those programmes cannot be resold. This is about who paid rather than what is on the label; ordinary pharmacy labelling with your own name on it is not a problem at all.",
+        "Anything obtained through a government-covered programme, whatever its condition. Supplies paid for that way cannot be resold. This is about who paid rather than what is on the label; ordinary pharmacy labelling with your own name on it is not a problem at all.",
       ],
     },
     {

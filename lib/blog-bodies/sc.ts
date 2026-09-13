@@ -53,7 +53,7 @@ export const SC: PostBody = {
       heading: "Either route, the same rules decide value",
       paragraphs: [
         "Factory-sealed and unopened. This is not negotiable at a counter any more than it is by post — the seal is what allows the next person to trust the box, and once it is gone the box is worth nothing rather than less. It is also the single most common reason supplies are refused.",
-        "Not obtained through Medicare or Medicaid, since those supplies cannot be resold. A pharmacy label with your name on it is ordinary and has no bearing on it; the question is who paid.",
+        "Not obtained through a government-covered programme, since those supplies cannot be resold. A pharmacy label with your name on it is ordinary and has no bearing on it; the question is who paid.",
         "For test strips, six months or more before the expiry date. And keep large boxes intact — one 100-count box is worth meaningfully more than two 50-count boxes of the same brand.",
         "Quantity matters in both directions too: ten or more boxes earns a better per-box rate, and a mixed lot of different brands and types is quoted as one lot rather than separated out.",
       ],

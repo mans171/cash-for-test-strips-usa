@@ -49,7 +49,7 @@ export const AR: PostBody = {
         "Test strips: FreeStyle Lite, Contour Next, Accu-Chek Guide, Aviva and SmartView, OneTouch Verio and Ultra, True Metrix. At least six months before the expiry date. Box size matters — one 100-count box is worth meaningfully more than two 50-count boxes of the same brand, so do not break up large boxes to make a lot look bigger.",
         "Dexcom: G6 sensors and transmitters, G7 sensors and receivers. The components accepted differ by generation, so read the box rather than assuming.",
         "Pods and pump parts: Omnipod 5, DASH and Classic pods, and some sealed Medtronic and Tandem components. If yours is an unusual item, 518-278-6008 will settle it faster than guessing.",
-        "And one exclusion that has nothing to do with condition: supplies obtained through Medicare or Medicaid cannot be resold. A pharmacy label with your name on it is fine — that is a different question from who paid the bill.",
+        "And one exclusion that has nothing to do with condition: supplies obtained through a government-covered programme cannot be resold. A pharmacy label with your name on it is fine — that is a different question from who paid the bill.",
       ],
     },
     {

@@ -316,7 +316,7 @@ export function angleSection(
         )
       }
       paras.push(
-        `What can be sold: unopened, unexpired boxes with the factory seal intact. A pharmacy label with your relative's name on it does not prevent a sale. What cannot: anything opened, anything past its date apart from Omnipod pods and Dexcom G7 sensors, and anything bought through Medicare or Medicaid.`
+        `What can be sold: unopened, unexpired boxes with the factory seal intact. A pharmacy label with your relative's name on it does not prevent a sale. What cannot: anything opened, anything past its date apart from Omnipod pods and Dexcom G7 sensors, and anything bought through a government-covered programme.`
       )
       return { heading: `What to Do With Supplies Left Behind`, paragraphs: paras }
     }
@@ -635,7 +635,7 @@ export function emphasisTierTables(angle: PostAngle): Array<"strips" | "cgm"> {
  */
 export function requirements(angle: PostAngle): { heading: string; intro: string; items: string[] } {
   const sealed = "The boxes are in their original, sealed packaging"
-  const notPublic = "They were not purchased using Medicare or Medicaid"
+  const notPublic = "They were not purchased using a government programme"
   const dated =
     "They have at least 6 months before expiration — except Omnipod pods and Dexcom G7 sensors, which we take expired"
 
@@ -760,7 +760,7 @@ export function postFaqs(
     case "estate":
       faqs.push({
         q: `The boxes have my relative's name on the pharmacy label. Can they still be sold?`,
-        a: `Yes. A prescription label with a name on it does not affect the sale, as long as the box is sealed and the supplies were not obtained through Medicare or Medicaid.`,
+        a: `Yes. A prescription label with a name on it does not affect the sale, as long as the box is sealed and the supplies were not obtained through a government-covered programme.`,
       })
       break
     case "dexcom":
@@ -834,7 +834,7 @@ export function postFaqs(
 
   faqs.push({
     q: `What condition do the boxes need to be in?`,
-    a: `Factory-sealed and unopened. Partial boxes, opened packaging and broken seals cannot be resold. Supplies bought through Medicare or Medicaid cannot be resold either.`,
+    a: `Factory-sealed and unopened. Partial boxes, opened packaging and broken seals cannot be resold. Supplies bought through a government programme cannot be resold either.`,
   })
 
   return faqs

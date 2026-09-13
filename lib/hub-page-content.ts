@@ -259,7 +259,7 @@ export function buildHubFaqs({
     q: "Is it legal to sell diabetic test strips?",
     a:
       `Reselling unused, unexpired, unopened test strips you paid for yourself is generally permitted, ` +
-      `and no state law specifically bans it. Strips paid for by Medicare or Medicaid cannot be resold, ` +
+      `and no state law specifically bans it. Strips paid for by a government programme cannot be resold, ` +
       `and boxes must be sealed and in original packaging. This is general information, not legal advice — ` +
       `consult an attorney about your situation.`,
   })

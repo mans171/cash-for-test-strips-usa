@@ -63,7 +63,7 @@ export const GA: PostBody = {
       heading: "What makes a box sellable",
       paragraphs: [
         "Factory-sealed and unopened, in original packaging. An opened box cannot be resold at any price, because nobody downstream can verify how it was stored. This is the most common reason a parcel is refused.",
-        "Not obtained through Medicare or Medicaid. Supplies paid for by those programmes cannot legally be resold. Private insurance or paid for yourself is fine, and a pharmacy label carrying your name changes nothing.",
+        "Not covered by a government programme. Supplies a public programme paid for cannot legally be resold. Private insurance or paid for yourself is fine, and a pharmacy label carrying your name changes nothing.",
         "For test strips, at least six months before the expiry date. Under that, value drops off quickly because whoever ends up using them needs time to get through the box.",
         "Check the count before deciding a small stack is not worth a call. A 100-count box is worth meaningfully more than two 50-count boxes of the same brand.",
       ],
@@ -95,8 +95,8 @@ export const GA: PostBody = {
       a: "Two things are: Omnipod pods (5, DASH and Classic) and Dexcom G7 sensors, both at a reduced rate. Expired test strips and expired Dexcom G6 sensors are not worth selling.",
     },
     {
-      q: "My supplies came through Medicaid. Can I sell them?",
-      a: "No. Supplies obtained through Medicare or Medicaid cannot be resold. Anything you received through private insurance or paid for yourself is fine.",
+      q: "A government programme paid for my supplies. Can I sell them?",
+      a: "No. Supplies obtained through a government-covered programme cannot be resold. Anything you received through private insurance or paid for yourself is fine.",
     },
     {
       q: "What if part of my shipment gets rejected?",

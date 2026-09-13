@@ -8,7 +8,7 @@ import type { PostBody } from "./types"
  * box in a Massachusetts cupboard was paid for by somebody other than the
  * person holding it — which makes the who-paid question the decisive one here,
  * and it is the question most guides skate over. Private insurance and retail
- * purchases are fine; Medicare and Medicaid supplies cannot be resold. Getting
+ * purchases are fine; government-covered supplies cannot be resold. Getting
  * that distinction straight is worth more to a Massachusetts reader than any
  * amount of general advice about packing parcels.
  *
@@ -33,7 +33,7 @@ export const MA: PostBody = {
     {
       heading: "The distinction that matters most in this state",
       paragraphs: [
-        "Supplies obtained through Medicare or Medicaid cannot be resold. That is a hard line and no condition, date or brand changes it. If a public programme paid for the box, it is out.",
+        "Supplies obtained through a government-covered programme cannot be resold. That is a hard line and no condition, date or brand changes it. If a public programme paid for the box, it is out.",
         "Supplies that came through private or employer health insurance are a different matter and are not excluded. Neither are supplies you paid for retail at a pharmacy counter. The vast majority of what changes hands in Massachusetts falls into those categories, which is why the state's coverage rate is a feature of this market rather than an obstacle to it.",
         "The thing that trips people up is the pharmacy label. A sticker with your name, your prescriber and a fill date on it looks official and looks like it might be a problem. It is not. It is completely ordinary, it appears on nearly every box anyone sells, and it tells you nothing about which programme paid. If you are unsure which applies to you, that is a five-minute call to 518-278-6008 rather than a reason to bin anything.",
       ],
@@ -75,7 +75,7 @@ export const MA: PostBody = {
   faqs: [
     {
       q: "My supplies came through my employer's health plan. Can I sell them?",
-      a: "Private and employer insurance are not the exclusion. Medicare and Medicaid are — supplies obtained through those programmes cannot be resold. Retail purchases are fine as well.",
+      a: "Private and employer insurance are not the exclusion. Government coverage is — supplies obtained through a public programme cannot be resold. Retail purchases are fine as well.",
     },
     {
       q: "There is a pharmacy label with my name on it. Does that stop the sale?",
@@ -91,7 +91,7 @@ export const MA: PostBody = {
     },
     {
       q: "I am clearing a parent's flat and do not know how anything was paid for.",
-      a: "Set aside anything you know came through Medicare or Medicaid, and ring 518-278-6008 about the rest rather than guessing in either direction. Keep every box sealed while you work through it.",
+      a: "Set aside anything you know came through a government programme, and ring 518-278-6008 about the rest rather than guessing in either direction. Keep every box sealed while you work through it.",
     },
   ],
 }

@@ -58,7 +58,7 @@ export const WY: PostBody = {
       paragraphs: [
         "Accepted, sealed and in date: FreeStyle Lite, Contour Next, Accu-Chek Guide, Aviva and SmartView, OneTouch Verio and Ultra and True Metrix test strips; Dexcom G6 sensors and transmitters; Dexcom G7 sensors and receivers; FreeStyle Libre 1, 2 and 3 sensors; Omnipod 5, DASH and Classic pods; and some sealed Medtronic and Tandem components.",
         "Two qualifiers on that list. FreeStyle Libre must be a US retail version, so sensors obtained abroad cannot be resold here at all. And box count is worth attention — one 100-count box of strips is worth meaningfully more than two 50-count boxes of the same brand, so keep large boxes intact.",
-        "Not accepted under any circumstances: anything opened, and anything obtained through Medicare or Medicaid. The first is because the seal is what makes the box resellable at all. The second is a restriction on the supplies themselves rather than a judgement about you, and a pharmacy label with your own name on it has no bearing on it either way.",
+        "Not accepted under any circumstances: anything opened, and anything obtained through a government-covered programme. The first is because the seal is what makes the box resellable at all. The second is a restriction on the supplies themselves rather than a judgement about you, and a pharmacy label with your own name on it has no bearing on it either way.",
       ],
     },
     {

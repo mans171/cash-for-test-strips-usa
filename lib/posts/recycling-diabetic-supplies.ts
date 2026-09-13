@@ -112,7 +112,7 @@ take-back programs where they exist for sensors and pods.</p>
     },
     {
       q: "Is it legal to sell sealed, unused diabetic supplies?",
-      a: "Reselling sealed, unexpired supplies you own is generally permitted, and no federal law specifically bans it. Supplies covered by Medicare or Medicaid cannot be resold. See our guide to the rules for more detail — this is general information, not legal advice.",
+      a: "Reselling sealed, unexpired supplies you own is generally permitted, and no federal law specifically bans it. Supplies covered by a government programme cannot be resold. See our guide to the rules for more detail — this is general information, not legal advice.",
     },
   ],
 }

@@ -51,7 +51,7 @@ export const MI: PostBody = {
       heading: "What makes a box sellable",
       paragraphs: [
         "Factory-sealed and unopened, in the original packaging. An opened box cannot be resold at any price, because nobody downstream can verify how it was stored. This is the most common reason a parcel gets refused or a settled price gets reopened.",
-        "Not obtained through Medicare or Medicaid. Supplies paid for by those programmes cannot legally be resold. Private insurance or paid for yourself is fine, and a pharmacy label carrying your name makes no difference.",
+        "Not government-covered. Supplies a public programme paid for cannot legally be resold. Private insurance or paid for yourself is fine, and a pharmacy label carrying your name makes no difference.",
         "For test strips, at least six months before the expiry date. Below that the value falls off quickly, because whoever ends up using them needs time to work through the box.",
         "Check the count before writing off a small stack. A 100-count box is worth meaningfully more than two 50-count boxes of the same brand.",
       ],
@@ -92,8 +92,8 @@ export const MI: PostBody = {
       a: "Yes, at a reduced rate — Omnipod 5, DASH and Classic — along with expired Dexcom G7 sensors. Those are the only two exceptions; everything else has to be in date.",
     },
     {
-      q: "My supplies came through Medicaid. Can I sell them?",
-      a: "No. Supplies obtained through Medicare or Medicaid cannot be resold. Anything received through private insurance or paid for yourself is fine.",
+      q: "A government programme paid for my supplies. Can I sell them?",
+      a: "No. Supplies covered by a government programme cannot be resold. Anything received through private insurance or paid for yourself is fine.",
     },
     {
       q: "Can I sell several brands together?",
