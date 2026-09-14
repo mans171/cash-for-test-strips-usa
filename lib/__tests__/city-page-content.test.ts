@@ -1,6 +1,18 @@
 import { describe, expect, it } from "vitest"
-import { buildCityFaqs, cityIntro, nearbyBuyers, siblingCities } from "../city-page-content"
+import {
+  buildAboveTheFold,
+  buildBrandsBlock,
+  buildCityFaqs,
+  buildCitySpecificFaq,
+  buildHowItWorks,
+  buildMetaDescription,
+  cityIntro,
+  honorsBonus,
+  nearbyBuyers,
+  siblingCities,
+} from "../city-page-content"
 import { CITY_TARGETS } from "../city-geo"
+import { OWNER_PHONE } from "../owner"
 import type { Company } from "../types"
 
 function company(overrides: Partial<Company> = {}): Company {
@@ -148,5 +160,245 @@ describe("buildCityFaqs", () => {
     const buyer = { ...company(), miles: 2 }
     const faqs = buildCityFaqs({ target: dallas, buyers: [buyer], hasMailIn: false })
     expect(faqs.some((f) => f.q.includes("condition"))).toBe(true)
+  })
+
+  it("varies the condition FAQ body when buyer description mentions sealing", () => {
+    const buyer = { ...company({ description: "We buy sealed boxes only." }), miles: 2 }
+    const faqs = buildCityFaqs({ target: dallas, buyers: [buyer], hasMailIn: false })
+    const condFaq = faqs.find((f) => f.q.includes("condition"))
+    // Should reference the buyer's name (derived from description path)
+    expect(condFaq?.a).toContain("Test Buyer")
+  })
+
+  it("varies the condition FAQ body when buyer lists meetup and city", () => {
+    const buyer = { ...company({ transaction_modes: ["meetup"], city: "Irving" }), miles: 2 }
+    const faqs = buildCityFaqs({ target: dallas, buyers: [buyer], hasMailIn: false })
+    const condFaq = faqs.find((f) => f.q.includes("condition"))
+    expect(condFaq?.a).toContain("Irving")
+  })
+
+  it("condition FAQ fallback references the city name", () => {
+    const buyer = { ...company({ description: null, transaction_modes: [], city: null }), miles: 2 }
+    const faqs = buildCityFaqs({ target: dallas, buyers: [buyer], hasMailIn: false })
+    const condFaq = faqs.find((f) => f.q.includes("condition"))
+    expect(condFaq?.a).toContain("Dallas")
+  })
+})
+
+describe("honorsBonus", () => {
+  it("returns true for a buyer with the OWNER_PHONE", () => {
+    const buyer = { ...company({ phone: OWNER_PHONE }), miles: 2 }
+    expect(honorsBonus(buyer)).toBe(true)
+  })
+
+  it("returns true regardless of phone formatting", () => {
+    // Strip formatting and re-format
+    const buyer = { ...company({ phone: OWNER_PHONE.replace(/\D/g, "").replace(/(\d{3})(\d{3})(\d{4})/, "$1.$2.$3") }), miles: 2 }
+    expect(honorsBonus(buyer)).toBe(true)
+  })
+
+  it("returns false for a third-party phone number", () => {
+    const buyer = { ...company({ phone: "212-555-0199" }), miles: 2 }
+    expect(honorsBonus(buyer)).toBe(false)
+  })
+
+  it("returns false when phone is null", () => {
+    const buyer = { ...company({ phone: null }), miles: 2 }
+    expect(honorsBonus(buyer)).toBe(false)
+  })
+})
+
+describe("buildAboveTheFold", () => {
+  it("uses 'We buy' language for house-answered buyers", () => {
+    const buyer = { ...company({ phone: OWNER_PHONE, transaction_modes: ["meetup"] }), miles: 5 }
+    const atf = buildAboveTheFold(buyer, dallas)
+    expect(atf.isHouse).toBe(true)
+    expect(atf.headline).toContain("We buy")
+    expect(atf.bonusCopy).not.toBeNull()
+  })
+
+  it("uses buyer name for third-party buyers", () => {
+    const buyer = { ...company({ name: "Dallas Test Strips Co", phone: "214-555-0100" }), miles: 5 }
+    const atf = buildAboveTheFold(buyer, dallas)
+    expect(atf.isHouse).toBe(false)
+    expect(atf.headline).toContain("Dallas Test Strips Co")
+    expect(atf.bonusCopy).toBeNull()
+  })
+
+  it("sets hasMeetup when transaction_modes includes meetup", () => {
+    const buyer = { ...company({ transaction_modes: ["meetup"], phone: "214-555-0100" }), miles: 3 }
+    const atf = buildAboveTheFold(buyer, dallas)
+    expect(atf.hasMeetup).toBe(true)
+  })
+
+  it("sets hasMeetup false when transaction_modes is empty", () => {
+    const buyer = { ...company({ transaction_modes: [], phone: "214-555-0100" }), miles: 3 }
+    const atf = buildAboveTheFold(buyer, dallas)
+    expect(atf.hasMeetup).toBe(false)
+  })
+
+  it("includes phone for house-answered buyers", () => {
+    const buyer = { ...company({ phone: OWNER_PHONE }), miles: 1 }
+    const atf = buildAboveTheFold(buyer, dallas)
+    expect(atf.phone).toBe(OWNER_PHONE)
+  })
+
+  it("exposes phone for third-party buyers too", () => {
+    const buyer = { ...company({ phone: "817-555-0177" }), miles: 8 }
+    const atf = buildAboveTheFold(buyer, dallas)
+    expect(atf.phone).toBe("817-555-0177")
+  })
+
+  it("sets phone null when buyer has no phone", () => {
+    const buyer = { ...company({ phone: null }), miles: 5 }
+    const atf = buildAboveTheFold(buyer, dallas)
+    expect(atf.phone).toBeNull()
+  })
+
+  it("no dollar figures in headline or contextLine except BONUS_MENTION_COPY", () => {
+    const buyer = { ...company({ phone: OWNER_PHONE, response_time: "within 1 hour" }), miles: 2 }
+    const atf = buildAboveTheFold(buyer, dallas)
+    // Only the bonus copy should contain $10; headline/contextLine must not
+    expect(atf.headline).not.toMatch(/\$\d/)
+    expect(atf.contextLine ?? "").not.toMatch(/\$\d/)
+  })
+})
+
+describe("buildBrandsBlock", () => {
+  it("deduplicates and sorts brands across buyers", () => {
+    const b1 = { ...company({ accepted_brands: ["FreeStyle", "OneTouch"] }), miles: 2 }
+    const b2 = { ...company({ accepted_brands: ["OneTouch", "Accu-Chek"] }), miles: 5 }
+    const brands = buildBrandsBlock([b1, b2])
+    expect(brands).toEqual(["Accu-Chek", "FreeStyle", "OneTouch"])
+  })
+
+  it("returns empty array when no buyer lists accepted brands", () => {
+    const buyer = { ...company({ accepted_brands: [] }), miles: 2 }
+    expect(buildBrandsBlock([buyer])).toEqual([])
+  })
+})
+
+describe("buildHowItWorks", () => {
+  it("always emits a contact step", () => {
+    const buyer = { ...company({ phone: "214-555-0100" }), miles: 3 }
+    const steps = buildHowItWorks(buyer, false)
+    expect(steps[0].title).toMatch(/contact/i)
+  })
+
+  it("emits a meetup step when transaction_modes includes meetup", () => {
+    const buyer = { ...company({ transaction_modes: ["meetup"], city: "Plano" }), miles: 3 }
+    const steps = buildHowItWorks(buyer, false)
+    expect(steps.some((s) => s.title.toLowerCase().includes("in person"))).toBe(true)
+  })
+
+  it("omits meetup step when transaction_modes is empty", () => {
+    const buyer = { ...company({ transaction_modes: [] }), miles: 3 }
+    const steps = buildHowItWorks(buyer, false)
+    expect(steps.some((s) => s.title.toLowerCase().includes("in person"))).toBe(false)
+  })
+
+  it("emits mail-in step when hasMailIn is true", () => {
+    const buyer = { ...company(), miles: 3 }
+    const steps = buildHowItWorks(buyer, true)
+    expect(steps.some((s) => s.title.toLowerCase().includes("mail"))).toBe(true)
+  })
+
+  it("omits mail-in step when hasMailIn is false", () => {
+    const buyer = { ...company(), miles: 3 }
+    const steps = buildHowItWorks(buyer, false)
+    expect(steps.some((s) => s.title.toLowerCase().includes("mail"))).toBe(false)
+  })
+
+  it("emits a payment step when payment_methods is non-empty", () => {
+    const buyer = { ...company({ payment_methods: ["Zelle", "Cash"] }), miles: 3 }
+    const steps = buildHowItWorks(buyer, false)
+    expect(steps.some((s) => s.title.toLowerCase().includes("paid"))).toBe(true)
+    const payStep = steps.find((s) => s.title.toLowerCase().includes("paid"))
+    expect(payStep?.body).toContain("Zelle")
+  })
+
+  it("omits payment step when payment_methods is empty", () => {
+    const buyer = { ...company({ payment_methods: [] }), miles: 3 }
+    const steps = buildHowItWorks(buyer, false)
+    expect(steps.some((s) => s.title.toLowerCase().includes("paid"))).toBe(false)
+  })
+
+  it("no dollar figures in step bodies except via bonus copy", () => {
+    const buyer = { ...company({ phone: OWNER_PHONE, payment_methods: ["Cash"] }), miles: 3 }
+    const steps = buildHowItWorks(buyer, false)
+    for (const step of steps) {
+      // Should not mention dollar amounts other than the known bonus
+      expect(step.body).not.toMatch(/\$\d+(?!\s*bonus)/)
+    }
+  })
+})
+
+describe("buildMetaDescription", () => {
+  it("returns a description <= 160 chars", () => {
+    const buyer = { ...company({ phone: OWNER_PHONE, transaction_modes: ["meetup"], payment_methods: ["PayPal", "Zelle", "Cash"] }), miles: 5 }
+    const desc = buildMetaDescription(buyer, dallas)
+    expect(desc.length).toBeLessThanOrEqual(160)
+  })
+
+  it("uses 'We buy' for house-answered buyers", () => {
+    const buyer = { ...company({ phone: OWNER_PHONE }), miles: 5 }
+    const desc = buildMetaDescription(buyer, dallas)
+    expect(desc).toContain("We buy")
+  })
+
+  it("uses buyer name for third-party buyers", () => {
+    const buyer = { ...company({ name: "Dallas Strips LLC", phone: "214-555-0100" }), miles: 5 }
+    const desc = buildMetaDescription(buyer, dallas)
+    expect(desc).toContain("Dallas Strips LLC")
+  })
+
+  it("never claims specific payment methods not listed on the buyer", () => {
+    // A buyer that only does Zelle — should NOT say PayPal or check
+    const buyer = { ...company({ payment_methods: ["Zelle"], phone: "214-555-0100" }), miles: 5 }
+    const desc = buildMetaDescription(buyer, dallas)
+    expect(desc).not.toContain("PayPal")
+    expect(desc).not.toContain("check")
+  })
+
+  it("includes the city and state", () => {
+    const buyer = { ...company({ phone: OWNER_PHONE }), miles: 5 }
+    const desc = buildMetaDescription(buyer, dallas)
+    expect(desc).toContain("Dallas")
+    expect(desc).toContain("TX")
+  })
+
+  it("no dollar figures in description", () => {
+    const buyer = { ...company({ phone: OWNER_PHONE, payment_methods: ["Cash"] }), miles: 5 }
+    const desc = buildMetaDescription(buyer, dallas)
+    expect(desc).not.toMatch(/\$\d/)
+  })
+})
+
+describe("buildCitySpecificFaq", () => {
+  it("derives a ZIP-based FAQ when zips are provided", () => {
+    const buyer = { ...company({ phone: OWNER_PHONE }), miles: 3 }
+    const faq = buildCitySpecificFaq(buyer, dallas, ["75201", "75202", "75203", "75204"])
+    expect(faq).not.toBeNull()
+    expect(faq?.q).toContain("ZIP")
+    expect(faq?.a).toContain("75201")
+  })
+
+  it("falls back to a distance-based FAQ when no zips are provided", () => {
+    const buyer = { ...company({ name: "Dallas Buyer" }), miles: 12 }
+    const faq = buildCitySpecificFaq(buyer, dallas, [])
+    expect(faq).not.toBeNull()
+    expect(faq?.q.toLowerCase()).toContain("far")
+  })
+
+  it("says 'We' for house-answered buyers in ZIP FAQ", () => {
+    const buyer = { ...company({ phone: OWNER_PHONE }), miles: 2 }
+    const faq = buildCitySpecificFaq(buyer, dallas, ["75201"])
+    expect(faq?.a).toContain("We serve")
+  })
+
+  it("uses buyer name for third-party buyers in ZIP FAQ", () => {
+    const buyer = { ...company({ name: "Third Party Co", phone: "214-555-0199" }), miles: 4 }
+    const faq = buildCitySpecificFaq(buyer, dallas, ["75201"])
+    expect(faq?.a).toContain("Third Party Co")
   })
 })
