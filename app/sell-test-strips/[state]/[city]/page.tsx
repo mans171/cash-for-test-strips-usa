@@ -18,11 +18,11 @@ import {
   buildHowItWorks,
   buildMetaDescription,
   cityIntro,
-  honorsBonus,
   nearbyBuyers,
   publishableCityTargets,
   siblingCities,
 } from "@/lib/city-page-content";
+import { honorsBonus } from "@/lib/bonus";
 import { pageTitle, cityTitle } from "@/lib/title";
 
 type Props = { params: Promise<{ state: string; city: string }> };
@@ -188,7 +188,7 @@ export default async function CityPage({ params }: Props) {
           {atf.hasMeetup && (
             <li className="flex items-start gap-2">
               <span className="text-cash font-bold mt-0.5">✓</span>
-              <span>Same-day in-person meetup available</span>
+              <span>In-person meetup available</span>
             </li>
           )}
           {atf.contextLine && (
@@ -233,7 +233,7 @@ export default async function CityPage({ params }: Props) {
       {brands.length > 0 && (
         <div className="mb-12">
           <h2 className="text-xl font-extrabold text-gray-900 mb-3">
-            What we buy near {target.name}
+            {atf.isHouse ? `What we buy near ${target.name}` : `What buyers near ${target.name} accept`}
           </h2>
           <ul className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-1.5 max-w-2xl">
             {brands.map((brand) => (

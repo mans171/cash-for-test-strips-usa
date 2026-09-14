@@ -7,10 +7,10 @@ import {
   buildHowItWorks,
   buildMetaDescription,
   cityIntro,
-  honorsBonus,
   nearbyBuyers,
   siblingCities,
 } from "../city-page-content"
+import { honorsBonus } from "../bonus"
 import { CITY_TARGETS } from "../city-geo"
 import { OWNER_PHONE } from "../owner"
 import type { Company } from "../types"
@@ -206,6 +206,11 @@ describe("honorsBonus", () => {
     const buyer = { ...company({ phone: null }), miles: 2 }
     expect(honorsBonus(buyer)).toBe(false)
   })
+
+  it("returns true for mail-in buyers regardless of phone", () => {
+    const buyer = { ...company({ phone: null, mail_in: true }), miles: 999 }
+    expect(honorsBonus(buyer)).toBe(true)
+  })
 })
 
 describe("buildAboveTheFold", () => {
@@ -383,17 +388,16 @@ describe("buildCitySpecificFaq", () => {
     expect(faq?.a).toContain("75201")
   })
 
-  it("falls back to a distance-based FAQ when no zips are provided", () => {
+  it("returns null when no zips are provided", () => {
     const buyer = { ...company({ name: "Dallas Buyer" }), miles: 12 }
     const faq = buildCitySpecificFaq(buyer, dallas, [])
-    expect(faq).not.toBeNull()
-    expect(faq?.q.toLowerCase()).toContain("far")
+    expect(faq).toBeNull()
   })
 
-  it("says 'We' for house-answered buyers in ZIP FAQ", () => {
+  it("says 'Contact us' for house-answered buyers in ZIP FAQ", () => {
     const buyer = { ...company({ phone: OWNER_PHONE }), miles: 2 }
     const faq = buildCitySpecificFaq(buyer, dallas, ["75201"])
-    expect(faq?.a).toContain("We serve")
+    expect(faq?.a).toContain("Contact us")
   })
 
   it("uses buyer name for third-party buyers in ZIP FAQ", () => {

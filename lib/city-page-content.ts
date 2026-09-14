@@ -2,7 +2,7 @@ import type { Company } from "./types"
 import { haversineMiles } from "./geo"
 import { CITY_TARGETS, cityCenter, type CityTarget } from "./city-geo"
 import { STATE_LABELS } from "./states"
-import { HOUSE_PHONES } from "./owner"
+import { honorsBonus, BONUS_MENTION_COPY } from "./bonus"
 
 /**
  * Content derivation for `/sell-test-strips/[state]/[city]` (Wave 1 city
@@ -82,30 +82,6 @@ function joinList(items: string[], conjunction: "and" | "or" = "and"): string {
   if (items.length === 2) return `${items[0]} ${conjunction} ${items[1]}`
   return `${items.slice(0, -1).join(", ")}, ${conjunction} ${items[items.length - 1]}`
 }
-
-// ---------------------------------------------------------------------------
-// House-network detection — identifies listings answered by the business itself
-// ---------------------------------------------------------------------------
-
-const normalizeDigits = (s: string) => s.replace(/\D/g, "")
-
-/** Returns true when this buyer listing is answered by the house (i.e., the
- *  phone is one of the CFTS network numbers). House-answered pages can speak
- *  in first-person plural and can promise the $10 bonus.
- *
- *  Deliberately does NOT check url — a house listing that has its own site is
- *  still house-answered; the distinction matters for isIndexableProfile(), not
- *  for who picks up the phone. */
-export function honorsBonus(buyer: Pick<NearbyBuyer, "phone">): boolean {
-  if (!buyer.phone) return false
-  const d = normalizeDigits(buyer.phone)
-  return HOUSE_PHONES.some((h) => normalizeDigits(h) === d)
-}
-
-/** The only dollar figure permitted on city pages. Used verbatim in
- *  above-the-fold copy and derived FAQs for house-answered listings only. */
-export const BONUS_MENTION_COPY =
-  "Text first and mention this listing to earn a $10 bonus on your first sale."
 
 // ---------------------------------------------------------------------------
 // Buyer-first above-the-fold block
@@ -209,19 +185,25 @@ export function buildHowItWorks(
 
   // Step 1: Contact — always present (there is always a nearest buyer)
   const contactWho = isHouse ? "us" : nearest.name
-  const contactBody = nearest.phone
-    ? `Call or text ${isHouse ? "us" : nearest.name} with the brand, quantity, and expiration date of what you have. ${isHouse ? "We quote" : `${nearest.name} quotes`} you the same day.`
-    : `Contact ${nearest.name} with the brand, quantity, and expiration date of what you have. ${isHouse ? "We quote" : `${nearest.name} quotes`} you the same day.`
+  const contactAction = nearest.phone ? "Call or text" : "Contact"
+  const contactName = isHouse ? "us" : nearest.name
+  const responseClause = nearest.response_time
+    ? ` ${isHouse ? "We" : nearest.name} respond${isHouse ? "" : "s"} ${nearest.response_time.toLowerCase()}.`
+    : ""
+  const contactBody = `${contactAction} ${contactName} with the brand, quantity, and expiration date of what you have.${responseClause}`
   steps.push({ number: n++, title: `Contact ${contactWho}`, body: contactBody })
 
   // Step 2: Meet in person (if meetup mode available)
   const hasMeetup = (nearest.transaction_modes ?? []).includes("meetup")
   if (hasMeetup) {
     const meetCity = nearest.city ? ` in ${nearest.city}` : ""
+    const meetResponseClause = nearest.response_time
+      ? ` ${isHouse ? "We" : nearest.name} respond${isHouse ? "" : "s"} ${nearest.response_time.toLowerCase()}.`
+      : ""
     steps.push({
       number: n++,
       title: "Meet in person",
-      body: `${isHouse ? "We meet" : `${nearest.name} meets`} sellers${meetCity}. No shipping, no waiting — same day${nearest.response_time ? `, ${nearest.response_time.toLowerCase()}` : ""}.`,
+      body: `${isHouse ? "We meet" : `${nearest.name} meets`} sellers${meetCity}. No shipping.${meetResponseClause}`,
     })
   }
 
@@ -264,11 +246,11 @@ export function buildMetaDescription(nearest: NearbyBuyer, target: CityTarget): 
   const location = `${target.name}, ${target.state}`
 
   const hasMeetup = (nearest.transaction_modes ?? []).includes("meetup")
-  const modeStr = hasMeetup ? "in-person meetup" : "mail-in"
+  const modeStr = hasMeetup ? "In-person meetup available." : "Mail-in available."
   const methods = (nearest.payment_methods ?? [])
   const payStr = methods.length > 0 ? ` Pay by ${joinList(methods.slice(0, 3))}.` : ""
 
-  const base = `${who} unused diabetic test strips ${milesStr} ${location}. ${hasMeetup ? "Same-day" : "Fast"} ${modeStr} available.${payStr}`
+  const base = `${who} unused diabetic test strips ${milesStr} ${location}. ${modeStr}${payStr}`
   // Trim to 160 chars — truncate at a word boundary if needed
   if (base.length <= 160) return base
   return base.slice(0, 157).replace(/\s+\S*$/, "") + "…"
@@ -289,24 +271,15 @@ export function buildCitySpecificFaq(
   target: CityTarget,
   zipsNear: string[],
 ): Faq | null {
-  if (zipsNear.length > 0) {
-    const sample = zipsNear.slice(0, 3).join(", ")
-    const andMore = zipsNear.length > 3 ? ` and ${zipsNear.length - 3} more` : ""
-    const isHouse = honorsBonus(nearest)
-    const whoAnswer = isHouse
-      ? "We serve sellers across the area"
-      : `${nearest.name} serves sellers across the area`
-    return {
-      q: `What ZIP codes near ${target.name} are covered?`,
-      a: `${whoAnswer} — including ${sample}${andMore}. If your ZIP isn't listed, contact ${isHouse ? "us" : nearest.name} directly; coverage extends up to ${Math.round(nearest.miles < 1 ? 30 : nearest.miles + 15)} miles.`,
-    }
-  }
-  // Fallback: distance-based FAQ when no ZIPs
+  if (zipsNear.length === 0) return null
+
+  const sample = zipsNear.slice(0, 3).join(", ")
+  const andMore = zipsNear.length > 3 ? ` and ${zipsNear.length - 3} more` : ""
   const isHouse = honorsBonus(nearest)
-  const milesAway = nearest.miles < 1 ? "in" : `about ${Math.round(nearest.miles)} miles from`
+  const whoContact = isHouse ? "us" : nearest.name
   return {
-    q: `How far does the nearest buyer travel to ${target.name}?`,
-    a: `${nearest.name} is based ${milesAway} ${target.name}. ${isHouse ? "We travel to sellers across the metro area" : `${nearest.name} serves buyers within the metro area`} — contact them directly to confirm they cover your neighborhood.`,
+    q: `What ZIP codes near ${target.name} are covered?`,
+    a: `${nearest.name} serves ZIP codes including ${sample}${andMore}. Contact ${whoContact} directly to confirm coverage for your address.`,
   }
 }
 
