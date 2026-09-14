@@ -5,6 +5,7 @@ import { BULK_MIN_PIECES } from '@/lib/owner'
 import { pickBulkRecipient } from '@/lib/bulk-routing'
 import { STATE_LABELS } from '@/lib/states'
 import { isHoneypotTripped } from '@/lib/honeypot'
+import { checkRateLimit, clientIp, RATE_LIMIT_MESSAGE } from '@/lib/rate-limit'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
@@ -13,7 +14,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 // nobody. RLS (leads_insert_public) permits the insert: an anonymous row
 // carries a null user_id, which the policy accepts. A signed-in reseller's row
 // carries their own id and must go through the session-bound client below. The
-// only bot guard is the honeypot.
+// bot guards are the honeypot and the per-IP rate limit (lib/rate-limit.ts).
 
 const MAX_LEN = 2000
 
@@ -34,6 +35,16 @@ export async function POST(request: Request) {
     if (isHoneypotTripped(body)) {
       console.warn('[honeypot] dropped', '/api/bulk-leads')
       return NextResponse.json({ ok: true })
+    }
+
+    // Per-IP limit second, before the buyer lookup, the insert and the mail.
+    // A tripped honeypot above never reaches this, so it costs the IP nothing.
+    const limit = checkRateLimit(clientIp(request.headers))
+    if (!limit.allowed) {
+      return NextResponse.json(
+        { error: RATE_LIMIT_MESSAGE },
+        { status: 429, headers: { 'Retry-After': String(limit.retryAfterSeconds) } }
+      )
     }
 
     // If the reseller happens to be signed in, stamp the lead with their id so

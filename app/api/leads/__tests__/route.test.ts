@@ -139,11 +139,16 @@ async function createTestCompany(overrides: { email?: string | null; phone?: str
   return companyId
 }
 
+// Every request carries its own client IP: the route now rate-limits 5 posts
+// per 10 minutes per IP (lib/rate-limit.ts), and this file sends more than
+// that. The limiter itself is covered by rate-limit.test.ts next to this one.
+let requestSeq = 0
 function makeRequest(body: unknown) {
+  requestSeq += 1
   return new Request('http://localhost/api/leads', {
     method: 'POST',
     body: JSON.stringify(body),
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'x-forwarded-for': `203.0.113.${requestSeq}` },
   })
 }
 
