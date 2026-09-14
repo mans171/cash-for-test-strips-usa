@@ -6,6 +6,7 @@ import { getCompanyContact } from '@/lib/order-matching'
 import type { OrderItem } from '@/lib/types'
 import { OWNER_EMAIL } from '@/lib/owner'
 import { isHoneypotTripped } from '@/lib/honeypot'
+import { checkRateLimit, clientIp, RATE_LIMIT_MESSAGE } from '@/lib/rate-limit'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
@@ -37,6 +38,17 @@ export async function POST(request: Request) {
     if (isHoneypotTripped(body)) {
       console.warn('[honeypot] dropped', '/api/leads')
       return NextResponse.json({ leadId: 'ok' })
+    }
+
+    // Per-IP limit second, still before any lookup, insert or email. Bots the
+    // honeypot missed and a stuck retry loop both stop here; a tripped
+    // honeypot above never reaches this so it costs the IP nothing.
+    const limit = checkRateLimit(clientIp(request.headers))
+    if (!limit.allowed) {
+      return NextResponse.json(
+        { error: RATE_LIMIT_MESSAGE },
+        { status: 429, headers: { 'Retry-After': String(limit.retryAfterSeconds) } }
+      )
     }
 
     // If the seller happens to be signed in, stamp the lead with their id so
