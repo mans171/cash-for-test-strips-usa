@@ -105,7 +105,11 @@ export default function IsItLegalPage() {
         not worth shipping. There are two exceptions worth checking: sealed expired Omnipod pods and
         sealed expired Dexcom G7 sensors both have buyers. If that is what you are holding, text a
         photo of the boxes to {OWNER_PHONE} and you will get a straight yes or no before you pack
-        anything.
+        anything.{' '}
+        <Link href="/blog/do-diabetic-test-strips-expire" className="text-emerald-600 hover:underline">
+          See the full expiry guide
+        </Link>{' '}
+        for what the date means and which products are the exceptions.
       </p>
 
       <h2 className="text-xl font-bold text-gray-900 mt-10 mb-3">Can you sell diabetic test strips on eBay?</h2>
@@ -113,7 +117,10 @@ export default function IsItLegalPage() {
         You can try, but eBay restricts listings for medical test strips and routinely removes them,
         so a listing can disappear after you have already packed the boxes. The usual route is a
         direct buyer: you describe what you have, the buyer confirms the brand and dates, and the
-        sealed boxes change hands without a public listing or a waiting auction.
+        sealed boxes change hands without a public listing or a waiting auction.{' '}
+        <Link href="/blog/can-you-sell-diabetic-test-strips-on-ebay" className="text-emerald-600 hover:underline">
+          Full breakdown of the eBay route and why most sellers skip it
+        </Link>.
       </p>
 
       <h2 className="text-xl font-bold text-gray-900 mt-10 mb-3">Does the reason you have the strips matter?</h2>
