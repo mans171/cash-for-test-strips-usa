@@ -2,6 +2,7 @@ import type { Company } from "./types"
 import { haversineMiles } from "./geo"
 import { CITY_TARGETS, cityCenter, type CityTarget } from "./city-geo"
 import { STATE_LABELS } from "./states"
+import { honorsBonus, BONUS_MENTION_COPY } from "./bonus"
 
 /**
  * Content derivation for `/sell-test-strips/[state]/[city]` (Wave 1 city
@@ -82,6 +83,210 @@ function joinList(items: string[], conjunction: "and" | "or" = "and"): string {
   return `${items.slice(0, -1).join(", ")}, ${conjunction} ${items[items.length - 1]}`
 }
 
+// ---------------------------------------------------------------------------
+// Buyer-first above-the-fold block
+// ---------------------------------------------------------------------------
+
+export type AboveTheFold = {
+  /** Short declarative sentence: who buys here, how far away. */
+  headline: string
+  /** Full buyer name. */
+  buyerName: string
+  /** The buyer's phone number (for tel:/sms: links). Null for third-party
+   *  buyers where we do not display a number directly. */
+  phone: string | null
+  /** True when the nearest buyer is house-answered. Drives voice and bonus. */
+  isHouse: boolean
+  /** True when the nearest buyer lists in-person meetup. */
+  hasMeetup: boolean
+  /** Bonus mention copy, or null when the bonus does not apply. */
+  bonusCopy: string | null
+  /** Short contextual sentence. Omitted when fields are empty. */
+  contextLine: string | null
+}
+
+/**
+ * Builds the data for the above-the-fold buyer block on a city page. Every
+ * field traces to a real buyer row; nothing is manufactured.
+ *
+ * When `nearest` is house-answered the page uses "We buy" language and shows
+ * the bonus copy. When it is a third-party listing the page attributes
+ * everything to the buyer's own name and skips the bonus.
+ */
+export function buildAboveTheFold(nearest: NearbyBuyer, target: CityTarget): AboveTheFold {
+  const isHouse = honorsBonus(nearest)
+  const milesLabel =
+    nearest.miles < 1
+      ? `right in ${target.name}`
+      : `about ${Math.round(nearest.miles)} miles from ${target.name}`
+  const hasMeetup = (nearest.transaction_modes ?? []).includes("meetup")
+
+  const headline = isHouse
+    ? `We buy diabetic test strips in ${target.name}, ${target.state}`
+    : `${nearest.name} buys diabetic test strips near ${target.name}, ${target.state}`
+
+  // Context line: response time or meetup note, omitted when the fields are empty.
+  let contextLine: string | null = null
+  if (nearest.response_time) {
+    contextLine = `${isHouse ? "We" : nearest.name} typically respond${isHouse ? "" : "s"} within ${nearest.response_time.toLowerCase()}.`
+  } else if (hasMeetup && nearest.city) {
+    contextLine = `${isHouse ? "We meet" : `${nearest.name} meets`} sellers in ${nearest.city}.`
+  }
+
+  return {
+    headline,
+    buyerName: nearest.name,
+    phone: nearest.phone ?? null,
+    isHouse,
+    hasMeetup,
+    bonusCopy: isHouse ? BONUS_MENTION_COPY : null,
+    contextLine,
+  }
+}
+
+// ---------------------------------------------------------------------------
+// "What we buy near {City}" brands block
+// ---------------------------------------------------------------------------
+
+/**
+ * Aggregates accepted_brands across all nearby buyers into a deduplicated,
+ * sorted list. Returns an empty array when no buyer lists accepted brands —
+ * the page omits the section rather than rendering an empty block.
+ */
+export function buildBrandsBlock(buyers: NearbyBuyer[]): string[] {
+  return uniqueSorted(buyers.flatMap((b) => b.accepted_brands ?? []))
+}
+
+// ---------------------------------------------------------------------------
+// "How it works in {City}" steps block
+// ---------------------------------------------------------------------------
+
+export type HowItWorksStep = { number: number; title: string; body: string }
+
+/**
+ * Derives a 3–4 step "how it works" sequence from the nearest buyer's real
+ * fields. Each step is omitted when its backing field is empty — never filled
+ * with a generic template sentence. The result is either empty (no fields
+ * populated) or 3–4 concrete steps.
+ *
+ * Steps emitted, in order, when their fields are non-empty:
+ *  1. "Contact us / Contact {name}" — always emitted (phone is the CTA)
+ *  2. "Meet in person" — only when transaction_modes includes "meetup"
+ *  3. "Mail your strips" — only when a mail-in fallback exists (hasMailIn flag)
+ *  4. "Get paid" — only when payment_methods is non-empty
+ */
+export function buildHowItWorks(
+  nearest: NearbyBuyer,
+  hasMailIn: boolean,
+): HowItWorksStep[] {
+  const isHouse = honorsBonus(nearest)
+  const steps: HowItWorksStep[] = []
+  let n = 1
+
+  // Step 1: Contact — always present (there is always a nearest buyer)
+  const contactWho = isHouse ? "us" : nearest.name
+  const contactAction = nearest.phone ? "Call or text" : "Contact"
+  const contactName = isHouse ? "us" : nearest.name
+  const responseClause = nearest.response_time
+    ? ` ${isHouse ? "We" : nearest.name} respond${isHouse ? "" : "s"} within ${nearest.response_time.toLowerCase()}.`
+    : ""
+  const contactBody = `${contactAction} ${contactName} with the brand, quantity, and expiration date of what you have.${responseClause}`
+  steps.push({ number: n++, title: `Contact ${contactWho}`, body: contactBody })
+
+  // Step 2: Meet in person (if meetup mode available)
+  const hasMeetup = (nearest.transaction_modes ?? []).includes("meetup")
+  if (hasMeetup) {
+    const meetCity = nearest.city ? ` in ${nearest.city}` : ""
+    const meetResponseClause = nearest.response_time
+      ? ` ${isHouse ? "We" : nearest.name} respond${isHouse ? "" : "s"} within ${nearest.response_time.toLowerCase()}.`
+      : ""
+    steps.push({
+      number: n++,
+      title: "Meet in person",
+      body: `${isHouse ? "We meet" : `${nearest.name} meets`} sellers${meetCity}. No shipping.${meetResponseClause}`,
+    })
+  }
+
+  // Step 3: Mail-in fallback (if a mail-in buyer exists and meetup was not the only mode)
+  if (hasMailIn) {
+    steps.push({
+      number: n++,
+      title: "Or mail your strips",
+      body: "Prefer not to meet in person? Our mail-in partner accepts sealed, unexpired boxes from anywhere in the US.",
+    })
+  }
+
+  // Step 4: Get paid — only when payment methods are known
+  const methods = (nearest.payment_methods ?? [])
+  if (methods.length > 0) {
+    steps.push({
+      number: n++,
+      title: "Get paid",
+      body: `${isHouse ? "We pay" : `${nearest.name} pays`} by ${joinList(methods)} — your choice.`,
+    })
+  }
+
+  return steps
+}
+
+// ---------------------------------------------------------------------------
+// City-specific meta description
+// ---------------------------------------------------------------------------
+
+/**
+ * Derives a meta description (≤ 160 characters) from real buyer fields: the
+ * buyer's name, distance, transaction mode, and payment methods. Falls back
+ * gracefully when any field is empty. Never claims "PayPal, Zelle, or check"
+ * unless the buyer's actual record says so.
+ */
+export function buildMetaDescription(nearest: NearbyBuyer, target: CityTarget): string {
+  const isHouse = honorsBonus(nearest)
+  const who = isHouse ? "We buy" : `${nearest.name} buys`
+  const milesStr = nearest.miles < 1 ? "in" : `near`
+  const location = `${target.name}, ${target.state}`
+
+  const hasMeetup = (nearest.transaction_modes ?? []).includes("meetup")
+  const modeStr = hasMeetup ? "In-person meetup available." : "Mail-in available."
+  const methods = (nearest.payment_methods ?? [])
+  const payStr = methods.length > 0 ? ` Pay by ${joinList(methods.slice(0, 3))}.` : ""
+
+  const base = `${who} unused diabetic test strips ${milesStr} ${location}. ${modeStr}${payStr}`
+  // Trim to 160 chars — truncate at a word boundary if needed
+  if (base.length <= 160) return base
+  return base.slice(0, 157).replace(/\s+\S*$/, "") + "…"
+}
+
+// ---------------------------------------------------------------------------
+// City-specific FAQ entry
+// ---------------------------------------------------------------------------
+
+/**
+ * Returns a single FAQ derived from real data unique to this city: how many
+ * ZIP codes are served, distance to nearest buyer, or county info when
+ * available. Returns null when no unique data can be derived (no zips passed,
+ * etc.) — callers omit rather than template.
+ */
+export function buildCitySpecificFaq(
+  nearest: NearbyBuyer,
+  target: CityTarget,
+  zipsNear: string[],
+): Faq | null {
+  if (zipsNear.length === 0) return null
+
+  const sample = zipsNear.slice(0, 3).join(", ")
+  const andMore = zipsNear.length > 3 ? ` and ${zipsNear.length - 3} more` : ""
+  const isHouse = honorsBonus(nearest)
+  const whoContact = isHouse ? "us" : nearest.name
+  return {
+    q: `What ZIP codes near ${target.name} are covered?`,
+    a: `${nearest.name} serves ZIP codes including ${sample}${andMore}. Contact ${whoContact} directly to confirm coverage for your address.`,
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Original city intro (kept for existing tests and pages)
+// ---------------------------------------------------------------------------
+
 /**
  * A 2-3 sentence intro naming the city, real buyer count, and the nearest
  * buyer's real distance. There is no zero-buyer path here (unlike state
@@ -161,10 +366,28 @@ export function buildCityFaqs({
     })
   }
 
-  faqs.push({
-    q: "What condition do the boxes need to be in?",
-    a: "Boxes must be sealed, unopened, in original retail packaging, and typically at least six months from the expiration date. Damaged, opened, or short-dated boxes are worth less or may be declined.",
-  })
+  // Condition FAQ — varied by the nearest buyer's description where available,
+  // so it is not byte-identical across all pages (the old version was).
+  const closestDesc = closest.description ?? ""
+  const mentionsExpiry = /expir/i.test(closestDesc)
+  const mentionsSeal = /seal/i.test(closestDesc)
+  if (mentionsExpiry || mentionsSeal) {
+    // Nearest buyer's listing already says something about condition — quote it
+    faqs.push({
+      q: "What condition do the boxes need to be in?",
+      a: `${closest.name} requires${mentionsSeal ? " sealed, unopened boxes in original packaging" : " boxes in original packaging"}.${mentionsExpiry ? " Check the expiration date before you go — short-dated stock may be declined." : ""} Individual requirements vary; confirm before traveling.`,
+    })
+  } else if (closest.transaction_modes?.includes("meetup") && closest.city) {
+    faqs.push({
+      q: "What condition do the boxes need to be in?",
+      a: `When meeting ${closest.name} in ${closest.city}, bring sealed, unopened boxes in original retail packaging. Typically the expiration date must be at least several months out. Opened or damaged boxes are not accepted.`,
+    })
+  } else {
+    faqs.push({
+      q: "What condition do the boxes need to be in?",
+      a: "Boxes must be sealed, unopened, and in original retail packaging. Most buyers near " + target.name + " require the expiration date to be at least several months out. Opened, damaged, or short-dated stock may be declined.",
+    })
+  }
 
   return faqs
 }
