@@ -128,7 +128,7 @@ export function buildAboveTheFold(nearest: NearbyBuyer, target: CityTarget): Abo
   // Context line: response time or meetup note, omitted when the fields are empty.
   let contextLine: string | null = null
   if (nearest.response_time) {
-    contextLine = `${isHouse ? "We" : nearest.name} typically respond${isHouse ? "" : "s"} ${nearest.response_time.toLowerCase()}.`
+    contextLine = `${isHouse ? "We" : nearest.name} typically respond${isHouse ? "" : "s"} within ${nearest.response_time.toLowerCase()}.`
   } else if (hasMeetup && nearest.city) {
     contextLine = `${isHouse ? "We meet" : `${nearest.name} meets`} sellers in ${nearest.city}.`
   }
@@ -188,7 +188,7 @@ export function buildHowItWorks(
   const contactAction = nearest.phone ? "Call or text" : "Contact"
   const contactName = isHouse ? "us" : nearest.name
   const responseClause = nearest.response_time
-    ? ` ${isHouse ? "We" : nearest.name} respond${isHouse ? "" : "s"} ${nearest.response_time.toLowerCase()}.`
+    ? ` ${isHouse ? "We" : nearest.name} respond${isHouse ? "" : "s"} within ${nearest.response_time.toLowerCase()}.`
     : ""
   const contactBody = `${contactAction} ${contactName} with the brand, quantity, and expiration date of what you have.${responseClause}`
   steps.push({ number: n++, title: `Contact ${contactWho}`, body: contactBody })
@@ -198,7 +198,7 @@ export function buildHowItWorks(
   if (hasMeetup) {
     const meetCity = nearest.city ? ` in ${nearest.city}` : ""
     const meetResponseClause = nearest.response_time
-      ? ` ${isHouse ? "We" : nearest.name} respond${isHouse ? "" : "s"} ${nearest.response_time.toLowerCase()}.`
+      ? ` ${isHouse ? "We" : nearest.name} respond${isHouse ? "" : "s"} within ${nearest.response_time.toLowerCase()}.`
       : ""
     steps.push({
       number: n++,
