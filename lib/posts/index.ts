@@ -4,7 +4,7 @@
  * How to add a new Wednesday post:
  *  1. Create lib/posts/<your-slug>.ts exporting a RegistryPost. datePublished and
  *     dateModified are the day it MERGES — every post is served the moment it lands,
- *     so a future date is a false label (Feldon 2026-09-14: "dated as they go live").object.
+ *     so a future date is a false label (Feldon 2026-09-14: "dated as they go live").
  *  2. Import it here and add it to POST_REGISTRY.
  *  3. Done. The post automatically appears in:
  *     - app/blog/[slug]/page.tsx (fall-through when slug is not a state post)
