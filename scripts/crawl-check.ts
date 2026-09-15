@@ -26,9 +26,7 @@
  * Read-only: issues GETs and HEADs, nothing else.
  */
 
-// Marks this file as a module. Without it TypeScript treats these scripts as
-// global scripts and `main` collides with the one in indexnow-ping.ts.
-export {}
+import { decodeHtmlEntities } from "./lib/html-entities"
 
 type Args = { base: string; max: number; titleMax: number }
 
@@ -129,6 +127,10 @@ async function run() {
       err("page-status", page, `page returned ${res.status}`)
       continue
     }
+    // An internal URL that redirects off-site (/api/track → the buyer's own
+    // domain) is a working outbound link, not one of our pages. Parsing the
+    // destination would attribute its links, title and schema to us.
+    if (new URL(res.url).origin !== origin) continue
     if (!(res.headers.get("content-type") ?? "").includes("text/html")) continue
 
     const html = await res.text()
@@ -142,8 +144,10 @@ async function run() {
 
     checkStructuredData(html, page)
 
-    for (const [, href] of html.matchAll(/<a\b[^>]*\bhref=["']([^"']+)["']/gi)) {
-      const target = normalise(href, page, origin)
+    for (const [, rawHref] of html.matchAll(/<a\b[^>]*\bhref=["']([^"']+)["']/gi)) {
+      // Attribute values are HTML-escaped (`&` is `&amp;`); decode before
+      // resolving so the URL we fetch is the one the browser would.
+      const target = normalise(decodeHtmlEntities(rawHref), page, origin)
       if (!target) continue
       if (!linkSources.has(target)) linkSources.set(target, new Set())
       ;(linkSources.get(target) as Set<string>).add(page)
@@ -169,7 +173,9 @@ async function run() {
         if (r.status === 405 || r.status === 501) {
           r = await fetch(target, { headers: { "user-agent": "cfts-crawl-check" } })
         }
-        if (!r.ok) {
+        // Landing off-site means the internal hop worked; the destination's
+        // health is the other site's concern.
+        if (!r.ok && new URL(r.url).origin === origin) {
           const from = [...(linkSources.get(target) as Set<string>)]
           err(
             "broken-link",
