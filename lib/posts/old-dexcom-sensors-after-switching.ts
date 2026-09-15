@@ -29,8 +29,8 @@ export const oldDexcomSensorsAfterSwitching: RegistryPost = {
   shortTitle: "Old Dexcom G6 Sensors After Switching to the G7",
   description:
     "Moving from G6 to G7 leaves most people with sealed sensors they can never use. What they are still worth, the expiry rule almost everyone gets wrong, and what to check first.",
-  datePublished: "2026-09-17",
-  dateModified: "2026-09-17",
+  datePublished: "2026-09-07",
+  dateModified: "2026-09-07",
   bodyHtml: `
 <p>Almost nobody switches CGM systems on an empty cupboard. The prescription
 changes, the pharmacy sends the new one, and a few boxes of the old sensors are

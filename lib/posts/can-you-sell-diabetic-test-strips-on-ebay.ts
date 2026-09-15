@@ -21,8 +21,8 @@ export const canYouSellDiabeticTestStripsOnEbay: RegistryPost = {
   title: "Can You Sell Diabetic Test Strips on eBay?",
   description:
     "eBay restricts and routinely removes medical test-strip listings. What happens in practice and the direct-buyer route that skips the risk entirely.",
-  datePublished: "2026-10-29",
-  dateModified: "2026-10-29",
+  datePublished: "2026-09-14",
+  dateModified: "2026-09-14",
   bodyHtml: `
 <p>Technically yes, but in practice eBay is the wrong platform for this. eBay
 restricts medical test-strip listings, and listings that go up come back down

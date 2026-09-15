@@ -27,8 +27,8 @@ export const insuranceChangedBrands: RegistryPost = {
   shortTitle: "Insurance Changed Brands? What to Do With Old Supplies",
   description:
     "A new plan year can leave you holding sealed boxes for a meter you no longer use. Whether you can sell supplies insurance paid for, and the one funding rule that decides it.",
-  datePublished: "2026-09-24",
-  dateModified: "2026-09-24",
+  datePublished: "2026-09-08",
+  dateModified: "2026-09-08",
   bodyHtml: `
 <p>This one is never anybody's decision. A plan year turns over, an employer
 switches carrier, or a formulary quietly moves, and the letter arrives saying

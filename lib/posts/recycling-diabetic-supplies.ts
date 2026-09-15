@@ -15,8 +15,8 @@ export const recyclingDiabeticSupplies: RegistryPost = {
   title: "Can You Recycle Diabetic Supplies? What Happens to Each Type",
   description:
     "Most diabetic supplies cannot go in the blue bin — but sealed, unexpired boxes have a better option. What is recyclable, what should be sold, and how to dispose of the rest safely.",
-  datePublished: "2026-09-10",
-  dateModified: "2026-09-10",
+  datePublished: "2026-09-07",
+  dateModified: "2026-09-07",
   bodyHtml: `
 <p>Most diabetic supplies end up in the trash — not because they are worthless,
 but because people are not sure what else to do with them. Recycling is the
