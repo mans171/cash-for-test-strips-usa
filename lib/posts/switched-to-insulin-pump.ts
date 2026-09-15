@@ -11,8 +11,8 @@ export const switchedToInsulinPump: RegistryPost = {
   shortTitle: "Leftover Test Strips After Starting a Pump or CGM",
   description:
     "Moving to a pump or continuous monitor usually leaves months of unopened strips behind. What is still worth something, what is not, and what to check first.",
-  datePublished: "2026-10-15",
-  dateModified: "2026-10-15",
+  datePublished: "2026-09-08",
+  dateModified: "2026-09-08",
   bodyHtml: `
 <p>Nobody starts a pump or a continuous monitor with an empty cupboard. The
 prescriptions were arriving on a schedule, that schedule did not stop the moment

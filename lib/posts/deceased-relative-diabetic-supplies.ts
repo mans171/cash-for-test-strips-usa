@@ -16,8 +16,8 @@ export const deceasedRelativeDiabeticSupplies: RegistryPost = {
   shortTitle: "Diabetic Supplies Left After a Death: What to Do",
   description:
     "What to do with sealed diabetic supplies during a clear-out: what has value, what does not, who in the family should handle it, and the one deadline that decides it.",
-  datePublished: "2026-10-08",
-  dateModified: "2026-10-08",
+  datePublished: "2026-09-08",
+  dateModified: "2026-09-08",
   bodyHtml: `
 <p>This is usually the last thing anyone thinks about, and it is usually the
 reason it never gets done. The furniture is spoken for, the paperwork is with a

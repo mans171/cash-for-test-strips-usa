@@ -19,8 +19,8 @@ export const whatDiabeticSuppliesBuyersDoNotBuy: RegistryPost = {
   title: "What Diabetic Supplies Buyers Do Not Buy",
   description:
     "Opened boxes, expired test strips, insulin, lancets, and pharmacy-labeled packaging — a plain list of what is rejected and why, plus the two narrow exceptions.",
-  datePublished: "2026-11-05",
-  dateModified: "2026-11-05",
+  datePublished: "2026-09-14",
+  dateModified: "2026-09-14",
   bodyHtml: `
 <p>Buyers in this category have a short list of things they will not take,
 and knowing the list before you pack anything saves time on both sides. The

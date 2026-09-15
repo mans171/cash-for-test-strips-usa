@@ -14,8 +14,8 @@ export const leftoverOmnipodPods: RegistryPost = {
   title: "Leftover Omnipod Pods: What They Are Worth, Expired or Not",
   description:
     "Switching pumps or changing therapy leaves boxes of pods behind. Omnipod is the one product where expired stock still has value, and most people never find out.",
-  datePublished: "2026-10-22",
-  dateModified: "2026-10-22",
+  datePublished: "2026-09-08",
+  dateModified: "2026-09-08",
   bodyHtml: `
 <p>Pods are bought and delivered in quantity, on a schedule, and they stop being
 needed all at once — a switch to a tubed pump, a change of therapy, a plan

@@ -15,8 +15,8 @@ export const doTestStripsExpire: RegistryPost = {
   title: "Do Diabetic Test Strips Expire? What the Date Actually Means",
   description:
     "Expired test strips give inaccurate readings and should not be used. But the same advice is wrong about two CGM products, and that mistake gets thrown away every week.",
-  datePublished: "2026-10-01",
-  dateModified: "2026-10-01",
+  datePublished: "2026-09-08",
+  dateModified: "2026-09-08",
   bodyHtml: `
 <p>Yes, and unlike a lot of printed dates, this one means something.</p>
 
