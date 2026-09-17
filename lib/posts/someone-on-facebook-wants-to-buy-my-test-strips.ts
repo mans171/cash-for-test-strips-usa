@@ -180,7 +180,7 @@ that no real buyer will take.</p>
   faqs: [
     {
       q: "Is it legal to sell diabetic test strips to someone who found me on Facebook?",
-      a: "Yes. The law does not restrict how a buyer finds you — it restricts what you sell. Sealed, personally owned supplies that were not purchased through Medicare or Medicaid are legal to sell in every state, regardless of the platform where the transaction started. See the full guide at /is-it-legal-to-sell-diabetic-test-strips for the details.",
+      a: "Yes. The law does not restrict how a buyer finds you — it restricts what you sell. Sealed, personally owned supplies that were not purchased through Medicare or Medicaid are legal to sell in every state, regardless of the platform where the transaction started. The legality guide linked above walks through the three conditions in full.",
     },
     {
       q: "What is an overpayment scam in the context of test strips?",
