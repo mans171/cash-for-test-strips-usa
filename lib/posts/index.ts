@@ -31,6 +31,7 @@ import { switchedToInsulinPump } from "./switched-to-insulin-pump"
 import { leftoverOmnipodPods } from "./leftover-omnipod-pods"
 import { whatDiabeticSuppliesBuyersDoNotBuy } from "./what-diabetic-supplies-buyers-do-not-buy"
 import { canYouSellDiabeticTestStripsOnEbay } from "./can-you-sell-diabetic-test-strips-on-ebay"
+import { someoneOnFacebookWantsToBuyMyTestStrips } from "./someone-on-facebook-wants-to-buy-my-test-strips"
 
 /**
  * All non-state registry posts, newest first.
@@ -39,6 +40,7 @@ import { canYouSellDiabeticTestStripsOnEbay } from "./can-you-sell-diabetic-test
  * in the right order without a runtime sort.
  */
 export const POST_REGISTRY: RegistryPost[] = [
+  someoneOnFacebookWantsToBuyMyTestStrips,
   whatDiabeticSuppliesBuyersDoNotBuy,
   canYouSellDiabeticTestStripsOnEbay,
   howToSellDiabeticSuppliesByMail,
