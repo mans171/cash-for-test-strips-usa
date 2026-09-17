@@ -1,13 +1,13 @@
 import type { PostBody } from "./types"
 
 /**
- * Colorado — two in-state buyers, the Denver area and Colorado Springs, and
- * both of them sit on the same north-south line. Every one of the ten Colorado
+ * Colorado — one in-state buyer, serving the Denver area, on the same
+ * north-south line as the rest of the state's population. Every one of the ten Colorado
  * cities we hold prevalence figures for is on that same Front Range corridor.
  *
  * So the spine here is shape rather than presence: Colorado's coverage is a
  * line, not a map, and the honest thing to tell a reader in the mountains or
- * west of the Divide is that the two listings do not help them at all.
+ * west of the Divide is that the listing does not help them at all.
  *
  * Kansas carries the same generated angle and is a neighboring state with a
  * similar profile, so it is deliberately built on something else entirely —
@@ -17,15 +17,15 @@ import type { PostBody } from "./types"
  * site publishes payout tiers, not prices.
  */
 export const CO: PostBody = {
-  label: "Two buyers, one corridor",
-  title: "Selling Diabetic Test Strips in Colorado: Two Buyers, One Corridor",
+  label: "One buyer, one corridor",
+  title: "Selling Diabetic Test Strips in Colorado: One Buyer, One Corridor",
   heading: "Selling Diabetic Test Strips in Colorado",
   metaDescription:
-    "Colorado has in-person buyers in the Denver area and Colorado Springs — both on the Front Range. Pueblo reads 13.5% for diabetes against Fort Collins at 6.2%. What sealed supplies need to qualify.",
+    "Colorado has an in-person buyer serving the Denver area, on the Front Range. Pueblo reads 13.5% for diabetes against Fort Collins at 6.2%. What sealed supplies need to qualify.",
 
   lead: [
-    "Colorado is one of the better-covered states on this directory. There are two in-person buyers listed: one serving the Denver area, one in Colorado Springs. For a state of just under six million people, that is more than most places get.",
-    "The catch is where they are. Both sit on the Front Range, the strip of cities running north to south along the eastern edge of the mountains. If you are on that line, you have options. If you are west of the Divide, the two listings do not do anything for you, and it is better to say that than to leave you guessing.",
+    "Colorado has one in-person buyer listed on this directory, serving the Denver area. It sits in the middle of the part of the state where most people actually live, which matters more than the count.",
+    "The catch is where it is. It sits on the Front Range, the strip of cities running north to south along the eastern edge of the mountains. If you are on that line, you have options. If you are west of the Divide, the listing does not do anything for you, and it is better to say that than to leave you guessing.",
   ],
 
   sections: [
@@ -33,8 +33,8 @@ export const CO: PostBody = {
       heading: "Coverage in Colorado is a line, not a map",
       paragraphs: [
         "Look at where Coloradans actually live and the reason for this becomes obvious. Every one of the ten Colorado cities we hold diabetes figures for — Denver, Colorado Springs, Aurora, Fort Collins, Lakewood, Thornton, Arvada, Westminster, Pueblo and Greeley — sits on the Front Range corridor. Not one of them is in the mountains or on the Western Slope.",
-        "A buyer needs enough people within a reasonable drive to make in-person collection worth doing at all, and in Colorado that means the corridor. The Denver-area listing covers the middle of it and reaches the northern suburbs comfortably. Colorado Springs covers the southern end.",
-        "Between the two of them, the majority of the state's population is within a manageable drive of somebody. That is genuinely unusual. It is also the whole of the story — there is no third listing hiding somewhere west, and there is unlikely to be one.",
+        "A buyer needs enough people within a reasonable drive to make in-person collection worth doing at all, and in Colorado that means the corridor. The Denver-area listing covers the middle of it and reaches the northern suburbs comfortably. The southern end, Colorado Springs and Pueblo, is a longer drive.",
+        "A large share of the state's population is within a manageable drive of it. That is also the whole of the story — there is no second listing hiding somewhere west, and there is unlikely to be one.",
       ],
     },
     {
@@ -52,13 +52,13 @@ export const CO: PostBody = {
         "Statewide, 8.6% of Colorado adults have diagnosed diabetes against a national figure of 12.1%. Only one state in the country reads lower. On the face of it that suggests there is not much of a local market here at all.",
         "The state average hides the thing that actually matters. Pueblo reads 13.5%, well above the national rate. Fort Collins reads 6.2%, barely half of it. That is a 7.3-point spread between two cities in the same state, and it is the difference between an old steel town and a university town rather than anything about Colorado's climate or altitude.",
         "Greeley sits at 10.5% and Aurora at 9.5%, both above the state figure. Denver itself reads 7.1%, which is low. Colorado Springs is 9.0%.",
-        "There is a useful coincidence in that. Pueblo, the city with the highest rate in the state, sits at the southern end of the same corridor as the Colorado Springs buyer. For once, the coverage and the need are in roughly the same place.",
+        "There is an awkward mismatch in that. Pueblo, the city with the highest rate in the state, sits at the southern end of the corridor, well over a hundred miles from the Denver-area buyer. For a few boxes from Pueblo, the prepaid mail-in label is usually the better route.",
       ],
     },
     {
       heading: "West of the Divide, it is post",
       paragraphs: [
-        "If you are in the mountain towns, on the Western Slope, or anywhere in the San Luis Valley, neither listing is a realistic drive and you should not treat it as one. Mail-in is the route, and it is not a consolation prize.",
+        "If you are in the mountain towns, on the Western Slope, or anywhere in the San Luis Valley, the Denver-area listing is not a realistic drive and you should not treat it as one. Mail-in is the route, and it is not a consolation prize.",
         "The label is prepaid and reaches all 527 of Colorado's ZIP codes at the same cost to you, which is nothing. Payment is made within 24 hours of the parcel arriving and being verified. In practice that means a couple of days in transit and then a day, which for most people is faster than arranging a drive over a pass in winter would be.",
         "Get the number in writing before anything leaves your house. Not a range and not an \"up to\" figure — the actual number for the brands, counts and dates you actually have. A buyer who will not commit before you post is one who plans to revise downwards once your box is in their building, and by then you have no leverage at all.",
       ],
@@ -85,7 +85,7 @@ export const CO: PostBody = {
   faqs: [
     {
       q: "Where exactly in Colorado can I sell in person?",
-      a: "Two listings: one covering the Denver area and one in Colorado Springs. Both are on the Front Range. There is no in-person buyer listed in the mountains, on the Western Slope or in the San Luis Valley, and mail-in with a prepaid label is the honest answer for anyone in those parts of the state.",
+      a: "One listing, covering the Denver area on the Front Range. There is no in-person buyer listed in the mountains, on the Western Slope or in the San Luis Valley, and mail-in with a prepaid label is the honest answer for anyone in those parts of the state.",
     },
     {
       q: "Is it worth driving over from the Western Slope?",
