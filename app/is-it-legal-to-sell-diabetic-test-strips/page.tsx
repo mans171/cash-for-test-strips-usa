@@ -150,6 +150,23 @@ export default function IsItLegalPage() {
         ))}
       </div>
 
+      <div className="border-t border-gray-100 pt-8 mt-10 not-prose">
+        <p className="text-sm text-gray-500 mb-3">
+          Related reading:{' '}
+          <Link href="/blog/someone-on-facebook-wants-to-buy-my-test-strips" className="text-emerald-600 font-semibold hover:underline">
+            Is a Facebook test strip offer a scam?
+          </Link>
+          {' · '}
+          <Link href="/blog/can-you-sell-diabetic-test-strips-on-ebay" className="text-emerald-600 hover:underline">
+            Can you sell on eBay?
+          </Link>
+          {' · '}
+          <Link href="/blog/do-diabetic-test-strips-expire" className="text-emerald-600 hover:underline">
+            Do test strips expire?
+          </Link>
+        </p>
+      </div>
+
       <div className="text-center mt-10 not-prose">
         <p className="text-xs text-gray-500 mb-4">Not legal advice — consult an attorney with specific questions about your situation.</p>
         <div className="bg-emerald-50 rounded-xl p-6">
