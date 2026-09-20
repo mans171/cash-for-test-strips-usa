@@ -13,3 +13,15 @@ export const STATE_LABELS: Record<string, string> = {
 }
 
 export const VALID_STATE_CODES = new Set(Object.keys(STATE_LABELS))
+
+// Where a mail-in seller can ship FROM: the 50 states plus the District of
+// Columbia, and never the CANADA pseudo-code. This is deliberately a separate
+// list — STATE_LABELS drives the state pages, the sitemap and the directory,
+// and DC has no state page, so it must not be added there.
+export const MAIL_IN_STATE_LABELS: Record<string, string> = Object.fromEntries(
+  Object.entries({ ...STATE_LABELS, DC: "District of Columbia" })
+    .filter(([code]) => code !== "CANADA")
+    .sort(([, a], [, b]) => a.localeCompare(b)),
+)
+
+export const MAIL_IN_STATE_CODES = new Set(Object.keys(MAIL_IN_STATE_LABELS))
