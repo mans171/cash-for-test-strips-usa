@@ -105,8 +105,8 @@ feel anything shifting, open it and add more fill.</p>
 
 <p>Crushed corners are the most common thing that changes what a buyer can do
 with a box after it arrives. A corner that was square when it left your hands
-but collapsed during shipping is a packaging defect, and that comes off the
-agreed figure. The shake test catches the packing gaps that cause it before
+but collapsed during shipping is a packaging defect, and the buyer may have
+to come back to you about it. The shake test catches the packing gaps that cause it before
 anything ships.</p>
 
 <h2>Sensors and pods: pack and drop off the same day</h2>
@@ -173,15 +173,17 @@ match your shipment to your kit without a back-and-forth to figure out what
 arrived. One index card takes ten seconds to add and removes a whole class
 of arrival-day confusion.</p>
 
-<h2>No printer? The post office counter can print your label</h2>
+<h2>No printer? You still have options</h2>
 
-<p>If you do not have access to a printer, bring the label to any USPS
-retail counter on your phone and ask them to print it. Show the label in
-your email or your kit status page, and they can print and attach it. This
-works at any staffed USPS location and costs nothing extra.</p>
+<p>A prepaid label is a regular PDF, so anywhere that prints a page can print
+it. A public library, an office-supply or shipping store, a workplace printer,
+or a neighbor all work — forward the label email or open your kit status page
+there and print one copy at full size. Plain paper is fine: trim it, and tape
+it down around all four edges without covering the barcode.</p>
 
-<p>The acceptance scan the counter agent gives you serves as your drop-off
-receipt. That scan is what you need.</p>
+<p>Do not count on the post office counter to print a label from your phone.
+Some locations cannot. If printing is a real obstacle, text the buyer before
+you pack and ask what they can arrange.</p>
 
 <h2>Get a drop-off receipt and keep it until you are paid</h2>
 
@@ -205,8 +207,7 @@ shipment moves.</p>
 
 <p>When the buyer receives the shipment, they check in and inspect your
 supplies. You will see the status update on your kit page. Once checked in,
-payment goes out by the method you chose when you set up the kit: Zelle,
-PayPal, Venmo, or check. The
+payment goes out by the method you chose when you set up the kit: Zelle, Cash App, Venmo, bank transfer, or check. The
 <a href="/blog/how-to-sell-diabetic-supplies-by-mail">mail-in guide</a>
 covers payment timing and what to do if the quoted figure is revised after
 arrival.</p>
@@ -241,7 +242,7 @@ for a quote on supplies anywhere in the country.</p>
     },
     {
       q: "Do I need to remove the pharmacy label from any of the boxes?",
-      a: "No. Leave pharmacy labels on. Buyers handle labeled packaging routinely and it does not affect the sale. Attempting to peel a sticker often damages the box art underneath — the one thing you need to protect.",
+      a: "No. Leave pharmacy labels on. Buyers handle labeled packaging routinely and will tell you if a label matters. Attempting to peel a sticker often damages the box art underneath — the one thing you need to protect.",
     },
     {
       q: "I have sensors, pods, and test strips all going in the same box. Is that fine?",
