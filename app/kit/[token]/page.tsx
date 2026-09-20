@@ -122,7 +122,7 @@ export default async function KitStatusPage({ params }: Props) {
             <a href={kit.label_pdf_url} target="_blank" rel="noopener noreferrer" className="bg-cash text-white font-semibold px-6 py-3 rounded-lg text-center hover:bg-cash-hover transition-colors">
               Print your label
             </a>
-            <p className="text-xs text-gray-500">No printer? Show this label on your phone at the post office counter and ask them to print it.</p>
+            <p className="text-xs text-gray-500">No printer? A library, a shipping or office-supply store, or a friend can print it from this page. Stuck? Text us.</p>
           </>
         ) : current >= 3 ? (
           <p className="text-sm text-gray-600">Your box is already with the carrier, so the label is no longer needed.</p>
