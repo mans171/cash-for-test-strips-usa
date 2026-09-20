@@ -833,14 +833,54 @@ export function parseSellerInput(body: unknown, validStates: ReadonlySet<string>
 // Stage 2 — labels
 // ---------------------------------------------------------------------------
 
-/** A kit has an active label when one was bought and has not been voided. The
- *  label columns are kept after a void (history), so `label_refund_status` is
- *  what says the label is dead. */
+// THE LABEL CLAIM. Buying a label costs real money, and "read the row, see no
+// label, buy" lets two presses both buy. So before any EasyPost call the label
+// route CLAIMS the kit with one conditional UPDATE that writes a placeholder
+// into `easypost_shipment_id` (`claim:<uuid>`) and stamps `label_created_at`.
+// Only one request can win that UPDATE; the winner swaps the placeholder for
+// the real shipment id after the buy, or clears it if nothing was bought.
+//
+// A claim token is NEVER a shipment. Everything that reads the column goes
+// through the helpers below.
+export const LABEL_CLAIM_PREFIX = 'claim:'
+
+/** A claim whose function died is abandoned after this long and may be taken
+ *  over. The trade-off: a request genuinely still running after 3 minutes
+ *  would be raced by the takeover — but the route makes three EasyPost calls
+ *  capped at 20s each and Vercel kills the function long before 3 minutes, so
+ *  in practice a claim this old belongs to a process that no longer exists. */
+export const LABEL_CLAIM_STALE_MS = 3 * 60 * 1000
+
+export function isLabelClaim(shipmentId: string | null | undefined): boolean {
+  return typeof shipmentId === 'string' && shipmentId.startsWith(LABEL_CLAIM_PREFIX)
+}
+
+/** The ISO timestamp before which a claim counts as abandoned. */
+export function labelClaimStaleBefore(now: Date): string {
+  return new Date(now.getTime() - LABEL_CLAIM_STALE_MS).toISOString()
+}
+
+/** True while a label is being bought for this kit (a claim that is not yet
+ *  abandoned). A claim with no readable timestamp is treated as live: the
+ *  database takeover (`label_created_at < cutoff`) would not match it either. */
+export function hasLiveLabelClaim(order: Pick<MailInOrder, 'easypost_shipment_id' | 'label_created_at'>, now: Date): boolean {
+  if (!isLabelClaim(order.easypost_shipment_id)) return false
+  const claimedAt = order.label_created_at ? Date.parse(order.label_created_at) : NaN
+  if (!Number.isFinite(claimedAt)) return true
+  return claimedAt >= now.getTime() - LABEL_CLAIM_STALE_MS
+}
+
+/** A kit has an active label when a REAL shipment was bought and has not been
+ *  voided. A `claim:` placeholder is not a label. After a void the shipment id
+ *  is cleared (it lives on in the label_voided timeline event) and
+ *  `label_refund_status` stays set until the next label is saved. */
 export function hasActiveLabel(order: Pick<MailInOrder, 'easypost_shipment_id' | 'label_refund_status'>): boolean {
-  return Boolean(order.easypost_shipment_id) && !order.label_refund_status
+  return Boolean(order.easypost_shipment_id) && !isLabelClaim(order.easypost_shipment_id) && !order.label_refund_status
 }
 
 export const LABEL_STATUSES: readonly MailInStatus[] = ['awaiting_quote', 'quote_agreed']
+
+export const LABEL_CLAIMED_ERROR = 'A label is already being made for this kit'
 
 export type ShipFrom = { name: string; street1: string; street2: string | null; city: string; state: string; zip: string; phone: string | null; email: string | null }
 
@@ -848,10 +888,16 @@ export type ShipFrom = { name: string; street1: string; street2: string | null; 
  *  ship-from address on success. `status` on the error is the HTTP status. */
 export function checkLabelPreconditions(
   order: MailInOrder,
-  quotedAmount: number | null
+  quotedAmount: number | null,
+  now: Date = new Date()
 ): { ok: true; shipFrom: ShipFrom } | { ok: false; status: 400 | 409; error: string } {
   if (hasActiveLabel(order)) {
     return { ok: false, status: 409, error: 'This kit already has a label. Void it first if a new one is needed.' }
+  }
+  // A cheap early answer only — the claiming UPDATE in the route is what
+  // actually enforces this.
+  if (hasLiveLabelClaim(order, now)) {
+    return { ok: false, status: 409, error: LABEL_CLAIMED_ERROR }
   }
   if (!LABEL_STATUSES.includes(order.status)) {
     return { ok: false, status: 409, error: `A label can only be made while a kit is Waiting for quote or Quote agreed (this one is ${STATUS_LABELS[order.status]}).` }

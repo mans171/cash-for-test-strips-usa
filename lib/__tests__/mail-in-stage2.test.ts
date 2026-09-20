@@ -11,6 +11,10 @@ import {
   planTrackerUpdate,
   sellerStepIndex,
   toSellerView,
+  LABEL_CLAIM_STALE_MS,
+  hasLiveLabelClaim,
+  isLabelClaim,
+  labelClaimStaleBefore,
   type MailInOrder,
   type MailInStatus,
 } from '../mail-in'
@@ -264,6 +268,46 @@ describe('labels', () => {
     expect(hasActiveLabel({ easypost_shipment_id: null, label_refund_status: null })).toBe(false)
     expect(hasActiveLabel({ easypost_shipment_id: 'shp_1', label_refund_status: null })).toBe(true)
     expect(hasActiveLabel({ easypost_shipment_id: 'shp_1', label_refund_status: 'submitted' })).toBe(false)
+  })
+
+  describe('the label claim placeholder', () => {
+    const CLAIM = 'claim:0b9d2c0e-0000-4000-8000-000000000001'
+    const minutesAgo = (m: number) => new Date(NOW.getTime() - m * 60_000).toISOString()
+
+    it('is never an active label, voided or not', () => {
+      expect(isLabelClaim(CLAIM)).toBe(true)
+      expect(isLabelClaim('shp_1')).toBe(false)
+      expect(isLabelClaim(null)).toBe(false)
+      expect(hasActiveLabel({ easypost_shipment_id: CLAIM, label_refund_status: null })).toBe(false)
+      expect(hasActiveLabel({ easypost_shipment_id: CLAIM, label_refund_status: 'submitted' })).toBe(false)
+    })
+
+    it('is live for 3 minutes and abandoned after that', () => {
+      expect(LABEL_CLAIM_STALE_MS).toBe(180_000)
+      expect(labelClaimStaleBefore(NOW)).toBe(minutesAgo(3))
+      expect(hasLiveLabelClaim({ easypost_shipment_id: CLAIM, label_created_at: minutesAgo(0) }, NOW)).toBe(true)
+      expect(hasLiveLabelClaim({ easypost_shipment_id: CLAIM, label_created_at: minutesAgo(2.9) }, NOW)).toBe(true)
+      expect(hasLiveLabelClaim({ easypost_shipment_id: CLAIM, label_created_at: minutesAgo(3.1) }, NOW)).toBe(false)
+      // No timestamp: the database takeover could not match it either.
+      expect(hasLiveLabelClaim({ easypost_shipment_id: CLAIM, label_created_at: null }, NOW)).toBe(true)
+      // A real shipment is not a claim however old it is.
+      expect(hasLiveLabelClaim({ easypost_shipment_id: 'shp_1', label_created_at: minutesAgo(0) }, NOW)).toBe(false)
+    })
+
+    it('refuses a second label while a claim is live, and lets an abandoned one through', () => {
+      const live = checkLabelPreconditions(order({ easypost_shipment_id: CLAIM, label_created_at: minutesAgo(1) }), 90, NOW)
+      expect(live).toMatchObject({ ok: false, status: 409, error: 'A label is already being made for this kit' })
+      expect(checkLabelPreconditions(order({ easypost_shipment_id: CLAIM, label_created_at: minutesAgo(4) }), 90, NOW).ok).toBe(true)
+    })
+
+    it('shows the seller NO label, link, tracking or test badge — even on a row that looks labeled', () => {
+      const view = toSellerView(order({
+        status: 'label_made', easypost_shipment_id: CLAIM, label_created_at: minutesAgo(1), easypost_mode: 'test',
+        tracking_code: '9400OLD', carrier: 'USPS', service: 'GroundAdvantage', label_url: 'https://example.com/old.pdf', label_pdf_url: 'https://example.com/old.pdf',
+      }))
+      expect(view).toMatchObject({ label_pdf_url: null, tracking_code: null, tracking_url: null, carrier: null, service: null, label_is_test: false, label_created_at: null })
+      expect(JSON.stringify(view)).not.toMatch(/claim:|9400OLD|old\.pdf/)
+    })
   })
 
   it('passes a ready kit and hands back the ship-from address', () => {

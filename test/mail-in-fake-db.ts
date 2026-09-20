@@ -3,6 +3,13 @@
 // just enough of the PostgREST builder to drive a route end to end with NO
 // database. It proves route wiring, not Postgres behavior.
 //
+// The one piece of Postgres behavior it DOES model, because the label race
+// tests depend on it: an UPDATE's filters and its write happen in one
+// synchronous step (`run`), so a conditional update is atomic exactly as a
+// single UPDATE ... WHERE ... RETURNING is. Filters follow SQL's rules for
+// NULL: `eq`, `lt`, `like` and `in` never match a null column; only `is` does.
+// test/__tests__/mail-in-fake-db.test.ts checks the fake itself.
+//
 // `touched` counts every call to `.from()`, so a test can assert a route
 // answered WITHOUT reaching for the database at all.
 
@@ -13,10 +20,17 @@ export function createFakeDb() {
   let nextId = 1
   const state = {
     touched: 0,
+    /** Every statement that ran, in order, as `mode:table` — lets a race test
+     *  prove both requests READ before either one wrote. */
+    ops: [] as string[],
     /** Make the next update on mail_in_orders fail, to test "bought but not saved". */
     failNextOrderUpdate: false,
-    /** Runs just before an update is applied. */
-    beforeUpdate: null as (() => void) | null,
+    /** Make every mail_in_orders update whose payload this accepts fail. */
+    failOrderUpdateWhen: null as ((payload: Row) => boolean) | null,
+    /** Make the next insert into mail_in_events fail. */
+    failNextEventInsert: false,
+    /** Runs just before an update is applied, with the update's payload. */
+    beforeUpdate: null as ((payload: Row) => void) | null,
   }
   const uuid = () => `00000000-0000-4000-8000-${String(nextId++).padStart(12, '0')}`
 
@@ -26,7 +40,12 @@ export function createFakeDb() {
     let payload: Row | Row[] | null = null
 
     const run = (): { data: Row[]; error: { message: string; code?: string } | null } => {
+      state.ops.push(`${mode}:${table}`)
       if (mode === 'insert') {
+        if (table === 'mail_in_events' && state.failNextEventInsert) {
+          state.failNextEventInsert = false
+          return { data: [], error: { message: 'simulated insert failure' } }
+        }
         const rows = (Array.isArray(payload) ? payload : [payload as Row]).map((row) => ({
           id: uuid(),
           created_at: new Date().toISOString(),
@@ -40,7 +59,10 @@ export function createFakeDb() {
           state.failNextOrderUpdate = false
           return { data: [], error: { message: 'simulated database failure' } }
         }
-        state.beforeUpdate?.()
+        if (table === 'mail_in_orders' && state.failOrderUpdateWhen?.(payload as Row)) {
+          return { data: [], error: { message: 'simulated database failure' } }
+        }
+        state.beforeUpdate?.(payload as Row)
       }
       const matched = tables[table].filter((row) => filters.every((f) => f(row)))
       if (mode === 'update') matched.forEach((row) => Object.assign(row, payload))
@@ -52,7 +74,38 @@ export function createFakeDb() {
       order: () => api,
       limit: () => api,
       eq: (column: string, value: unknown) => {
-        filters.push((row) => row[column] === value)
+        filters.push((row) => row[column] != null && row[column] === value)
+        return api
+      },
+      /** PostgREST `is`: null (and booleans). `.is(col, null)` is IS NULL. */
+      is: (column: string, value: null | boolean) => {
+        filters.push((row) => (value === null ? row[column] == null : row[column] === value))
+        return api
+      },
+      in: (column: string, values: unknown[]) => {
+        filters.push((row) => row[column] != null && values.includes(row[column]))
+        return api
+      },
+      /** SQL LIKE: `%` any run, `_` one character, case-sensitive, whole value. */
+      like: (column: string, pattern: string) => {
+        const source = pattern
+          .split('')
+          .map((ch) => (ch === '%' ? '[\\s\\S]*' : ch === '_' ? '[\\s\\S]' : ch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))
+          .join('')
+        const regex = new RegExp(`^${source}$`)
+        filters.push((row) => typeof row[column] === 'string' && regex.test(row[column] as string))
+        return api
+      },
+      /** Less-than. Timestamps compare as instants, as timestamptz does. */
+      lt: (column: string, value: string | number) => {
+        filters.push((row) => {
+          const cell = row[column]
+          if (cell == null) return false
+          if (typeof cell === 'number' && typeof value === 'number') return cell < value
+          const a = Date.parse(String(cell))
+          const b = Date.parse(String(value))
+          return Number.isFinite(a) && Number.isFinite(b) ? a < b : String(cell) < String(value)
+        })
         return api
       },
       insert: (rows: Row | Row[]) => {
@@ -91,7 +144,10 @@ export function createFakeDb() {
       tables.mail_in_orders.length = 0
       tables.mail_in_events.length = 0
       state.touched = 0
+      state.ops.length = 0
       state.failNextOrderUpdate = false
+      state.failOrderUpdateWhen = null
+      state.failNextEventInsert = false
       state.beforeUpdate = null
     },
     /** Insert a kit row directly, with sensible defaults. */
