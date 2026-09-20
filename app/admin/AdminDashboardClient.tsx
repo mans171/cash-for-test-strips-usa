@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useState } from "react";
+import { MailInTab } from "./MailInTab";
 
 type SubmissionPayload = {
   name: string;
@@ -62,7 +63,7 @@ type DashboardData = {
 
 export function AdminDashboardClient() {
   const [data, setData] = useState<DashboardData | null>(null);
-  const [tab, setTab] = useState<"submissions" | "claims" | "leads" | "clicks" | "missingPhones">("submissions");
+  const [tab, setTab] = useState<"submissions" | "claims" | "leads" | "clicks" | "missingPhones" | "mailIn">("submissions");
   const [error, setError] = useState<string | null>(null);
 
   async function load() {
@@ -135,7 +136,7 @@ export function AdminDashboardClient() {
 
   return (
     <div>
-      <div className="flex gap-2 mb-6">
+      <div className="flex flex-wrap gap-2 mb-6">
         {(["submissions", "claims", "leads", "clicks", "missingPhones"] as const).map((t) => (
           <button
             key={t}
@@ -145,7 +146,17 @@ export function AdminDashboardClient() {
             {t} ({data[t].length})
           </button>
         ))}
+        {/* Mail-in loads its own data (see MailInTab), so it has no count here
+            and a failure there leaves the tabs above working. */}
+        <button
+          onClick={() => setTab("mailIn")}
+          className={`text-sm px-3 py-1.5 rounded-full border ${tab === "mailIn" ? "bg-emerald-600 text-white border-emerald-600" : "border-gray-200 text-gray-600"}`}
+        >
+          Mail-in
+        </button>
       </div>
+
+      {tab === "mailIn" && <MailInTab />}
 
       {tab === "submissions" && (
         <div className="flex flex-col gap-3">
