@@ -23,6 +23,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE_URL}/sell`, changeFrequency: 'monthly', priority: 0.7 },
     // Reseller-facing money page: its own search intent, not a blog post.
     { url: `${BASE_URL}/sell-test-strips-in-bulk`, changeFrequency: 'monthly', priority: 0.9 },
+    // The mail-in kit form: a public money page. The seller status pages under
+    // /kit/<token> are private (noindex, disallowed) and must never be listed.
+    { url: `${BASE_URL}/mail-in-kit`, changeFrequency: 'monthly', priority: 0.9 },
     // /buyer is login-gated; Google rejected it on 2026-09-01 and it must not
     // appear in the sitemap. The page itself carries noindex robots metadata.
     { url: `${BASE_URL}/about`, changeFrequency: 'monthly', priority: 0.6 },

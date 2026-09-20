@@ -18,7 +18,7 @@ export const howToSellDiabeticSuppliesByMail: RegistryPost = {
   description:
     "Everything you need before your first mail-in sale — from getting a quote in writing to what to do if the figure changes after your parcel arrives.",
   datePublished: "2026-09-10",
-  dateModified: "2026-09-10",
+  dateModified: "2026-09-20",
   bodyHtml: `
 <p>You have sealed boxes of diabetic supplies you are not going to use, and the
 nearest buyer is hours away. Mail-in is the answer for most people outside the
@@ -31,6 +31,10 @@ sit matters before you ship anything.</p>
 
 <p>This page walks through the transaction from first contact to payment,
 including what to do if something goes wrong.</p>
+
+<p>Ready to start? Our <a href="/mail-in-kit">mail-in kit form</a> takes a few
+minutes: list what you have, tell us where it is shipping from, and text us for
+your quote.</p>
 
 <h2>Get the number in writing before anything ships</h2>
 

@@ -388,7 +388,10 @@ export function SellFlowClient() {
         ) : (
           <div className="flex flex-col gap-2">
             {buyers.length === 0 && mailIn && (
-              <p className="text-sm text-gray-500">No local buyer in your state yet — here&apos;s our mail-in option.</p>
+              <p className="text-sm text-gray-500">
+                No local buyer in your state yet — here&apos;s our mail-in option. Or{" "}
+                <a href="/mail-in-kit" className="text-cash font-semibold hover:underline">start a mail-in kit</a> and we send a prepaid label once you approve our quote.
+              </p>
             )}
             {cards.map((c) => (
               <div key={c.id} className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex items-center justify-between gap-3 hover:shadow-md transition-shadow">
