@@ -180,6 +180,16 @@ describe('toSellerView — what may reach the seller', () => {
     expect(Object.keys(view).sort()).toEqual([...ALLOWED].sort())
   })
 
+  it('an expected item is product + boxes, plus expiration when the seller gave one — nothing else', () => {
+    const items = [
+      { product: 'A', boxes: 1, expiration: '2027-01', quoted: 'ITEM-SENTINEL' },
+      { product: 'B', boxes: 2, internal: 'ITEM-SENTINEL' },
+    ] as unknown as MailInOrder['expected_items']
+    const view = toSellerView(order({ expected_items: items }))
+    expect(view.expected_items.map((item) => Object.keys(item).sort())).toEqual([['boxes', 'expiration', 'product'], ['boxes', 'product']])
+    expect(JSON.stringify(view)).not.toContain('ITEM-SENTINEL')
+  })
+
   it('leaks nothing sensitive at any status', () => {
     const statuses: MailInStatus[] = ['awaiting_quote', 'quote_agreed', 'kit_sent', 'label_made', 'in_transit', 'delivered', 'checked_in', 'paid', 'problem', 'closed']
     for (const status of statuses) {

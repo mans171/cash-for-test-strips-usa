@@ -8,6 +8,7 @@ import { fakeDb } from '@/test/mail-in-fake-db'
 import { HONEYPOT_FIELD } from '@/lib/honeypot'
 import { RATE_LIMIT_MAX } from '@/lib/rate-limit'
 import { OWNER_EMAIL } from '@/lib/owner'
+import { EXPIRATION_BUCKET_VALUES } from '@/lib/mail-in'
 import { POST } from '../route'
 
 let ipCounter = 0
@@ -67,6 +68,23 @@ describe('POST /api/mail-in', () => {
     // The alert never carries the payout handle or the private link.
     expect(mail.html).not.toContain('ZELLE-HANDLE-SENTINEL')
     expect(mail.html).not.toContain(String(row.token))
+  })
+
+  it('stores the optional month per item and shows it in the alert, neutrally', async () => {
+    const items = [{ product: 'Contour NEXT 100ct', boxes: 4, expiration: EXPIRATION_BUCKET_VALUES[1] }, { product: 'Dexcom G7', boxes: 2 }]
+    const res = await POST(request({ ...valid, expected_items: items }))
+    expect(res.status).toBe(201)
+    expect(fakeDb.tables.mail_in_orders[0].expected_items).toEqual(items)
+    const html = sendEmail.mock.calls[0][0].html
+    expect(html).toContain('<li>Contour NEXT 100ct x 4 · exp ' + EXPIRATION_BUCKET_VALUES[1] + '</li>')
+    expect(html).toContain('<li>Dexcom G7 x 2</li>')
+  })
+
+  it('answers 400 to a month the form could never send, nothing saved', async () => {
+    const res = await POST(request({ ...valid, expected_items: [{ product: 'Dexcom G7', boxes: 2, expiration: 'whenever' }] }))
+    expect(res.status).toBe(400)
+    expect(fakeDb.tables.mail_in_orders).toHaveLength(0)
+    expect(sendEmail).not.toHaveBeenCalled()
   })
 
   it('refuses a browser POST from another site with 403, database untouched', async () => {

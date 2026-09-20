@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { headers } from 'next/headers'
 import { notFound } from 'next/navigation'
 import { loadSellerView } from '@/lib/kit-lookup'
-import { SELLER_STEPS, sellerStepIndex, totalBoxes } from '@/lib/mail-in'
+import { SELLER_STEPS, expirationText, sellerStepIndex, totalBoxes } from '@/lib/mail-in'
 import { checkRateLimit, clientIp, RATE_LIMIT_MESSAGE } from '@/lib/rate-limit'
 import { OWNER_PHONE } from '@/lib/owner'
 
@@ -151,7 +151,10 @@ export default async function KitStatusPage({ params }: Props) {
           <ul className="mt-2 text-sm text-gray-700 flex flex-col gap-1">
             {kit.expected_items.map((item, i) => (
               <li key={`${item.product}-${i}`} className="flex justify-between gap-3">
-                <span className="min-w-0 break-words">{item.product}</span>
+                <span className="min-w-0 break-words">
+                  {item.product}
+                  {expirationText(item) && <span className="block text-xs text-gray-500">{expirationText(item)}</span>}
+                </span>
                 <span className="font-semibold shrink-0">× {item.boxes}</span>
               </li>
             ))}

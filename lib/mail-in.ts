@@ -12,6 +12,8 @@
  *  purchase, tracking webhook) will move the same statuses automatically and
  *  must go through the same `planOrderPatch` so the timeline stays complete. */
 
+import { getExpirationMonthOptions, monthsFromNowToYYYYMM } from './expiration'
+
 // ---------------------------------------------------------------------------
 // Statuses
 // ---------------------------------------------------------------------------
@@ -102,7 +104,12 @@ export function isPayoutMethod(value: unknown): value is PayoutMethod {
 // Types
 // ---------------------------------------------------------------------------
 
-export type MailInItem = { product: string; boxes: number }
+/** `expiration` is optional and stored exactly as the /sell flow stores
+ *  `OrderItem.expiration`: a `YYYY-MM` string for a calendar month, or the
+ *  option's own label for the two catch-all buckets. The key is ABSENT when
+ *  the month was not given — rows written before the field existed and lines
+ *  typed without it look the same. */
+export type MailInItem = { product: string; boxes: number; expiration?: string }
 
 export type MailInOrder = {
   id: string
@@ -268,19 +275,77 @@ function parseAmount(raw: unknown, label: string): Result<number | null> {
   return { ok: true, value: Math.round(value * 100) / 100 }
 }
 
+// ---------------------------------------------------------------------------
+// Per-item expiration month (optional)
+// ---------------------------------------------------------------------------
+
+const EXPIRATION_MONTH_PATTERN = /^\d{4}-(0[1-9]|1[0-2])$/
+const EXPIRATION_MAX_LENGTH = 40
+
+function isBucketOption(months: number, all: { value: number }[]): boolean {
+  return months === all[0].value || months === all[all.length - 1].value
+}
+
+/** Owner's ruling (2026-09-20): the mail-in kit never shows the word
+ *  "expired". /sell's first catch-all bucket reads "Already expired / less than
+ *  1 month"; on every mail-in surface that bucket is shown AND stored as this
+ *  instead. The team learns the box is short-dated and follows up by phone. */
+export const KIT_SHORT_DATED_BUCKET = 'Less than 1 month'
+
+/** The select options for a kit line: /sell's month list, each paired with the
+ *  value /sell would store for it (see SellFlowClient `selectMonths`) — `YYYY-MM`
+ *  for a calendar month, the label itself for the last catch-all bucket — except
+ *  the first bucket, which is reworded (see KIT_SHORT_DATED_BUCKET). */
+export function expirationChoices(today: Date = new Date()): Array<{ value: string; label: string }> {
+  const options = getExpirationMonthOptions(today)
+  return options.map((opt) => {
+    if (opt.value === options[0].value) return { value: KIT_SHORT_DATED_BUCKET, label: KIT_SHORT_DATED_BUCKET }
+    return {
+      value: isBucketOption(opt.value, options) ? opt.label : monthsFromNowToYYYYMM(opt.value, today),
+      label: opt.label,
+    }
+  })
+}
+
+/** The catch-all bucket values, which do not depend on the date. */
+export const EXPIRATION_BUCKET_VALUES: readonly string[] = expirationChoices()
+  .filter((choice) => !EXPIRATION_MONTH_PATTERN.test(choice.value))
+  .map((choice) => choice.value)
+
+export function parseExpiration(raw: unknown, label: string): Result<string | undefined> {
+  if (raw === undefined || raw === null) return { ok: true, value: undefined }
+  if (typeof raw !== 'string') return err(`${label}: expiration month is not valid`)
+  if (raw.length > EXPIRATION_MAX_LENGTH) return err(`${label}: expiration month is not valid`)
+  const trimmed = raw.trim()
+  if (trimmed === '') return { ok: true, value: undefined }
+  if (EXPIRATION_MONTH_PATTERN.test(trimmed) || EXPIRATION_BUCKET_VALUES.includes(trimmed)) {
+    return { ok: true, value: trimmed }
+  }
+  return err(`${label}: expiration month is not valid`)
+}
+
+/** "exp 2027-01", or '' when the month was not given (or is not a value this
+ *  file would have stored). The one display form, used everywhere. */
+export function expirationText(item: { expiration?: unknown }): string {
+  const parsed = parseExpiration(item.expiration, '')
+  return parsed.ok && parsed.value ? `exp ${parsed.value}` : ''
+}
+
 export function parseItems(raw: unknown, label: string): Result<MailInItem[]> {
   if (!Array.isArray(raw)) return err(`${label} must be a list`)
   if (raw.length > LIMITS.items) return err(`${label} can have at most ${LIMITS.items} lines`)
   const items: MailInItem[] = []
   for (const entry of raw) {
     if (!entry || typeof entry !== 'object') return err(`${label}: each line needs a product and a box count`)
-    const { product, boxes } = entry as Record<string, unknown>
+    const { product, boxes, expiration } = entry as Record<string, unknown>
     if (typeof product !== 'string' || product.trim() === '') return err(`${label}: each line needs a product`)
     if (product.trim().length > LIMITS.product) return err(`${label}: product name is too long`)
     if (typeof boxes !== 'number' || !Number.isInteger(boxes) || boxes < 1 || boxes > LIMITS.boxes) {
       return err(`${label}: boxes must be a whole number from 1 to ${LIMITS.boxes}`)
     }
-    items.push({ product: product.trim(), boxes })
+    const month = parseExpiration(expiration, label)
+    if (!month.ok) return month
+    items.push(month.value ? { product: product.trim(), boxes, expiration: month.value } : { product: product.trim(), boxes })
   }
   return { ok: true, value: items }
 }
@@ -690,7 +755,7 @@ export type SellerOrderInput = {
 /** Validate a public submission. A strict whitelist: nothing a seller posts
  *  can set a status, an amount, a note of ours, or a lead link. `validStates`
  *  is injected so this file stays free of the states table. */
-export function parseSellerInput(body: unknown, validStates: ReadonlySet<string>): Result<SellerOrderInput> {
+export function parseSellerInput(body: unknown, validStates: ReadonlySet<string>, now: Date = new Date()): Result<SellerOrderInput> {
   const object = asObject(body)
   if (!object.ok) return object
   const raw = object.value
@@ -718,6 +783,14 @@ export function parseSellerInput(body: unknown, validStates: ReadonlySet<string>
   const f = fields.value
 
   if (!f.expected_items || f.expected_items.length === 0) return err('Tell us at least one product you are sending')
+  // Stricter than the admin parser: a seller may only send a value the form's
+  // select can produce. One month of slack either side covers a browser whose
+  // clock or time zone sits across a month boundary from the server's.
+  const producible = new Set<string>(EXPIRATION_BUCKET_VALUES)
+  for (let months = 0; months <= 25; months++) producible.add(monthsFromNowToYYYYMM(months, now))
+  if (f.expected_items.some((item) => item.expiration !== undefined && !producible.has(item.expiration))) {
+    return err('Expected items: expiration month is not valid')
+  }
   if (!f.name) return err('Your name is required')
   if (!f.phone) return err('A phone number is required so we can text you a quote')
   if (!f.street1) return err('Your street address is required')
@@ -877,7 +950,12 @@ export function toSellerView(order: MailInOrder): SellerView {
     status: order.status,
     // The seller's own wording ("Label ready", "On its way"), not the board's.
     status_label: order.status === 'problem' ? 'We need to talk' : (SELLER_STEPS[sellerStepIndex(order.status)]?.label ?? STATUS_LABELS[order.status]),
-    expected_items: (order.expected_items ?? []).map((item) => ({ product: item.product, boxes: item.boxes })),
+    expected_items: (order.expected_items ?? []).map((item) => {
+      const month = parseExpiration(item.expiration, '')
+      return month.ok && month.value
+        ? { product: item.product, boxes: item.boxes, expiration: month.value }
+        : { product: item.product, boxes: item.boxes }
+    }),
     carrier: tracked ? order.carrier : null,
     service: tracked ? order.service : null,
     tracking_code: tracked ? order.tracking_code : null,

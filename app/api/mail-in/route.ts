@@ -8,6 +8,7 @@ import { checkRateLimit, clientIp, RATE_LIMIT_MESSAGE } from '@/lib/rate-limit'
 import { checkSameOrigin } from '@/lib/admin-auth'
 import {
   PAYOUT_METHOD_LABELS,
+  expirationText,
   generateOrderNumber,
   generateToken,
   parseSellerInput,
@@ -99,7 +100,7 @@ export async function POST(request: Request) {
               (input.email ? '<br>Email: ' + escapeHtml(input.email) : '') + '</p>',
             '<p>Ships from: ' + escapeHtml(input.city) + ', ' + escapeHtml(MAIL_IN_STATE_LABELS[input.state] ?? input.state) + '</p>',
             '<p>Wants to be paid by: ' + escapeHtml(PAYOUT_METHOD_LABELS[input.payout_method]) + '</p>',
-            '<ul>' + input.expected_items.map((i) => '<li>' + escapeHtml(i.product) + ' x ' + i.boxes + '</li>').join('') + '</ul>',
+            '<ul>' + input.expected_items.map((i) => '<li>' + escapeHtml(i.product) + ' x ' + i.boxes + (expirationText(i) ? ' · ' + escapeHtml(expirationText(i)) : '') + '</li>').join('') + '</ul>',
             '<p>Total boxes: ' + totalBoxes(input.expected_items) + '</p>',
             input.seller_note && '<p>Their note:<br>' + escapeHtml(input.seller_note).replace(/\n/g, '<br>') + '</p>',
             '<p style="color:#666">They have been told to text us for a quote. Open the Mail-in tab in /admin, agree a price by text, then press "Quote agreed - send label".</p>',

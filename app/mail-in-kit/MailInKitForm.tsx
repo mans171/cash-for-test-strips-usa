@@ -7,13 +7,15 @@ import { PRODUCT_BRANDS } from "@/lib/product-catalog";
 import { MAIL_IN_STATE_LABELS } from "@/lib/states";
 import { HONEYPOT_FIELD } from "@/lib/honeypot";
 import { OWNER_PHONE } from "@/lib/owner";
-import { PAYOUT_METHODS, PAYOUT_METHOD_LABELS, totalBoxes, type MailInItem, type PayoutMethod } from "@/lib/mail-in";
+import { PAYOUT_METHODS, PAYOUT_METHOD_LABELS, expirationChoices, totalBoxes, type MailInItem, type PayoutMethod } from "@/lib/mail-in";
 
 // Three steps, then a confirmation whose primary button is the seller's FINAL
 // step: text us for a quote. There is no "make my label" control anywhere in
 // this file on purpose — labels are made by us, after a price is agreed.
 //
-// No date-condition field and no price anywhere: standing rules for this site.
+// Each line has an OPTIONAL month select that only asks — it never blocks a
+// step and carries no wording about date condition. No price anywhere either:
+// standing rules for this site.
 
 type Brand = (typeof PRODUCT_BRANDS)[number];
 type Step = 1 | 2 | 3;
@@ -91,6 +93,18 @@ export function MailInKitForm() {
 
   function setBoxes(index: number, boxes: number) {
     setItems((prev) => prev.map((item, i) => (i === index ? { ...item, boxes } : item)));
+  }
+
+  // Blank ("Not sure") removes the key, so the line posts exactly as it did
+  // before this field existed.
+  function setExpiration(index: number, value: string) {
+    setItems((prev) =>
+      prev.map((item, i) => {
+        if (i !== index) return item;
+        const { product, boxes } = item;
+        return value ? { product, boxes, expiration: value } : { product, boxes };
+      })
+    );
   }
 
   function next() {
@@ -171,6 +185,8 @@ export function MailInKitForm() {
     );
   }
 
+  const monthChoices = expirationChoices();
+
   return (
     <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
       <StepIndicator current={step} />
@@ -182,23 +198,39 @@ export function MailInKitForm() {
           {items.length > 0 && (
             <ul className="flex flex-col gap-2">
               {items.map((item, i) => (
-                <li key={item.product} className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-2">
-                  <span className="flex-1 min-w-0 text-sm text-gray-800 break-words">{item.product}</span>
-                  <label className="flex items-center gap-1 shrink-0 text-xs text-gray-500">
-                    <input
-                      aria-label={`Boxes of ${item.product}`}
-                      type="number"
-                      min={1}
-                      inputMode="numeric"
-                      value={Number.isFinite(item.boxes) ? item.boxes : ""}
-                      onChange={(e) => setBoxes(i, Number(e.target.value))}
-                      className="w-16 border border-gray-200 rounded-lg px-2 py-1 text-sm text-gray-900"
-                    />
-                    boxes
-                  </label>
-                  <button type="button" onClick={() => setItems((prev) => prev.filter((_, j) => j !== i))} className="text-xs font-medium text-red-600 shrink-0">
-                    Remove
-                  </button>
+                <li key={item.product} className="flex flex-col gap-2 border border-gray-200 rounded-lg px-3 py-2">
+                  <div className="flex items-center gap-2">
+                    <span className="flex-1 min-w-0 text-sm text-gray-800 break-words">{item.product}</span>
+                    <label className="flex items-center gap-1 shrink-0 text-xs text-gray-500">
+                      <input
+                        aria-label={`Boxes of ${item.product}`}
+                        type="number"
+                        min={1}
+                        inputMode="numeric"
+                        value={Number.isFinite(item.boxes) ? item.boxes : ""}
+                        onChange={(e) => setBoxes(i, Number(e.target.value))}
+                        className="w-16 border border-gray-200 rounded-lg px-2 py-1 text-sm text-gray-900"
+                      />
+                      boxes
+                    </label>
+                    <button type="button" onClick={() => setItems((prev) => prev.filter((_, j) => j !== i))} className="text-xs font-medium text-red-600 shrink-0">
+                      Remove
+                    </button>
+                  </div>
+                  <div className="min-w-0">
+                    <label className="block text-xs font-medium text-gray-500 mb-1" htmlFor={`kit-exp-${i}`}>Expiration month (optional)</label>
+                    <select
+                      id={`kit-exp-${i}`}
+                      className={`${INPUT} min-w-0 text-gray-900`}
+                      value={item.expiration ?? ""}
+                      onChange={(e) => setExpiration(i, e.target.value)}
+                    >
+                      <option value="">Not sure</option>
+                      {monthChoices.map((choice) => (
+                        <option key={choice.value} value={choice.value}>{choice.label}</option>
+                      ))}
+                    </select>
+                  </div>
                 </li>
               ))}
               <li className="text-xs text-gray-500">Total boxes: {totalBoxes(items.filter((item) => Number.isFinite(item.boxes)))}</li>
