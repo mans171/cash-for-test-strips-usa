@@ -69,6 +69,24 @@ describe('POST /api/mail-in', () => {
     expect(mail.html).not.toContain(String(row.token))
   })
 
+  it('refuses a browser POST from another site with 403, database untouched', async () => {
+    const req = new Request('http://localhost/api/mail-in', {
+      method: 'POST',
+      body: JSON.stringify(valid),
+      headers: { 'Content-Type': 'application/json', 'x-forwarded-for': freshIp(), origin: 'https://evil.example' },
+    })
+    expect((await POST(req)).status).toBe(403)
+    expect(fakeDb.state.touched).toBe(0)
+    expect(sendEmail).not.toHaveBeenCalled()
+
+    const same = new Request('http://localhost/api/mail-in', {
+      method: 'POST',
+      body: JSON.stringify(valid),
+      headers: { 'Content-Type': 'application/json', 'x-forwarded-for': freshIp(), origin: 'http://localhost' },
+    })
+    expect((await POST(same)).status).toBe(201)
+  })
+
   it('ignores any status, amount or source the client tries to set', async () => {
     await POST(request({ ...valid, status: 'paid', quoted_amount: 999, paid_amount: 999, source: 'admin', internal_notes: 'x', easypost_mode: 'live' }))
     const row = fakeDb.tables.mail_in_orders[0]

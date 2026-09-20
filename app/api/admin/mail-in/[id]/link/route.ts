@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { isValidSession, ADMIN_SESSION_COOKIE_NAME } from '@/lib/admin-auth'
+import { requireAdmin } from '@/lib/admin-auth'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import type { MailInOrder } from '@/lib/mail-in'
 import { emailSellerLink, sellerLink, sellerLinkText } from '@/lib/mail-in-server'
@@ -8,22 +8,14 @@ import { emailSellerLink, sellerLink, sellerLinkText } from '@/lib/mail-in-serve
 // and the ready-to-send text; with { "email": true } it also emails it. It
 // never makes a label and never changes a status.
 
-function getCookie(request: Request, name: string): string | undefined {
-  const header = request.headers.get('cookie') ?? ''
-  const match = header.split(';').map((c) => c.trim()).find((c) => c.startsWith(`${name}=`))
-  return match?.slice(name.length + 1)
-}
-
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 type Context = { params: Promise<{ id: string }> }
 
 export async function POST(request: Request, { params }: Context) {
   try {
-    const session = getCookie(request, ADMIN_SESSION_COOKIE_NAME)
-    if (!isValidSession(session)) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const denied = await requireAdmin(request)
+    if (denied) return denied
 
     const { id } = await params
     if (!UUID_PATTERN.test(id)) {

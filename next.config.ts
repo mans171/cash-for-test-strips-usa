@@ -11,6 +11,9 @@ const nextConfig: NextConfig = {
       { source: "/admin", headers: noindex },
       { source: "/admin/:path*", headers: noindex },
       { source: "/api/admin/:path*", headers: noindex },
+      // Seller status pages are private links. The page sets a robots <meta>
+      // too; the header covers the 404 and rate-limit responses as well.
+      { source: "/kit/:path*", headers: noindex },
     ];
   },
   async redirects() {

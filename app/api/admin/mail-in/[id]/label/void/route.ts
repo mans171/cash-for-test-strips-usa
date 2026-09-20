@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { isValidSession, ADMIN_SESSION_COOKIE_NAME } from '@/lib/admin-auth'
+import { requireAdmin } from '@/lib/admin-auth'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { hasActiveLabel, stripToken, validNextStatuses, type MailInOrder } from '@/lib/mail-in'
 import { EasyPostError, getEasyPostConfig, refundShipment } from '@/lib/easypost'
@@ -12,22 +12,14 @@ import { EasyPostError, getEasyPostConfig, refundShipment } from '@/lib/easypost
 // This is the one sanctioned BACKWARD move (Label made -> Quote agreed), which
 // is why it does not go through planOrderPatch. It leaves its own trail.
 
-function getCookie(request: Request, name: string): string | undefined {
-  const header = request.headers.get('cookie') ?? ''
-  const match = header.split(';').map((c) => c.trim()).find((c) => c.startsWith(`${name}=`))
-  return match?.slice(name.length + 1)
-}
-
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 type Context = { params: Promise<{ id: string }> }
 
 export async function POST(request: Request, { params }: Context) {
   try {
-    const session = getCookie(request, ADMIN_SESSION_COOKIE_NAME)
-    if (!isValidSession(session)) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const denied = await requireAdmin(request)
+    if (denied) return denied
 
     const { id } = await params
     if (!UUID_PATTERN.test(id)) {

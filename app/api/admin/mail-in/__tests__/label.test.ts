@@ -5,7 +5,15 @@ const sendEmail = vi.fn(async (input: { to: string; subject: string; html: strin
 vi.mock('@/lib/email', () => ({ sendEmail: (input: { to: string; subject: string; html: string }) => sendEmail(input), escapeHtml: (v: string) => v }))
 
 import { fakeDb } from '@/test/mail-in-fake-db'
-import { ADMIN_SESSION_COOKIE_NAME, signSession } from '@/lib/admin-auth'
+// The session's credential version normally comes from admin_credentials.
+// Pinned here so a valid session needs no database (lib/admin-credential-version.ts)
+// — which also keeps `fakeDb.state.touched === 0` an honest "database untouched".
+vi.mock('@/lib/admin-credential-version', () => ({
+  getCredentialVersion: async () => 'a'.repeat(32),
+  clearCredentialVersionCache: () => {},
+}))
+
+import { ADMIN_SESSION_COOKIE_NAME, buildSession } from '@/lib/admin-auth'
 import { POST as labelPOST } from '../[id]/label/route'
 import { POST as voidPOST } from '../[id]/label/void/route'
 import { POST as linkPOST } from '../[id]/link/route'
@@ -45,7 +53,7 @@ const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => 
   return json({ error: { message: 'unexpected url' } }, 404)
 })
 
-const cookie = signSession()
+const cookie = buildSession('a'.repeat(32))
 function request(path: string, body?: unknown, withCookie: string | undefined = cookie) {
   return new Request(`http://localhost${path}`, {
     method: 'POST',
@@ -93,6 +101,32 @@ describe.each([
     const res = await handler(req, ctx(String(row.id)))
     expect(res.status).toBe(401)
     expect(fakeDb.state.touched).toBe(0)
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it('a VALID session posted from another site -> 403 before the database and before EasyPost', async () => {
+    const row = fakeDb.seedOrder()
+    const req = new Request(`http://localhost/api/admin/mail-in/${row.id}/${path}`, {
+      method: 'POST',
+      body: JSON.stringify({ quoted_amount: 90 }),
+      headers: { cookie: `${ADMIN_SESSION_COOKIE_NAME}=${cookie}`, origin: 'https://evil.example' },
+    })
+    const res = await handler(req, ctx(String(row.id)))
+    expect(res.status).toBe(403)
+    expect(fakeDb.state.touched).toBe(0)
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(row.status).toBe('quote_agreed')
+  })
+
+  it('a session signed for an OLD credential version -> 401 (the await is really there)', async () => {
+    const row = fakeDb.seedOrder()
+    const req = new Request(`http://localhost/api/admin/mail-in/${row.id}/${path}`, {
+      method: 'POST',
+      body: JSON.stringify({ quoted_amount: 90 }),
+      headers: { cookie: `${ADMIN_SESSION_COOKIE_NAME}=${buildSession('b'.repeat(32))}` },
+    })
+    const res = await handler(req, ctx(String(row.id)))
+    expect(res.status).toBe(401)
     expect(fetchMock).not.toHaveBeenCalled()
   })
 })

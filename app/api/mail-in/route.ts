@@ -5,6 +5,7 @@ import { OWNER_EMAIL } from '@/lib/owner'
 import { STATE_LABELS, VALID_STATE_CODES } from '@/lib/states'
 import { isHoneypotTripped } from '@/lib/honeypot'
 import { checkRateLimit, clientIp, RATE_LIMIT_MESSAGE } from '@/lib/rate-limit'
+import { checkSameOrigin } from '@/lib/admin-auth'
 import {
   PAYOUT_METHOD_LABELS,
   generateOrderNumber,
@@ -29,6 +30,12 @@ const CREATE_ATTEMPTS = 4
 
 export async function POST(request: Request) {
   try {
+    // The form posts from this site. A browser POST from any other origin is
+    // refused; a request with no Origin header (curl, server-to-server) passes
+    // and still meets the honeypot and the rate limit below.
+    const forbidden = checkSameOrigin(request)
+    if (forbidden) return forbidden
+
     const body = await request.json().catch(() => null)
     if (!body || typeof body !== 'object') {
       return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
