@@ -34,13 +34,23 @@ describe('expirationChoices — the same options /sell offers, stored the way /s
   const choices = expirationChoices(NOW)
   const sellOptions = getExpirationMonthOptions(NOW)
 
-  it('keeps every /sell label, unchanged and in order', () => {
-    expect(choices.map((c) => c.label)).toEqual(sellOptions.map((o) => o.label))
+  it('keeps every /sell label in order, except the first bucket, which is reworded', () => {
+    expect(choices.map((c) => c.label).slice(1)).toEqual(sellOptions.map((o) => o.label).slice(1))
+    expect(choices[0]).toEqual({ value: 'Less than 1 month', label: 'Less than 1 month' })
   })
 
-  it('stores YYYY-MM for a calendar month and the label itself for the two buckets', () => {
-    // Mirrors SellFlowClient.selectMonths: 0 and 25 keep their label.
-    expect(choices[0].value).toBe(sellOptions[0].label)
+  it('never shows or stores the word "expired" on a mail-in surface (owner ruling 2026-09-20)', () => {
+    for (const choice of choices) {
+      expect(choice.label.toLowerCase()).not.toContain('expired')
+      expect(choice.value.toLowerCase()).not.toContain('expired')
+    }
+    // /sell's own wording is no longer an accepted kit value.
+    expect(parseExpiration(sellOptions[0].label, 'x').ok).toBe(false)
+  })
+
+  it('stores YYYY-MM for a calendar month, the reworded first bucket, and the label for the last', () => {
+    // Mirrors SellFlowClient.selectMonths for 1–25; bucket 0 is reworded for the kit.
+    expect(choices[0].value).toBe('Less than 1 month')
     expect(choices[choices.length - 1].value).toBe(sellOptions[sellOptions.length - 1].label)
     expect(choices[1].value).toBe('2026-10')
     expect(choices[4].value).toBe(monthsFromNowToYYYYMM(4, NOW))

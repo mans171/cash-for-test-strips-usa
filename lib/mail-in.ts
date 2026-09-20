@@ -286,26 +286,32 @@ function isBucketOption(months: number, all: { value: number }[]): boolean {
   return months === all[0].value || months === all[all.length - 1].value
 }
 
-/** The select options for a kit line: the SAME labels /sell shows, each paired
- *  with the value /sell would store for it (see SellFlowClient `selectMonths`):
- *  `YYYY-MM` for a calendar month, the label itself for the first and last
- *  catch-all buckets. */
+/** Owner's ruling (2026-09-20): the mail-in kit never shows the word
+ *  "expired". /sell's first catch-all bucket reads "Already expired / less than
+ *  1 month"; on every mail-in surface that bucket is shown AND stored as this
+ *  instead. The team learns the box is short-dated and follows up by phone. */
+export const KIT_SHORT_DATED_BUCKET = 'Less than 1 month'
+
+/** The select options for a kit line: /sell's month list, each paired with the
+ *  value /sell would store for it (see SellFlowClient `selectMonths`) — `YYYY-MM`
+ *  for a calendar month, the label itself for the last catch-all bucket — except
+ *  the first bucket, which is reworded (see KIT_SHORT_DATED_BUCKET). */
 export function expirationChoices(today: Date = new Date()): Array<{ value: string; label: string }> {
   const options = getExpirationMonthOptions(today)
-  return options.map((opt) => ({
-    value: isBucketOption(opt.value, options) ? opt.label : monthsFromNowToYYYYMM(opt.value, today),
-    label: opt.label,
-  }))
+  return options.map((opt) => {
+    if (opt.value === options[0].value) return { value: KIT_SHORT_DATED_BUCKET, label: KIT_SHORT_DATED_BUCKET }
+    return {
+      value: isBucketOption(opt.value, options) ? opt.label : monthsFromNowToYYYYMM(opt.value, today),
+      label: opt.label,
+    }
+  })
 }
 
 /** The catch-all bucket values, which do not depend on the date. */
-export const EXPIRATION_BUCKET_VALUES: readonly string[] = (() => {
-  const options = getExpirationMonthOptions()
-  return options.filter((opt) => isBucketOption(opt.value, options)).map((opt) => opt.label)
-})()
+export const EXPIRATION_BUCKET_VALUES: readonly string[] = expirationChoices()
+  .filter((choice) => !EXPIRATION_MONTH_PATTERN.test(choice.value))
+  .map((choice) => choice.value)
 
-/** Shape check only: a real `YYYY-MM` or a known bucket. Blank, null and
- *  missing all mean "not given" (undefined). Anything else is refused. */
 export function parseExpiration(raw: unknown, label: string): Result<string | undefined> {
   if (raw === undefined || raw === null) return { ok: true, value: undefined }
   if (typeof raw !== 'string') return err(`${label}: expiration month is not valid`)
