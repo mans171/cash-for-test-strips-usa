@@ -54,7 +54,7 @@ front label, not just from memory.</p>
 <h2>The side or end panel with the lot number</h2>
 
 <p>The narrow end or side panel of every box carries a lot number and other
-printed details that buyers need to verify the product. Flip the box and
+printed details a buyer needs for an accurate quote. Flip the box and
 photograph that panel so the text is readable. You do not need to know what
 each line means — just make sure it is in focus and legible.</p>
 

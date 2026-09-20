@@ -104,8 +104,8 @@ money in the whole transaction.</p>
   box absorbs the impacts. Product boxes pressed directly against the outer wall
   have no buffer when the parcel is dropped.</li>
   <li><strong>Do not apply tape to the product boxes themselves.</strong> Tape
-  on original packaging pulls the label when removed and can be read as evidence
-  of tampering. Pack the product boxes exactly as they are.</li>
+  on original packaging tears the printed surface when it comes off. Pack the
+  product boxes exactly as they are.</li>
 </ul>
 
 <p>The two failures that most often turn a sellable box into an unsellable one
@@ -170,9 +170,8 @@ should.</p>
   value of what you are sending.</li>
   <li><strong>Mention it to the buyer if the parcel was exposed.</strong> If
   tracking shows the shipment stalled somewhere during a heat wave or cold snap,
-  say so when you reach out. A buyer who inspects honestly will tell you what
-  they found. Volunteering the information upfront also protects you from a
-  disputed revision later.</li>
+  say so when you reach out. Volunteering the information upfront also protects
+  you from a disputed revision later.</li>
 </ul>
 
 <p>This section is about whether the item survives shipment as a sellable item —
@@ -211,7 +210,7 @@ the parcel arrives and is checked. Budget the transit time as a separate window
 from the payment window.</p>
 
 <p>For most domestic ground shipments, transit is two to five business days
-depending on distance. Once the parcel arrives and is inspected, same-day
+depending on distance. Once the parcel arrives and is checked in, same-day
 payment is common and realistic for buyers who operate that way.</p>
 
 <p>If you are a day past expected arrival and have not heard anything, check the
