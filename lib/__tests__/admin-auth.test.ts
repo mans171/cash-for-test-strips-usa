@@ -4,8 +4,6 @@ import {
   checkPassword,
   hashPassword,
   verifyPassword,
-  signSession,
-  isValidSession,
   createResetToken,
   verifyResetToken,
   consumeResetToken,
@@ -58,22 +56,7 @@ describe('checkPassword (DB-backed)', () => {
   })
 })
 
-describe('sessions (unchanged behavior)', () => {
-  it('a freshly signed session is valid', () => {
-    const session = signSession()
-    expect(isValidSession(session)).toBe(true)
-  })
-
-  it('a tampered or missing session is invalid', () => {
-    expect(isValidSession(undefined)).toBe(false)
-    expect(isValidSession('admin-authenticated.tampered-signature')).toBe(false)
-  })
-
-  it('a session with no dot or extra dots is invalid', () => {
-    expect(isValidSession('admin-authenticated')).toBe(false)
-    expect(isValidSession('admin-authenticated.sig.extra')).toBe(false)
-  })
-})
+// Session tests live in admin-session.test.ts, which mocks the database.
 
 describe('reset token lifecycle', () => {
   // consumeResetToken inserts a new admin_credentials row as a side effect

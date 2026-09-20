@@ -80,7 +80,7 @@ describe('POST /api/admin/review', () => {
     })
     cleanupSubmissionIds.push(submission.id)
 
-    const response = await POST(makeRequest({ submissionId: submission.id, action: 'approve' }, signSession()))
+    const response = await POST(makeRequest({ submissionId: submission.id, action: 'approve' }, await signSession()))
     expect(response.status).toBe(200)
 
     // Never use .single() here: if a prior run's cleanup ever failed, this

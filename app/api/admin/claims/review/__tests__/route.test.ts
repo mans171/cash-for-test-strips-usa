@@ -120,7 +120,7 @@ describe('POST /api/admin/claims/review', () => {
     const claim = await createClaim({ companyId: company!.id, userId, submittedPhone: '5559994201' })
     cleanupClaimIds.push(claim.id)
 
-    const response = await POST(makeRequest({ claimId: claim.id, action: 'approve' }, signSession()))
+    const response = await POST(makeRequest({ claimId: claim.id, action: 'approve' }, await signSession()))
     expect(response.status).toBe(200)
 
     const { data: updated } = await supabaseAdmin.from('claims').select('status').eq('id', claim.id).single()
@@ -146,7 +146,7 @@ describe('POST /api/admin/claims/review', () => {
     const claim = await createClaim({ companyId: company!.id, userId, submittedPhone: '5559994202' })
     cleanupClaimIds.push(claim.id)
 
-    const response = await POST(makeRequest({ claimId: claim.id, action: 'reject' }, signSession()))
+    const response = await POST(makeRequest({ claimId: claim.id, action: 'reject' }, await signSession()))
     expect(response.status).toBe(200)
 
     const { data: updated } = await supabaseAdmin.from('claims').select('status').eq('id', claim.id).single()
@@ -154,12 +154,12 @@ describe('POST /api/admin/claims/review', () => {
   })
 
   it('returns 400 when claimId is missing', async () => {
-    const response = await POST(makeRequest({ action: 'approve' }, signSession()))
+    const response = await POST(makeRequest({ action: 'approve' }, await signSession()))
     expect(response.status).toBe(400)
   })
 
   it('returns 400 when action is invalid', async () => {
-    const response = await POST(makeRequest({ claimId: 'x', action: 'bogus' }, signSession()))
+    const response = await POST(makeRequest({ claimId: 'x', action: 'bogus' }, await signSession()))
     expect(response.status).toBe(400)
   })
 })

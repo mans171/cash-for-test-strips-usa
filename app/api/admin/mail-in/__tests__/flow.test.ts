@@ -63,7 +63,14 @@ vi.mock('@/lib/supabase-admin', () => ({
   supabaseAdmin: { from: (table: keyof typeof db) => builder(table) },
 }))
 
-import { ADMIN_SESSION_COOKIE_NAME, signSession } from '@/lib/admin-auth'
+// The session's credential version normally comes from admin_credentials.
+// Pinned here so a valid session needs no database (lib/admin-credential-version.ts).
+vi.mock('@/lib/admin-credential-version', () => ({
+  getCredentialVersion: async () => 'a'.repeat(32),
+  clearCredentialVersionCache: () => {},
+}))
+
+import { ADMIN_SESSION_COOKIE_NAME, buildSession } from '@/lib/admin-auth'
 import { POST } from '../route'
 import { GET, PATCH } from '../[id]/route'
 
@@ -71,7 +78,7 @@ function request(method: string, path: string, body?: unknown) {
   return new Request(`http://localhost${path}`, {
     method,
     body: body === undefined ? undefined : JSON.stringify(body),
-    headers: { 'Content-Type': 'application/json', cookie: `${ADMIN_SESSION_COOKIE_NAME}=${signSession()}` },
+    headers: { 'Content-Type': 'application/json', cookie: `${ADMIN_SESSION_COOKIE_NAME}=${buildSession('a'.repeat(32))}` },
   })
 }
 const ctx = (id: string) => ({ params: Promise.resolve({ id }) })

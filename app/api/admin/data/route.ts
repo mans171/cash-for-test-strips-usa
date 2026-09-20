@@ -1,19 +1,11 @@
 import { NextResponse } from 'next/server'
-import { isValidSession, ADMIN_SESSION_COOKIE_NAME } from '@/lib/admin-auth'
+import { requireAdmin } from '@/lib/admin-auth'
 import { supabaseAdmin } from '@/lib/supabase-admin'
-
-function getCookie(request: Request, name: string): string | undefined {
-  const header = request.headers.get('cookie') ?? ''
-  const match = header.split(';').map((c) => c.trim()).find((c) => c.startsWith(`${name}=`))
-  return match?.slice(name.length + 1)
-}
 
 export async function GET(request: Request) {
   try {
-    const session = getCookie(request, ADMIN_SESSION_COOKIE_NAME)
-    if (!isValidSession(session)) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const denied = await requireAdmin(request)
+    if (denied) return denied
 
     const [submissions, leads, clicks, missingPhones, claims] = await Promise.all([
       supabaseAdmin.from('submissions').select('*').eq('status', 'pending').order('created_at', { ascending: false }),
