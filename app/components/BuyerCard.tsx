@@ -19,6 +19,9 @@ export function BuyerCard({
   const moreStates = company.states.length > 2 ? ` +${company.states.length - 2}` : ""
   const brands = company.accepted_brands ?? []
   const showContact = hasAnyContact(company)
+  // A mail-in listing always has an action — "Start your mail-in kit", rendered
+  // by ContactButtons above its call/text button — even with no phone on file.
+  const showActions = showContact || company.mail_in === true
   // Mail-in buyers have no /company/[slug] page — linking to one ships a 404.
   const showProfile = hasProfilePage(company)
 
@@ -77,14 +80,14 @@ export function BuyerCard({
       {/* Stacked, not side by side: ContactButtons renders up to two buttons of
           its own (call + visit site), and sitting that column next to a single
           "View profile" button left one half twice the height of the other. */}
-      {(showProfile || showContact) && (
+      {(showProfile || showActions) && (
         <div className="flex flex-col gap-2 mt-auto pt-1">
           {showProfile && (
             <Link href={`/company/${company.slug}`} className={`${btnSecondary} w-full !px-3 !py-2 !text-xs`}>
               View profile
             </Link>
           )}
-          {showContact && <ContactButtons company={company} />}
+          {showActions && <ContactButtons company={company} />}
           {showContact && honorsBonus(company) && (
             <p className="text-[11px] text-emerald-700 font-semibold">💵 {BONUS_MENTION_COPY}</p>
           )}

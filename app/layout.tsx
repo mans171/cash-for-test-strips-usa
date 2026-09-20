@@ -53,6 +53,9 @@ export default function RootLayout({
               <Link href="/sell-test-strips" className="hover:text-white transition-colors">
                 Sell by State
               </Link>
+              <Link href="/mail-in-kit" className="hover:text-white transition-colors">
+                Mail-In Kit
+              </Link>
               <Link href="/how-much-are-diabetic-test-strips-worth" className="hover:text-white transition-colors">
                 Price Guide
               </Link>

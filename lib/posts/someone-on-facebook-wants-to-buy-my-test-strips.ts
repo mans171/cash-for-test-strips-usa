@@ -25,7 +25,7 @@ export const someoneOnFacebookWantsToBuyMyTestStrips: RegistryPost = {
   description:
     "A Facebook DM or Marketplace offer to buy your test strips could be real — or a classic overpayment scheme. Here are the exact red flags and what a legitimate buyer does instead.",
   datePublished: "2026-09-17",
-  dateModified: "2026-09-17",
+  dateModified: "2026-09-20",
   bodyHtml: `
 <p>You are holding sealed boxes of test strips — maybe from a prescription change,
 a switch to a CGM, or a family member's estate. Someone on Facebook Marketplace, in
@@ -113,7 +113,8 @@ to "inspect" the boxes.</p>
 You do not spend money to ship supplies to a buyer. They provide the label, they receive
 the shipment, they verify it, and they pay — typically within 24 hours — via Zelle,
 Venmo, PayPal, or check. Not a wire transfer to an account you cannot trace back to a
-real business.</p>
+real business. Our own <a href="/mail-in-kit">mail-in kit</a> works this way: nothing
+ships until you have approved the quote.</p>
 
 <p><strong>They do not need your banking details or Social Security number.</strong>
 There is no reason for a test strip buyer to ask for your routing number, account

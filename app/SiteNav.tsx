@@ -7,6 +7,9 @@ import { useUser, signOut } from "@/lib/auth-client";
 
 const NAV_LINKS = [
   { href: "/directory", label: "Find a Buyer" },
+  // The national offer: a seller in any state fills in a kit and is sent a
+  // prepaid label. It launched reachable only from three small text links.
+  { href: "/mail-in-kit", label: "Mail-In Kit" },
   // Sitewide link to the state/city hub: every geo page hangs off this, so it
   // needs an inbound link from every page rather than just the homepage.
   { href: "/sell-test-strips", label: "By State" },
@@ -20,13 +23,17 @@ const NAV_LINKS = [
   { href: "/#how-it-works", label: "How It Works" },
 ];
 
-/** The desktop bar shows four. Seven links plus Login plus a button was nine
+/** The desktop bar shows five. Seven links plus Login plus a button was nine
  *  items in half a bar, and four of them read as the same job to a seller.
  *  "By State" is reachable sitewide from the footer ("Sell by State") and
  *  "How It Works" is a homepage anchor, so neither loses its inbound link.
- *  The mobile drawer still renders NAV_LINKS in full — it has the room. */
+ *  The mobile drawer still renders NAV_LINKS in full — it has the room.
+ *
+ *  The bar appears at lg (1024px), not md: with "Mail-In Kit" added, five
+ *  links plus Login plus the button need ~970px, and between 768 and 1023 the
+ *  labels wrapped onto two lines. Tablets get the drawer instead. */
 const PRIMARY_LINKS = NAV_LINKS.filter((l) =>
-  ["Find a Buyer", "Price Guide", "Sell in Bulk", "Blog"].includes(l.label)
+  ["Find a Buyer", "Mail-In Kit", "Price Guide", "Sell in Bulk", "Blog"].includes(l.label)
 );
 
 export default function SiteNav() {
@@ -47,7 +54,7 @@ export default function SiteNav() {
           Cash For Test Strips <span className="text-electric">USA</span>
         </Link>
 
-        <div className="hidden md:flex items-center gap-7 text-[15px] font-medium text-white/90">
+        <div className="hidden lg:flex items-center gap-7 text-[15px] font-medium text-white/90">
           {PRIMARY_LINKS.map((link) => (
             <Link key={link.label} href={link.href} className="hover:text-white transition-colors">
               {link.label}
@@ -83,7 +90,7 @@ export default function SiteNav() {
           </Link>
         </div>
 
-        <div className="flex md:hidden items-center gap-4">
+        <div className="flex lg:hidden items-center gap-4">
           <Link
             href="/sell"
             className="bg-electric text-ink-deep font-extrabold px-3.5 py-2 rounded-lg text-sm whitespace-nowrap hover:bg-white transition-colors"
@@ -114,7 +121,7 @@ export default function SiteNav() {
       </div>
 
       {open && (
-        <div className="md:hidden absolute left-0 right-0 top-16 md:top-[72px] bg-ink border-b border-white/10 shadow-lg flex flex-col px-4 py-3 gap-1">
+        <div className="lg:hidden absolute left-0 right-0 top-16 md:top-[72px] bg-ink border-b border-white/10 shadow-lg flex flex-col px-4 py-3 gap-1">
           {NAV_LINKS.map((link) => (
             <Link
               key={link.label}

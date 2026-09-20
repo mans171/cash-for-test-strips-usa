@@ -243,7 +243,7 @@ function MailInFallback({ company }: { company: Company | null }) {
         </div>
         <div className="shrink-0">
           {company ? (
-            <ContactButtons company={company} size="page" />
+            <ContactButtons company={company} size="page" tone="dark" />
           ) : (
             <Link href="/sell" className={btnOnDark}>
               Start a sale →
