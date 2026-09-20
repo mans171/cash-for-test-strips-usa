@@ -130,6 +130,27 @@ describe('mail-in routes, end to end against an in-memory client', () => {
     expect(db.mail_in_events.map((e) => e.type)).toEqual(['created', 'status_changed'])
   })
 
+  it('accepts an optional expiration month on a new kit and on the check-in count', async () => {
+    const res = await POST(
+      request('POST', '/api/admin/mail-in', {
+        phone: '(518) 555-0100',
+        expected_items: [{ product: 'Contour NEXT 100ct', boxes: 4, expiration: '2027-01' }, { product: 'Dexcom G7', boxes: 1 }],
+      })
+    )
+    const created = await res.json()
+    expect(res.status).toBe(201)
+    expect(created.order.expected_items).toEqual([{ product: 'Contour NEXT 100ct', boxes: 4, expiration: '2027-01' }, { product: 'Dexcom G7', boxes: 1 }])
+
+    const id = created.order.id
+    const received = [{ product: 'Contour NEXT 100ct', boxes: 3, expiration: '2026-12' }]
+    const checkedIn = await PATCH(request('PATCH', `/api/admin/mail-in/${id}`, { status: 'checked_in', received_items: received }), ctx(id))
+    expect(checkedIn.status).toBe(200)
+    expect((await checkedIn.json()).order.received_items).toEqual(received)
+
+    const junk = await POST(request('POST', '/api/admin/mail-in', { phone: '(518) 555-0100', expected_items: [{ product: 'X', boxes: 1, expiration: 'junk' }] }))
+    expect(junk.status).toBe(400)
+  })
+
   it('refuses an illegal move with 400 and writes nothing', async () => {
     const { body: created } = await createKit()
     const id = created.order.id

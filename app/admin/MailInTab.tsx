@@ -10,6 +10,8 @@ import {
   STATUS_LABELS,
   LABEL_STATUSES,
   ageInDays,
+  expirationChoices,
+  expirationText,
   hasActiveLabel,
   totalBoxes,
   type MailInEvent,
@@ -87,14 +89,15 @@ function formatPhone(digits: string): string {
 // Items editor (expected items on a new kit, received items at check-in)
 // ---------------------------------------------------------------------------
 
-type DraftItem = { product: string; custom: boolean; boxes: string };
+type DraftItem = { product: string; custom: boolean; boxes: string; expiration: string };
 
 function toDrafts(items: MailInItem[] | null | undefined): DraftItem[] {
-  if (!items || items.length === 0) return [{ product: "", custom: false, boxes: "1" }];
+  if (!items || items.length === 0) return [{ product: "", custom: false, boxes: "1", expiration: "" }];
   return items.map((item) => ({
     product: item.product,
     custom: !KNOWN_PRODUCTS.has(item.product),
     boxes: String(item.boxes),
+    expiration: item.expiration ?? "",
   }));
 }
 
@@ -103,18 +106,22 @@ function toDrafts(items: MailInItem[] | null | undefined): DraftItem[] {
 function fromDrafts(drafts: DraftItem[]): MailInItem[] {
   return drafts
     .filter((d) => d.product.trim() !== "")
-    .map((d) => ({ product: d.product.trim(), boxes: Number(d.boxes) }));
+    .map((d) => {
+      const line = { product: d.product.trim(), boxes: Number(d.boxes) };
+      return d.expiration ? { ...line, expiration: d.expiration } : line;
+    });
 }
 
 function ItemsEditor({ drafts, onChange }: { drafts: DraftItem[]; onChange: (next: DraftItem[]) => void }) {
   function update(index: number, patch: Partial<DraftItem>) {
     onChange(drafts.map((d, i) => (i === index ? { ...d, ...patch } : d)));
   }
+  const monthChoices = expirationChoices();
 
   return (
     <div className="flex flex-col gap-2">
       {drafts.map((draft, index) => (
-        <div key={index} className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <div key={index} className="flex flex-col gap-2 sm:flex-row sm:items-end">
           <div className="flex-1 min-w-0 flex flex-col gap-2">
             <select
               aria-label="Product"
@@ -146,6 +153,23 @@ function ItemsEditor({ drafts, onChange }: { drafts: DraftItem[]; onChange: (nex
               />
             )}
           </div>
+          <label className="flex flex-col gap-1 text-xs text-gray-400 sm:w-44 min-w-0">
+            Expiration month (optional)
+            <select
+              className={`${inputClass} min-w-0 text-gray-900`}
+              value={draft.expiration}
+              onChange={(e) => update(index, { expiration: e.target.value })}
+            >
+              <option value="">Not sure</option>
+              {/* A month saved earlier may have dropped off today's list; keep it selectable. */}
+              {draft.expiration && !monthChoices.some((c) => c.value === draft.expiration) && (
+                <option value={draft.expiration}>{draft.expiration}</option>
+              )}
+              {monthChoices.map((choice) => (
+                <option key={choice.value} value={choice.value}>{choice.label}</option>
+              ))}
+            </select>
+          </label>
           <div className="flex items-center gap-2">
             <input
               aria-label="Boxes"
@@ -170,7 +194,7 @@ function ItemsEditor({ drafts, onChange }: { drafts: DraftItem[]; onChange: (nex
       <button
         type="button"
         className="self-start text-xs text-emerald-600 hover:underline"
-        onClick={() => onChange([...drafts, { product: "", custom: false, boxes: "1" }])}
+        onClick={() => onChange([...drafts, { product: "", custom: false, boxes: "1", expiration: "" }])}
       >
         + Add another product
       </button>
@@ -184,7 +208,10 @@ function ItemsList({ items, empty }: { items: MailInItem[] | null; empty: string
     <ul className="text-xs text-gray-700 flex flex-col gap-1">
       {items.map((item, i) => (
         <li key={`${item.product}-${i}`} className="flex justify-between gap-2">
-          <span className="min-w-0 break-words">{item.product}</span>
+          <span className="min-w-0 break-words">
+            {item.product}
+            {expirationText(item) && <span className="block text-xs text-gray-500">{expirationText(item)}</span>}
+          </span>
           <span className="font-semibold shrink-0">× {item.boxes}</span>
         </li>
       ))}
