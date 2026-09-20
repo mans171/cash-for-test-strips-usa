@@ -1,16 +1,34 @@
 import { NextResponse } from 'next/server'
-import { checkPassword, signSession, ADMIN_SESSION_COOKIE_NAME } from '@/lib/admin-auth'
+import {
+  ADMIN_SESSION_COOKIE_NAME,
+  SESSION_COOKIE_OPTIONS,
+  SESSION_MAX_AGE_SECONDS,
+  checkPassword,
+  checkSameOrigin,
+  getClientIp,
+  signSession,
+} from '@/lib/admin-auth'
 
-// Simple in-memory rate limit for login attempts. This is a single-instance
-// internal tool — no need for Redis/an external store. It just needs to slow
-// down brute-forcing a single shared password, not survive a restart or work
-// across multiple instances.
+// In-memory rate limit for login attempts, per client address.
+//
+// KNOWN LIMIT, stated plainly: this Map lives inside ONE serverless instance.
+// Vercel can run several instances at once and recycles them, so the real
+// ceiling is "10 per 15 minutes per address PER INSTANCE", and it resets on a
+// cold start. It slows a single-source brute force; it does not stop a
+// distributed one. Closing that needs a shared store (or a Vercel Firewall
+// rate-limit rule on /api/admin/login), which is infrastructure and was
+// deliberately left out. The fixed delay on failure below and scrypt's own
+// cost put a second, instance-independent brake on guessing.
 const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000
 const RATE_LIMIT_MAX_ATTEMPTS = 10
 const attempts = new Map<string, { count: number; resetAt: number }>()
 
-function getClientKey(request: Request): string {
-  return request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+// Every failed attempt waits this long before answering. It costs a person
+// who mistyped nothing noticeable, and caps one connection at ~2 guesses/sec.
+const FAILED_LOGIN_DELAY_MS = process.env.NODE_ENV === 'test' ? 0 : 500
+
+function delay(ms: number): Promise<void> {
+  return ms > 0 ? new Promise((resolve) => setTimeout(resolve, ms)) : Promise.resolve()
 }
 
 function isRateLimited(key: string): boolean {
@@ -28,7 +46,10 @@ function isRateLimited(key: string): boolean {
 
 export async function POST(request: Request) {
   try {
-    const key = getClientKey(request)
+    const forbidden = checkSameOrigin(request)
+    if (forbidden) return forbidden
+
+    const key = getClientIp(request)
     if (isRateLimited(key)) {
       return NextResponse.json(
         { error: 'Too many login attempts. Please try again later.' },
@@ -36,20 +57,21 @@ export async function POST(request: Request) {
       )
     }
 
-    const body = await request.json()
+    const body = await request.json().catch(() => null)
     const password = body?.password
 
+    // checkPassword -> verifyPassword compares scrypt output with
+    // crypto.timingSafeEqual, so the comparison itself is constant-time.
     if (typeof password !== 'string' || !(await checkPassword(password))) {
+      await delay(FAILED_LOGIN_DELAY_MS)
       return NextResponse.json({ error: 'Invalid password' }, { status: 401 })
     }
 
     const response = NextResponse.json({ ok: true })
-    response.cookies.set(ADMIN_SESSION_COOKIE_NAME, signSession(), {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 60 * 60 * 24 * 7,
+    response.cookies.set(ADMIN_SESSION_COOKIE_NAME, await signSession(), {
+      ...SESSION_COOKIE_OPTIONS,
+      // Browser-side hint only; isValidSession enforces the same limit server-side.
+      maxAge: SESSION_MAX_AGE_SECONDS,
     })
     return response
   } catch (error) {

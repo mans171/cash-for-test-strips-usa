@@ -2,6 +2,17 @@ import type { NextConfig } from "next";
 import { stateRedirects } from "./lib/state-post-redirects";
 
 const nextConfig: NextConfig = {
+  async headers() {
+    // Keep the back office out of search results. robots.txt already asks
+    // crawlers not to fetch these paths; this header is the instruction not to
+    // INDEX them, and unlike a <meta> tag it also covers the JSON API routes.
+    const noindex = [{ key: "X-Robots-Tag", value: "noindex, nofollow" }];
+    return [
+      { source: "/admin", headers: noindex },
+      { source: "/admin/:path*", headers: noindex },
+      { source: "/api/admin/:path*", headers: noindex },
+    ];
+  },
   async redirects() {
     return [
       // Force the www host to the apex domain so Google indexes one canonical

@@ -1,14 +1,10 @@
 import { NextResponse } from 'next/server'
-import { createResetToken } from '@/lib/admin-auth'
+import { checkSameOrigin, createResetToken, getClientIp } from '@/lib/admin-auth'
 import { sendEmail } from '@/lib/email'
 
 const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000
 const RATE_LIMIT_MAX_ATTEMPTS = 5
 const attempts = new Map<string, { count: number; resetAt: number }>()
-
-function getClientKey(request: Request): string {
-  return request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
-}
 
 function isRateLimited(key: string): boolean {
   const now = Date.now()
@@ -25,7 +21,10 @@ function isRateLimited(key: string): boolean {
 
 export async function POST(request: Request) {
   try {
-    const key = getClientKey(request)
+    const forbidden = checkSameOrigin(request)
+    if (forbidden) return forbidden
+
+    const key = getClientIp(request)
     if (isRateLimited(key)) {
       return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 })
     }

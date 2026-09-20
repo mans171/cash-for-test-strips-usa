@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server'
-import { consumeResetToken } from '@/lib/admin-auth'
+import { checkSameOrigin, consumeResetToken } from '@/lib/admin-auth'
 
 export async function POST(request: Request) {
   try {
+    const forbidden = checkSameOrigin(request)
+    if (forbidden) return forbidden
+
     const body = await request.json()
     const { token, newPassword } = body ?? {}
 
