@@ -184,13 +184,10 @@ export default async function StatePage({ params }: Props) {
                 Mail-in buyers accept sealed, unexpired boxes from any US state. You ship the
                 strips and get paid once they arrive and are checked — no local buyer needed.
               </p>
-              <p className="text-gray-800 font-semibold max-w-2xl mb-3 text-sm leading-relaxed">
+              <p className="text-gray-800 font-semibold max-w-2xl mb-5 text-sm leading-relaxed">
                 Selling from {label}? Start with the mail-in kit: list what you have, text us for a
                 private quote, and a prepaid label follows once you approve it.
               </p>
-              <Link href="/mail-in-kit" className={`${btnPrimary} mb-6`}>
-                Start a mail-in kit from {label}
-              </Link>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <BuyerCard company={mailIn} />
               </div>
