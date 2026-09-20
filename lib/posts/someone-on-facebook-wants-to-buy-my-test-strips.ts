@@ -167,7 +167,7 @@ of how polished the profile looks or how many followers the page has.</p>
 <a href="/is-it-legal-to-sell-diabetic-test-strips">whether selling diabetic test strips
 is legal</a> covers the three conditions that govern any private sale. The short version:
 selling sealed, personally owned supplies is permitted across the United States, as long
-as the supplies were not purchased through Medicare or Medicaid. What you are protecting
+as the supplies were not paid for by a government-covered program. What you are protecting
 yourself against here is not the law — it is the people who use the legitimate market
 to run fraud.</p>
 
@@ -180,7 +180,7 @@ that no real buyer will take.</p>
   faqs: [
     {
       q: "Is it legal to sell diabetic test strips to someone who found me on Facebook?",
-      a: "Yes. The law does not restrict how a buyer finds you — it restricts what you sell. Sealed, personally owned supplies that were not purchased through Medicare or Medicaid are legal to sell in every state, regardless of the platform where the transaction started. The legality guide linked above walks through the three conditions in full.",
+      a: "Yes. The law does not restrict how a buyer finds you — it restricts what you sell. Sealed, personally owned supplies that were not paid for by a government-covered program are legal to sell in every state, regardless of the platform where the transaction started. The legality guide linked above walks through the three conditions in full.",
     },
     {
       q: "What is an overpayment scam in the context of test strips?",

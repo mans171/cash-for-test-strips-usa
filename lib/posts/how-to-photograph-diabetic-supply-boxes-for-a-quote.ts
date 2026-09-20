@@ -13,7 +13,7 @@ import { OWNER_PHONE } from "../owner"
  * Hard content rules in effect:
  *  - No dollar figures or prices anywhere.
  *  - No expiration / date-condition language ("unexpired", "in date", etc.).
- *  - No "insulin", "prescription", "Rx", government program names, or medical advice.
+ *  - No medical wording, government program names, or medical advice.
  *  - No personal-name byline.
  *  - American spelling throughout.
  *
@@ -81,7 +81,7 @@ filtered it out for them. A crease on an outer carton is usually nothing; a
 torn window or a stain that reached the box art is a different conversation.
 Show it and let the buyer make the call.</p>
 
-<h2>Pharmacy labels and prescription stickers</h2>
+<h2>Pharmacy labels and stickers</h2>
 
 <p>If a box has a pharmacy sticker on it, photograph it as-is. Do not try to
 peel it before you send the photos. Buyers work with labeled packaging all the
@@ -104,13 +104,13 @@ closer to a window before you shoot again.</p>
 
 <p>Once you have the shots, send them together in a single text or message
 thread with a one-line note on what you have. Something like "I have 8 Libre 3
-and 4 Omnipod 5 DASH pods, sending photos now" is enough context. The buyer
+and 4 Omnipod 5 boxes, sending photos now" is enough context. The buyer
 sees the complete picture at once rather than piecing it together from messages
 spread over an hour.</p>
 
 <p>If you are texting directly, <a href="/directory">the directory</a> lists
 buyers by state with contact numbers. You can also text <strong>${OWNER_PHONE}</strong>
-— that number covers the Albany metro for in-person pickups and handles
+— that number handles in-person pickups in and around Albany, New York, and
 mail-in quotes for sellers anywhere in the country. The
 <a href="/sell-test-strips">sell page</a> walks through what happens after the
 photos, from the quote to the handoff.</p>
