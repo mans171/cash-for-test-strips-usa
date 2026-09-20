@@ -164,7 +164,7 @@ export default async function HomePage() {
       <section className="border-y border-gray-100 bg-white py-5">
         <div className="max-w-5xl mx-auto px-4 flex flex-wrap justify-center gap-x-8 gap-y-2 text-sm text-gray-600 font-medium">
           <span>✓ Sealed boxes only. Some expired CGM sensors and pods still qualify.</span>
-          <span>✓ Free shipping label for mail-in</span>
+          <span>✓ Free shipping label for mail-in · <Link href="/mail-in-kit" className="text-cash font-semibold underline">start a mail-in kit</Link></span>
           <span>✓ PayPal · Zelle · Check · Cash</span>
           <span>✓ Dexcom · Libre · Omnipod · OneTouch · Contour · Accu-Chek</span>
           <span>✓ Local pickup through {localBuyerCount ?? 29} buyers</span>

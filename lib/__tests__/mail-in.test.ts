@@ -5,6 +5,7 @@ import {
   PAYOUT_METHODS,
   PAYOUT_METHOD_LABELS,
   PIPELINE_STATUSES,
+  STATUS_LABELS,
   ageInDays,
   canTransition,
   countByStatus,
@@ -47,7 +48,7 @@ function patchOf(body: unknown): PatchOrderInput {
 describe('status transitions', () => {
   it('lists the statuses in the exact order the migration CHECK uses', () => {
     expect([...MAIL_IN_STATUSES]).toEqual([
-      'quote_agreed', 'kit_sent', 'label_made', 'in_transit', 'delivered', 'checked_in', 'paid', 'problem', 'closed',
+      'awaiting_quote', 'quote_agreed', 'kit_sent', 'label_made', 'in_transit', 'delivered', 'checked_in', 'paid', 'problem', 'closed',
     ])
   })
 
@@ -77,6 +78,31 @@ describe('status transitions', () => {
   it('offers next moves in pipeline order, then problem, then closed', () => {
     expect(validNextStatuses('delivered')).toEqual(['checked_in', 'paid', 'problem', 'closed'])
     expect(validNextStatuses('paid')).toEqual(['problem', 'closed'])
+  })
+})
+
+describe('awaiting_quote, the stage-2 first status', () => {
+  it('is first in the pipeline and labeled for a person', () => {
+    expect(PIPELINE_STATUSES[0]).toBe('awaiting_quote')
+    expect(STATUS_LABELS.awaiting_quote).toBe('Waiting for quote')
+  })
+
+  it('moves forward to anything, and nothing in the pipeline moves back to it', () => {
+    expect(validNextStatuses('awaiting_quote')).toEqual([
+      'quote_agreed', 'kit_sent', 'label_made', 'in_transit', 'delivered', 'checked_in', 'paid', 'problem', 'closed',
+    ])
+    for (const from of PIPELINE_STATUSES.slice(1)) expect(canTransition(from, 'awaiting_quote'), from).toBe(false)
+    expect(canTransition('problem', 'awaiting_quote')).toBe(true)
+    expect(canTransition('closed', 'awaiting_quote')).toBe(false)
+  })
+
+  it('records the move to Quote agreed without stamping a milestone', () => {
+    const plan = planOrderPatch(snapshot({ status: 'awaiting_quote' }), patchOf({ status: 'quote_agreed', quoted_amount: 90 }), NOW)
+    expect(plan.ok).toBe(true)
+    if (!plan.ok) return
+    expect(plan.value.update).toMatchObject({ status: 'quote_agreed', quoted_amount: 90 })
+    expect(plan.value.update.kit_sent_at).toBeUndefined()
+    expect(plan.value.events.map((e) => e.type)).toEqual(['fields_updated', 'status_changed'])
   })
 })
 
@@ -111,7 +137,7 @@ describe('parseCreateInput', () => {
     const parsed = parseCreateInput({ name: '  Pat Seller ', phone: '(518) 555-0100', email: ' Pat@Example.COM ' })
     expect(parsed).toEqual({
       ok: true,
-      value: { name: 'Pat Seller', phone: '5185550100', email: 'pat@example.com', expected_items: [] },
+      value: { name: 'Pat Seller', phone: '5185550100', email: 'pat@example.com', expected_items: [], status: 'quote_agreed' },
     })
   })
 
@@ -158,9 +184,18 @@ describe('parseCreateInput', () => {
     expect(b.ok && b.value.quoted_amount).toBe(80)
   })
 
-  it('ignores fields it does not know, including status and token', () => {
+  it('ignores fields it does not know, including a late status and the token', () => {
     const parsed = parseCreateInput({ phone: '5185550100', status: 'paid', token: 'x', order_number: 'MK-1', paid_amount: 5 })
-    expect(parsed).toEqual({ ok: true, value: { phone: '5185550100', expected_items: [] } })
+    expect(parsed).toEqual({ ok: true, value: { phone: '5185550100', expected_items: [], status: 'quote_agreed' } })
+  })
+
+  it('lets an admin start a kit at Waiting for quote, and nowhere else', () => {
+    const waiting = parseCreateInput({ phone: '5185550100', status: 'awaiting_quote' })
+    expect(waiting.ok && waiting.value.status).toBe('awaiting_quote')
+    for (const status of ['label_made', 'paid', 'closed', 'problem', 42, null]) {
+      const parsed = parseCreateInput({ phone: '5185550100', status })
+      expect(parsed.ok && parsed.value.status).toBe('quote_agreed')
+    }
   })
 })
 
@@ -284,11 +319,12 @@ describe('parsePatchInput', () => {
 describe('summary', () => {
   it('combines kit_sent and label_made into kits out', () => {
     const counts = countByStatus([
+      { status: 'awaiting_quote' }, { status: 'awaiting_quote' }, { status: 'quote_agreed' },
       { status: 'kit_sent' }, { status: 'label_made' }, { status: 'label_made' }, { status: 'in_transit' },
       { status: 'delivered' }, { status: 'checked_in' }, { status: 'problem' }, { status: 'paid' }, { status: 'closed' },
     ])
     expect(summarize(counts, 7)).toEqual({
-      kitsOut: 3, inTransit: 1, deliveredNotCheckedIn: 1, checkedInNotPaid: 1, problems: 1, paidThisMonth: 7,
+      awaitingQuote: 2, kitsOut: 3, inTransit: 1, deliveredNotCheckedIn: 1, checkedInNotPaid: 1, problems: 1, paidThisMonth: 7,
     })
   })
 

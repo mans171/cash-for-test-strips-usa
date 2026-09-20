@@ -8,7 +8,9 @@ import {
   PAYOUT_METHOD_LABELS,
   PIPELINE_STATUSES,
   STATUS_LABELS,
+  LABEL_STATUSES,
   ageInDays,
+  hasActiveLabel,
   totalBoxes,
   type MailInEvent,
   type MailInItem,
@@ -35,6 +37,10 @@ type DetailResponse = {
   events: MailInEvent[];
   nextStatuses: MailInStatus[];
 };
+
+/** What "send label" and "resend link" hand back: the seller's private link
+ *  and a ready-to-send text. Held in memory only, never stored in the page. */
+type SellerLink = { link: string; text: string; emailed: boolean };
 
 const NETWORK_ERROR = "Couldn't reach the server. Check your connection and try again.";
 const OTHER = "__other__";
@@ -208,6 +214,7 @@ type DetailsDraft = {
   quoted_amount: string;
   internal_notes: string;
   items: DraftItem[];
+  start_status: "quote_agreed" | "awaiting_quote";
 };
 
 function draftFromOrder(order?: MailInOrderForAdmin): DetailsDraft {
@@ -225,6 +232,7 @@ function draftFromOrder(order?: MailInOrderForAdmin): DetailsDraft {
     quoted_amount: order?.quoted_amount === null || order?.quoted_amount === undefined ? "" : String(order.quoted_amount),
     internal_notes: order?.internal_notes ?? "",
     items: toDrafts(order?.expected_items),
+    start_status: "quote_agreed",
   };
 }
 
@@ -248,6 +256,7 @@ function draftToBody(draft: DetailsDraft): Record<string, unknown> {
 
 function DetailsForm({
   initial,
+  isNew = false,
   submitLabel,
   busy,
   error,
@@ -255,6 +264,7 @@ function DetailsForm({
   onCancel,
 }: {
   initial: DetailsDraft;
+  isNew?: boolean;
   submitLabel: string;
   busy: boolean;
   error: string | null;
@@ -269,7 +279,7 @@ function DetailsForm({
       className="flex flex-col gap-4"
       onSubmit={(e) => {
         e.preventDefault();
-        onSubmit(draftToBody(draft));
+        onSubmit(isNew ? { ...draftToBody(draft), status: draft.start_status } : draftToBody(draft));
       }}
     >
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -287,6 +297,16 @@ function DetailsForm({
         </label>
       </div>
       <p className="text-xs text-gray-400 -mt-2">A phone number or an email is required.</p>
+
+      {isNew && (
+        <label className="flex flex-col gap-1">
+          <span className={labelClass}>Where does this kit start?</span>
+          <select className={inputClass} value={draft.start_status} onChange={(e) => set({ start_status: e.target.value as DetailsDraft["start_status"] })}>
+            <option value="quote_agreed">{STATUS_LABELS.quote_agreed} — the price is already settled</option>
+            <option value="awaiting_quote">{STATUS_LABELS.awaiting_quote} — no price yet</option>
+          </select>
+        </label>
+      )}
 
       <div>
         <p className={`${labelClass} mb-2`}>What they said they are sending</p>
@@ -314,7 +334,7 @@ function DetailsForm({
       </div>
 
       <details className="text-sm">
-        <summary className="text-xs text-emerald-600 cursor-pointer">Ship-from address (optional for now)</summary>
+        <summary className="text-xs text-emerald-600 cursor-pointer">Ship-from address (needed before a label can be made)</summary>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
           <label className="flex flex-col gap-1 sm:col-span-2">
             <span className={labelClass}>Street address</span>
@@ -394,6 +414,14 @@ function describeEvent(event: MailInEvent): { title: string; note?: string } {
     }
     return { title: `${from} → ${to}`, note: notes.join(" · ") || undefined };
   }
+  if (event.type === "label_created") {
+    const parts = [detail.carrier, detail.service, detail.tracking_code].filter((v) => typeof v === "string");
+    return { title: detail.mode === "test" ? "TEST label made" : "Label made", note: parts.join(" · ") || undefined };
+  }
+  if (event.type === "label_voided") {
+    return { title: "Label voided", note: typeof detail.refund_status === "string" ? `EasyPost refund: ${detail.refund_status}` : undefined };
+  }
+  if (event.type === "link_sent") return { title: `Kit link sent by ${String(detail.channel ?? "message")}` };
   if (event.type === "fields_updated") {
     const fields = Array.isArray(detail.fields) ? (detail.fields as string[]) : [];
     return { title: `Updated ${fields.map((f) => FIELD_LABELS[f] ?? f).join(", ") || "details"}` };
@@ -418,6 +446,10 @@ function OrderDetail({ id, onClose, onChanged }: { id: string; onClose: () => vo
   const [paidAmount, setPaidAmount] = useState("");
   const [payMethod, setPayMethod] = useState("");
   const [payHandle, setPayHandle] = useState("");
+  const [labelOpen, setLabelOpen] = useState(false);
+  const [labelAmount, setLabelAmount] = useState("");
+  const [sellerLink, setSellerLink] = useState<SellerLink | null>(null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -453,6 +485,55 @@ function OrderDetail({ id, onClose, onChanged }: { id: string; onClose: () => vo
       return false;
     } finally {
       setBusy(false);
+    }
+  }
+
+  /** POST to one of the label routes. On success the detail refreshes and,
+   *  when the route returns one, the seller link panel opens. */
+  async function post(path: string, body: Record<string, unknown>, fallback: string): Promise<boolean> {
+    setBusy(true);
+    setCopied(false);
+    try {
+      const res = await fetch(`/api/admin/mail-in/${id}/${path}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const result = await res.json();
+      if (!res.ok) {
+        setError(result.error ?? fallback);
+        return false;
+      }
+      setError(null);
+      if (result.order) {
+        setDetail({ order: result.order, events: result.events ?? [], nextStatuses: result.nextStatuses ?? [] });
+        onChanged();
+      }
+      if (typeof result.link === "string") setSellerLink({ link: result.link, text: result.text, emailed: Boolean(result.emailed) });
+      return true;
+    } catch {
+      setError(NETWORK_ERROR);
+      return false;
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function sendLabel() {
+    if (await post("label", { quoted_amount: labelAmount.trim() === "" ? null : labelAmount }, "Could not make the label")) setLabelOpen(false);
+  }
+
+  async function voidLabel() {
+    if (!window.confirm("Void this label? The seller's page stops offering it and the kit goes back to Quote agreed.")) return;
+    if (await post("label/void", {}, "Could not void the label")) setSellerLink(null);
+  }
+
+  async function copyText(text: string) {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+    } catch {
+      setError("Could not copy. Select the text and copy it by hand.");
     }
   }
 
@@ -499,6 +580,8 @@ function OrderDetail({ id, onClose, onChanged }: { id: string; onClose: () => vo
   const address = [order.street1, order.street2, [order.city, order.state].filter(Boolean).join(", "), order.zip]
     .filter(Boolean)
     .join(" · ");
+  const labelActive = hasActiveLabel(order);
+  const canMakeLabel = !labelActive && LABEL_STATUSES.includes(order.status);
 
   return (
     <div className="border border-emerald-200 rounded-lg p-4 mb-6 flex flex-col gap-4">
@@ -506,7 +589,7 @@ function OrderDetail({ id, onClose, onChanged }: { id: string; onClose: () => vo
         <div className="min-w-0">
           <p className="font-medium">{order.order_number} · {order.name ?? "(no name)"}</p>
           <p className="text-xs text-gray-400">
-            {STATUS_LABELS[order.status]} · {ageInDays(order.created_at, new Date())} days old · created {new Date(order.created_at).toLocaleDateString()}
+            {STATUS_LABELS[order.status]} · {order.source === "site" ? "from the website" : "entered by us"} · {ageInDays(order.created_at, new Date())} days old · created {new Date(order.created_at).toLocaleDateString()}
           </p>
           {order.status === "problem" && order.problem_reason && (
             <p className="text-xs text-red-600 mt-1 break-words">Problem: {order.problem_reason}</p>
@@ -550,6 +633,30 @@ function OrderDetail({ id, onClose, onChanged }: { id: string; onClose: () => vo
             </div>
           </div>
 
+          {order.seller_note && (
+            <div>
+              <p className={`${labelClass} mb-1`}>Seller&apos;s note</p>
+              <p className="text-sm text-gray-700 whitespace-pre-wrap break-words">{order.seller_note}</p>
+            </div>
+          )}
+
+          {order.easypost_shipment_id && (
+            <div className="text-xs bg-gray-50 rounded-lg p-3 flex flex-col gap-1.5">
+              {order.easypost_mode === "test" && (
+                <p className="border-2 border-dashed border-red-500 bg-red-50 text-red-700 font-black text-center rounded-lg px-2 py-2">TEST LABEL — not valid postage</p>
+              )}
+              <p className="text-gray-700 break-words">
+                <span className="font-semibold text-gray-500">Label:</span> {[order.carrier, order.service].filter(Boolean).join(" ") || "—"}
+                {order.label_created_at && ` · made ${new Date(order.label_created_at).toLocaleDateString()}`}
+                {order.label_refund_status && <span className="text-red-600 font-semibold"> · VOIDED ({order.label_refund_status})</span>}
+              </p>
+              <p className="text-gray-700 break-all"><span className="font-semibold text-gray-500">Tracking:</span> {order.tracking_code ?? "—"}</p>
+              {labelActive && (order.label_pdf_url ?? order.label_url) && (
+                <a href={(order.label_pdf_url ?? order.label_url) as string} target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:underline">Open the label PDF</a>
+              )}
+            </div>
+          )}
+
           <div className="text-xs bg-gray-50 rounded-lg p-3 grid grid-cols-2 gap-x-3 gap-y-1.5">
             <span className="font-semibold text-gray-500">Payout method</span>
             <span className="text-gray-700">{order.payout_method ? PAYOUT_METHOD_LABELS[order.payout_method] : "—"}</span>
@@ -571,9 +678,60 @@ function OrderDetail({ id, onClose, onChanged }: { id: string; onClose: () => vo
 
           <div className="flex flex-wrap items-center gap-2">
             <button onClick={() => { setEditing(true); setPending(null); setError(null); }} className={quietButton}>Edit details</button>
-            <button disabled className={quietButton} title="Coming in stage 2">Send kit link</button>
-            <span className="text-xs text-gray-400">Coming in stage 2</span>
+            {canMakeLabel && (
+              <button
+                disabled={busy}
+                onClick={() => {
+                  setLabelAmount(order.quoted_amount === null ? "" : String(order.quoted_amount));
+                  setLabelOpen(true);
+                  setPending(null);
+                  setError(null);
+                }}
+                className={primaryButton}
+              >
+                Quote agreed — send label
+              </button>
+            )}
+            <button disabled={busy} onClick={() => void post("link", {}, "Could not get the link")} className={quietButton}>Resend link</button>
+            {labelActive && order.status === "label_made" && (
+              <button disabled={busy} onClick={voidLabel} className="text-xs border border-red-300 text-red-600 px-3 py-1.5 rounded-lg disabled:opacity-50">Void label</button>
+            )}
           </div>
+
+          {labelOpen && canMakeLabel && (
+            <div className="border border-emerald-200 rounded-lg p-3 flex flex-col gap-3">
+              <p className="text-sm font-medium">Make the prepaid label</p>
+              <p className="text-xs text-gray-500">
+                Only press this once the seller has said yes to the price by text. It checks the address with USPS, buys one USPS label from the seller to Latham, and moves the kit to Label made.
+              </p>
+              <label className="flex flex-col gap-1">
+                <span className={labelClass}>Quoted amount the seller agreed to (admin only — never shown to the seller)</span>
+                <input className={inputClass} inputMode="decimal" placeholder="0.00" value={labelAmount} onChange={(e) => setLabelAmount(e.target.value)} />
+              </label>
+              <p className="text-xs text-gray-500 break-words"><span className="font-semibold">Ships from:</span> {address || "no address yet — use Edit details first"}</p>
+              <div className="flex gap-2">
+                <button onClick={sendLabel} disabled={busy} className={primaryButton}>{busy ? "Making label…" : "Make label"}</button>
+                <button onClick={() => { setLabelOpen(false); setError(null); }} className={quietButton}>Cancel</button>
+              </div>
+            </div>
+          )}
+
+          {sellerLink && (
+            <div className="border border-emerald-200 bg-emerald-50 rounded-lg p-3 flex flex-col gap-2">
+              <p className="text-sm font-medium">Send this to the seller</p>
+              <p className="text-xs text-gray-700 break-all bg-white border border-gray-200 rounded-lg p-2">{sellerLink.text}</p>
+              <div className="flex flex-wrap gap-2">
+                <button onClick={() => void copyText(sellerLink.text)} className={primaryButton}>{copied ? "Copied" : "Copy"}</button>
+                {order.phone && (
+                  <a href={`sms:${order.phone}?&body=${encodeURIComponent(sellerLink.text)}`} className={quietButton}>Text it to {formatPhone(order.phone)}</a>
+                )}
+                {order.email && (
+                  <button disabled={busy} onClick={() => void post("link", { email: true }, "Could not send the email")} className={quietButton}>Email it again</button>
+                )}
+              </div>
+              {sellerLink.emailed && <p className="text-xs text-gray-500">Emailed to {order.email}.</p>}
+            </div>
+          )}
 
           <div>
             <p className={`${labelClass} mb-2`}>Move this kit</p>
@@ -673,6 +831,7 @@ function OrderDetail({ id, onClose, onChanged }: { id: string; onClose: () => vo
 // ---------------------------------------------------------------------------
 
 const SUMMARY_TILES: Array<{ key: keyof MailInSummary; label: string }> = [
+  { key: "awaitingQuote", label: "Waiting for quote" },
   { key: "kitsOut", label: "Kits out" },
   { key: "inTransit", label: "In transit" },
   { key: "deliveredNotCheckedIn", label: "Delivered, not checked in" },
@@ -814,6 +973,7 @@ export function MailInTab() {
           <p className="font-medium mb-3">New kit</p>
           <DetailsForm
             initial={draftFromOrder()}
+            isNew
             submitLabel="Create kit"
             busy={createBusy}
             error={createError}

@@ -7,12 +7,12 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/admin', '/admin/', '/api/', '/orders'],
+        disallow: ['/admin', '/admin/', '/api/', '/orders', '/kit/'],
       },
-      { userAgent: 'GPTBot', allow: '/', disallow: ['/admin', '/admin/', '/api/', '/orders'] },
-      { userAgent: 'PerplexityBot', allow: '/', disallow: ['/admin', '/admin/', '/api/', '/orders'] },
-      { userAgent: 'ClaudeBot', allow: '/', disallow: ['/admin', '/admin/', '/api/', '/orders'] },
-      { userAgent: 'Google-Extended', allow: '/', disallow: ['/admin', '/admin/', '/api/', '/orders'] },
+      { userAgent: 'GPTBot', allow: '/', disallow: ['/admin', '/admin/', '/api/', '/orders', '/kit/'] },
+      { userAgent: 'PerplexityBot', allow: '/', disallow: ['/admin', '/admin/', '/api/', '/orders', '/kit/'] },
+      { userAgent: 'ClaudeBot', allow: '/', disallow: ['/admin', '/admin/', '/api/', '/orders', '/kit/'] },
+      { userAgent: 'Google-Extended', allow: '/', disallow: ['/admin', '/admin/', '/api/', '/orders', '/kit/'] },
     ],
     sitemap: 'https://cash4teststripsusa.com/sitemap.xml',
   }

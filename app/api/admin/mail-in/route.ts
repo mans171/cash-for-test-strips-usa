@@ -121,7 +121,7 @@ export async function POST(request: Request) {
           ...parsed.value,
           order_number: generateOrderNumber(),
           token: generateToken(),
-          status: 'quote_agreed',
+          source: 'admin',
         })
         .select('*')
         .single()
