@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { verifyWebhookSignature } from '@/lib/easypost'
-import { normalizeEasyPostMode, planTrackerUpdate, type MailInOrder } from '@/lib/mail-in'
+import { isLabelClaim, normalizeEasyPostMode, planTrackerUpdate, type MailInOrder } from '@/lib/mail-in'
 
 // PUBLIC, and the only caller is EasyPost. The signature is checked against
 // the RAW body before anything else: a missing secret or a bad signature is a
@@ -47,6 +47,11 @@ export async function POST(request: Request) {
     }
     const order = (found?.data ?? null) as MailInOrder | null
     if (!order) return ignored('unknown tracker')
+
+    // A `claim:` placeholder means a label is being bought right now, not that
+    // one exists. Whatever tracker matched this row (an older, voided label's)
+    // does not speak for the kit.
+    if (isLabelClaim(order.easypost_shipment_id)) return ignored('label being made')
 
     // A test-mode event must never move a live kit, nor the other way round.
     const eventMode = normalizeEasyPostMode(event.mode ?? tracker.mode)

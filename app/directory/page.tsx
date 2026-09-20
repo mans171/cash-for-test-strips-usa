@@ -8,7 +8,7 @@ import type { Company } from "@/lib/types";
 import { buildItemListSchema } from "@/lib/schema";
 import { JsonLd } from "@/app/components/JsonLd";
 import { BuyerCard } from "@/app/components/BuyerCard";
-import { ContactButtons } from "@/app/components/ContactButtons";
+import { ContactButtons, MAIL_IN_KIT_HREF, MAIL_IN_KIT_LABEL } from "@/app/components/ContactButtons";
 import { ZipCookieSync } from "@/app/components/ZipCookieSync";
 import { btnOnDark } from "@/app/components/ui";
 import { isValidZip } from "@/lib/geo";
@@ -245,8 +245,8 @@ function MailInFallback({ company }: { company: Company | null }) {
           {company ? (
             <ContactButtons company={company} size="page" tone="dark" />
           ) : (
-            <Link href="/sell" className={btnOnDark}>
-              Start a sale →
+            <Link href={MAIL_IN_KIT_HREF} className={btnOnDark}>
+              {MAIL_IN_KIT_LABEL}
             </Link>
           )}
         </div>

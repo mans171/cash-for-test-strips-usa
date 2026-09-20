@@ -149,6 +149,23 @@ describe('POST /api/webhooks/easypost — tracker.updated', () => {
     expect(row.status).toBe('in_transit')
   })
 
+  it('never treats a label CLAIM as a label: a tracker that matches a claimed kit is ignored', async () => {
+    // A voided kit being re-labeled right now: the old tracking code is still
+    // on the row, the shipment column holds a claim placeholder.
+    const row = labeled({ status: 'quote_agreed', easypost_shipment_id: 'claim:0b9d2c0e-0000-4000-8000-000000000001', label_refund_status: null })
+    for (const status of ['in_transit', 'delivered']) {
+      const res = await POST(request(event(status)))
+      expect(res.status).toBe(200)
+      expect(await res.json()).toEqual({ ok: true, ignored: 'label being made' })
+    }
+    expect(row).toMatchObject({ status: 'quote_agreed', first_scan_at: null, delivered_at: null })
+    expect(fakeDb.tables.mail_in_events).toHaveLength(0)
+    // Same for a claim sitting on a row that says Label made.
+    row.status = 'label_made'
+    expect(await (await POST(request(event('in_transit')))).json()).toEqual({ ok: true, ignored: 'label being made' })
+    expect(row.status).toBe('label_made')
+  })
+
   it('ignores a voided label\'s tracker', async () => {
     const row = labeled({ status: 'quote_agreed', label_refund_status: 'submitted' })
     await POST(request(event('in_transit')))

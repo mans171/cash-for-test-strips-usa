@@ -13,6 +13,8 @@ import {
   expirationChoices,
   expirationText,
   hasActiveLabel,
+  hasLiveLabelClaim,
+  isLabelClaim,
   totalBoxes,
   type MailInEvent,
   type MailInItem,
@@ -448,6 +450,7 @@ function describeEvent(event: MailInEvent): { title: string; note?: string } {
   if (event.type === "label_voided") {
     return { title: "Label voided", note: typeof detail.refund_status === "string" ? `EasyPost refund: ${detail.refund_status}` : undefined };
   }
+  if (event.type === "voided_shipment_archived") return { title: "Voided label archived" };
   if (event.type === "link_sent") return { title: `Kit link sent by ${String(detail.channel ?? "message")}` };
   if (event.type === "fields_updated") {
     const fields = Array.isArray(detail.fields) ? (detail.fields as string[]) : [];
@@ -608,7 +611,10 @@ function OrderDetail({ id, onClose, onChanged }: { id: string; onClose: () => vo
     .filter(Boolean)
     .join(" · ");
   const labelActive = hasActiveLabel(order);
-  const canMakeLabel = !labelActive && LABEL_STATUSES.includes(order.status);
+  // A `claim:` placeholder means a purchase is in flight — it is not a label.
+  const labelBeingMade = hasLiveLabelClaim(order, new Date());
+  const hasLabelRecord = Boolean(order.easypost_shipment_id) && !isLabelClaim(order.easypost_shipment_id);
+  const canMakeLabel = !labelActive && !labelBeingMade && LABEL_STATUSES.includes(order.status);
 
   return (
     <div className="border border-emerald-200 rounded-lg p-4 mb-6 flex flex-col gap-4">
@@ -667,7 +673,11 @@ function OrderDetail({ id, onClose, onChanged }: { id: string; onClose: () => vo
             </div>
           )}
 
-          {order.easypost_shipment_id && (
+          {labelBeingMade && (
+            <p className="text-xs bg-gray-50 rounded-lg p-3 text-gray-700">Label is being made…</p>
+          )}
+
+          {(hasLabelRecord || Boolean(order.label_refund_status)) && !labelBeingMade && (
             <div className="text-xs bg-gray-50 rounded-lg p-3 flex flex-col gap-1.5">
               {order.easypost_mode === "test" && (
                 <p className="border-2 border-dashed border-red-500 bg-red-50 text-red-700 font-black text-center rounded-lg px-2 py-2">TEST LABEL — not valid postage</p>

@@ -24,6 +24,9 @@ let calls: Call[] = []
 let rates: Array<Record<string, string>> = []
 let deliverable = true
 let buyFails = false
+let buyDelayMs = 0
+let buyDrops = false
+let shipmentCount = 0
 
 const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
   const url = String(input)
@@ -37,12 +40,14 @@ const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => 
       verifications: { delivery: deliverable ? { success: true, errors: [] } : { success: false, errors: [{ message: 'Address not found' }] } },
     })
   }
-  if (url.endsWith('/v2/shipments')) return json({ id: 'shp_test1', rates })
+  if (url.endsWith('/v2/shipments')) return json({ id: `shp_test${++shipmentCount}`, rates })
   if (url.endsWith('/buy')) {
+    if (buyDelayMs > 0) await new Promise((resolve) => setTimeout(resolve, buyDelayMs))
+    if (buyDrops) throw new TypeError('socket hang up')
     if (buyFails) return json({ error: { code: 'SHIPMENT.POSTAGE.FAILURE', message: 'Unable to buy postage' } }, 422)
     const picked = rates.find((r) => r.id === (JSON.parse(String(init?.body)) as { rate: { id: string } }).rate.id)
     return json({
-      id: 'shp_test1',
+      id: url.split('/').at(-2),
       tracking_code: '9400100000000000000001',
       tracker: { id: 'trk_test1' },
       selected_rate: { carrier: picked?.carrier, service: picked?.service },
@@ -72,6 +77,9 @@ beforeEach(() => {
   rates = [{ id: 'rate_ups', carrier: 'UPS', service: 'Ground', rate: '1.00' }, USPS, { id: 'rate_usps_pri', carrier: 'USPS', service: 'Priority', rate: '9.10' }]
   deliverable = true
   buyFails = false
+  buyDelayMs = 0
+  buyDrops = false
+  shipmentCount = 0
   vi.stubGlobal('fetch', fetchMock)
   vi.stubEnv('EASYPOST_MODE', '')
   vi.stubEnv('EASYPOST_TEST_API_KEY', 'EZTK-test-key-sentinel')
@@ -276,7 +284,7 @@ describe('POST label — making the label', () => {
   it('BUY SUCCEEDED, DATABASE FAILED: logs loudly and hands the shipment id back', async () => {
     const logged = vi.spyOn(console, 'error').mockImplementation(() => {})
     const row = fakeDb.seedOrder()
-    fakeDb.state.failNextOrderUpdate = true
+    fakeDb.state.failOrderUpdateWhen = (payload) => payload.status === 'label_made'
     const res = await labelPOST(request(`/api/admin/mail-in/${row.id}/label`, {}), ctx(String(row.id)))
     const body = await res.json()
     expect(res.status).toBe(500)
@@ -290,10 +298,199 @@ describe('POST label — making the label', () => {
   it('the same when the kit changed status mid-purchase', async () => {
     const logged = vi.spyOn(console, 'error').mockImplementation(() => {})
     const row = fakeDb.seedOrder()
-    fakeDb.state.beforeUpdate = () => { row.status = 'closed' }
+    fakeDb.state.beforeUpdate = (payload) => { if (payload.status === 'label_made') row.status = 'closed' }
     const res = await labelPOST(request(`/api/admin/mail-in/${row.id}/label`, {}), ctx(String(row.id)))
     expect(res.status).toBe(500)
     expect((await res.json()).easypost_shipment_id).toBe('shp_test1')
+    // The purchase is pinned on the kit (status untouched), so it can never
+    // expire into a second buy the way a bare claim could.
+    expect(row).toMatchObject({ status: 'closed', easypost_shipment_id: 'shp_test1', tracking_code: '9400100000000000000001' })
+    logged.mockRestore()
+  })
+})
+
+describe('POST label — ONE purchase per kit, enforced by the claim', () => {
+  const press = (row: { id?: unknown }) => labelPOST(request(`/api/admin/mail-in/${row.id}/label`, {}), ctx(String(row.id)))
+  const buys = () => calls.filter((c) => c.url.endsWith('/buy'))
+  const minutesAgo = (m: number) => new Date(Date.now() - m * 60_000).toISOString()
+
+  it('two presses at the same instant: exactly ONE buy, one 200 and one 409', async () => {
+    buyDelayMs = 40
+    const row = fakeDb.seedOrder()
+    const [a, b] = await Promise.all([press(row), press(row)])
+    expect([a.status, b.status].sort()).toEqual([200, 409])
+    const refused = a.status === 409 ? a : b
+    expect((await refused.json()).error).toBe('A label is already being made for this kit')
+    expect(buys()).toHaveLength(1)
+    // The loser never reached EasyPost at all: one verify, one shipment, one buy.
+    expect(calls).toHaveLength(3)
+    // And this really was the race: BOTH requests read "no label" before either wrote.
+    const orderOps = fakeDb.state.ops.filter((op) => op.endsWith(':mail_in_orders'))
+    expect(orderOps.slice(0, 2)).toEqual(['select:mail_in_orders', 'select:mail_in_orders'])
+    expect(row).toMatchObject({ status: 'label_made', easypost_shipment_id: 'shp_test1' })
+    expect(fakeDb.tables.mail_in_events.filter((e) => e.type === 'label_created')).toHaveLength(1)
+  })
+
+  it('five presses at once still buy once', async () => {
+    buyDelayMs = 20
+    const row = fakeDb.seedOrder()
+    const results = await Promise.all([press(row), press(row), press(row), press(row), press(row)])
+    expect(results.map((r) => r.status).sort()).toEqual([200, 409, 409, 409, 409])
+    expect(buys()).toHaveLength(1)
+  })
+
+  it('while the buy is in flight the row holds a claim token, never a shipment', async () => {
+    buyDelayMs = 40
+    const row = fakeDb.seedOrder()
+    const pending = press(row)
+    await new Promise((resolve) => setTimeout(resolve, 15))
+    expect(String(row.easypost_shipment_id)).toMatch(/^claim:[0-9a-f-]{36}$/)
+    expect(row.label_created_at).toBeTruthy()
+    expect(row.status).toBe('quote_agreed')
+    expect((await pending).status).toBe(200)
+    expect(row.easypost_shipment_id).toBe('shp_test1')
+  })
+
+  it.each([
+    ['an undeliverable address', () => { deliverable = false }, 422],
+    ['no USPS rate', () => { rates = [{ id: 'rate_ups', carrier: 'UPS', service: 'Ground', rate: '1.00' }] }, 502],
+    ['EasyPost refusing the buy', () => { buyFails = true }, 502],
+  ] as const)('a failure before a successful buy (%s) RELEASES the claim, and a retry succeeds', async (_label, breakIt, status) => {
+    const logged = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const row = fakeDb.seedOrder()
+    breakIt()
+    expect((await press(row)).status).toBe(status)
+    expect(row).toMatchObject({ easypost_shipment_id: null, label_created_at: null, status: 'quote_agreed' })
+
+    deliverable = true
+    buyFails = false
+    rates = [USPS]
+    expect((await press(row)).status).toBe(200)
+    // One successful buy; the refused buy in the third case was a call too.
+    expect(buys()).toHaveLength(_label.startsWith('EasyPost') ? 2 : 1)
+    expect(row.status).toBe('label_made')
+    logged.mockRestore()
+  })
+
+  it('a THROWN exception releases the claim too, and a retry succeeds', async () => {
+    const logged = vi.spyOn(console, 'error').mockImplementation(() => {})
+    // Not an array: totalBoxes throws a TypeError inside the claimed section.
+    const row = fakeDb.seedOrder({ expected_items: 5 })
+    expect((await press(row)).status).toBe(500)
+    expect(buys()).toHaveLength(0)
+    expect(row).toMatchObject({ easypost_shipment_id: null, label_created_at: null })
+
+    row.expected_items = [{ product: 'Contour NEXT 100ct', boxes: 4 }]
+    expect((await press(row)).status).toBe(200)
+    expect(buys()).toHaveLength(1)
+    logged.mockRestore()
+  })
+
+  it('releasing only ever clears OUR token', async () => {
+    const logged = vi.spyOn(console, 'error').mockImplementation(() => {})
+    deliverable = false
+    const row = fakeDb.seedOrder()
+    // Someone else's token lands on the row before our release runs.
+    fakeDb.state.beforeUpdate = (payload) => { if (payload.easypost_shipment_id === null) row.easypost_shipment_id = 'claim:someone-else' }
+    expect((await press(row)).status).toBe(422)
+    expect(row.easypost_shipment_id).toBe('claim:someone-else')
+    logged.mockRestore()
+  })
+
+  it('BUY SUCCEEDED, SAVE FAILED (twice): the claim STAYS, a retry is a 409 and buys nothing', async () => {
+    const logged = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const row = fakeDb.seedOrder()
+    let failures = 0
+    fakeDb.state.failOrderUpdateWhen = (payload) => payload.status === 'label_made' && ++failures > 0
+    const res = await press(row)
+    expect(res.status).toBe(500)
+    expect((await res.json()).easypost_shipment_id).toBe('shp_test1')
+    expect(failures).toBe(2) // the save is retried once, then given up on
+    expect(String(row.easypost_shipment_id)).toMatch(/^claim:/)
+    expect(buys()).toHaveLength(1)
+
+    fakeDb.state.failOrderUpdateWhen = null
+    const again = await press(row)
+    expect(again.status).toBe(409)
+    expect((await again.json()).error).toBe('A label is already being made for this kit')
+    expect(buys()).toHaveLength(1)
+    logged.mockRestore()
+  })
+
+  it('a save that fails once is retried and the label is saved', async () => {
+    const logged = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const row = fakeDb.seedOrder()
+    let failures = 0
+    fakeDb.state.failOrderUpdateWhen = (payload) => payload.status === 'label_made' && ++failures === 1
+    expect((await press(row)).status).toBe(200)
+    expect(row).toMatchObject({ status: 'label_made', easypost_shipment_id: 'shp_test1' })
+    expect(buys()).toHaveLength(1)
+    logged.mockRestore()
+  })
+
+  it('a buy that never ANSWERS may have been charged: the claim is held and a retry is a 409', async () => {
+    const logged = vi.spyOn(console, 'error').mockImplementation(() => {})
+    buyDrops = true
+    const row = fakeDb.seedOrder()
+    const res = await press(row)
+    const body = await res.json()
+    expect(res.status).toBe(502)
+    expect(body.error).toMatch(/MAY have been bought/)
+    expect(body.easypost_shipment_id).toBe('shp_test1')
+    expect(String(row.easypost_shipment_id)).toMatch(/^claim:/)
+    expect(logged.mock.calls.flat().join(' ')).toMatch(/BUY OUTCOME UNKNOWN.*shp_test1/)
+
+    buyDrops = false
+    expect((await press(row)).status).toBe(409)
+    expect(buys()).toHaveLength(1)
+    logged.mockRestore()
+  })
+
+  it('an ABANDONED claim (older than 3 minutes) is taken over', async () => {
+    const row = fakeDb.seedOrder({ easypost_shipment_id: 'claim:dead-function', label_created_at: minutesAgo(3.5) })
+    expect((await press(row)).status).toBe(200)
+    expect(buys()).toHaveLength(1)
+    expect(row).toMatchObject({ status: 'label_made', easypost_shipment_id: 'shp_test1' })
+  })
+
+  it('a FRESH claim (under 3 minutes) is not: 409 and EasyPost is never called', async () => {
+    const row = fakeDb.seedOrder({ easypost_shipment_id: 'claim:still-running', label_created_at: minutesAgo(2.5) })
+    const res = await press(row)
+    expect(res.status).toBe(409)
+    expect((await res.json()).error).toBe('A label is already being made for this kit')
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(row.easypost_shipment_id).toBe('claim:still-running')
+  })
+
+  it('two requests racing to take over the same abandoned claim: one buy', async () => {
+    buyDelayMs = 20
+    const row = fakeDb.seedOrder({ easypost_shipment_id: 'claim:dead-function', label_created_at: minutesAgo(10) })
+    const [a, b] = await Promise.all([press(row), press(row)])
+    expect([a.status, b.status].sort()).toEqual([200, 409])
+    expect(buys()).toHaveLength(1)
+  })
+
+  it('an old REAL shipment id is never "taken over", however old', async () => {
+    const row = fakeDb.seedOrder({ easypost_shipment_id: 'shp_real', label_created_at: minutesAgo(600) })
+    expect((await press(row)).status).toBe(409)
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(row.easypost_shipment_id).toBe('shp_real')
+  })
+
+  it('a kit voided BEFORE this change (old shipment id still on the row) can be labeled; the old id goes to the timeline first', async () => {
+    const row = fakeDb.seedOrder({ easypost_shipment_id: 'shp_legacy', label_refund_status: 'refunded', tracking_code: '9400LEGACY', easypost_mode: 'test' })
+    expect((await press(row)).status).toBe(200)
+    expect(row).toMatchObject({ status: 'label_made', easypost_shipment_id: 'shp_test1', label_refund_status: null })
+    expect(fakeDb.tables.mail_in_events[0]).toMatchObject({ type: 'voided_shipment_archived', detail: { easypost_shipment_id: 'shp_legacy', tracking_code: '9400LEGACY', refund_status: 'refunded' } })
+  })
+
+  it('...and if that timeline write fails, the old id is NOT cleared and nothing is bought', async () => {
+    const logged = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const row = fakeDb.seedOrder({ easypost_shipment_id: 'shp_legacy', label_refund_status: 'refunded' })
+    fakeDb.state.failNextEventInsert = true
+    expect((await press(row)).status).toBe(500)
+    expect(row.easypost_shipment_id).toBe('shp_legacy')
+    expect(fetchMock).not.toHaveBeenCalled()
     logged.mockRestore()
   })
 })
@@ -312,8 +509,47 @@ describe('POST label/void', () => {
     expect(res.status).toBe(200)
     expect(calls.map((c) => `${c.method} ${c.url}`)).toEqual(['POST https://api.easypost.com/v2/shipments/shp_test1/refund'])
     expect(calls[0].body).toBeNull()
-    expect(row).toMatchObject({ status: 'quote_agreed', label_refund_status: 'submitted', easypost_shipment_id: 'shp_test1', tracking_code: '9400100000000000000001' })
+    // The shipment id leaves the ROW (so the kit can be claimed again) and lives on in the timeline.
+    expect(row).toMatchObject({ status: 'quote_agreed', label_refund_status: 'submitted', easypost_shipment_id: null, tracking_code: '9400100000000000000001' })
     expect(fakeDb.tables.mail_in_events.slice(-2).map((e) => e.type)).toEqual(['label_voided', 'status_changed'])
+    expect(fakeDb.tables.mail_in_events.at(-2)?.detail).toEqual({ refund_status: 'submitted', tracking_code: '9400100000000000000001', easypost_shipment_id: 'shp_test1', mode: 'test' })
+  })
+
+  it('void, then a NEW label: works, and the voided shipment id survives in the event log', async () => {
+    const row = await labeled()
+    expect((await voidPOST(request(`/api/admin/mail-in/${row.id}/label/void`), ctx(String(row.id)))).status).toBe(200)
+    const res = await labelPOST(request(`/api/admin/mail-in/${row.id}/label`, {}), ctx(String(row.id)))
+    expect(res.status).toBe(200)
+    expect(row).toMatchObject({ status: 'label_made', easypost_shipment_id: 'shp_test2', label_refund_status: null })
+    const voided = fakeDb.tables.mail_in_events.filter((e) => e.type === 'label_voided')
+    expect(voided).toHaveLength(1)
+    expect(voided[0].detail).toMatchObject({ easypost_shipment_id: 'shp_test1' })
+    expect(fakeDb.tables.mail_in_events.filter((e) => e.type === 'label_created').map((e) => (e.detail as { easypost_shipment_id: string }).easypost_shipment_id)).toEqual(['shp_test1', 'shp_test2'])
+  })
+
+  it('if the label_voided timeline row cannot be written, the shipment id STAYS on the kit; the next label archives it', async () => {
+    const logged = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const row = await labeled()
+    fakeDb.state.failNextEventInsert = true
+    expect((await voidPOST(request(`/api/admin/mail-in/${row.id}/label/void`), ctx(String(row.id)))).status).toBe(200)
+    expect(row).toMatchObject({ status: 'quote_agreed', label_refund_status: 'submitted', easypost_shipment_id: 'shp_test1' })
+
+    expect((await labelPOST(request(`/api/admin/mail-in/${row.id}/label`, {}), ctx(String(row.id)))).status).toBe(200)
+    expect(row.easypost_shipment_id).toBe('shp_test2')
+    expect(fakeDb.tables.mail_in_events.find((e) => e.type === 'voided_shipment_archived')?.detail).toMatchObject({ easypost_shipment_id: 'shp_test1' })
+    logged.mockRestore()
+  })
+
+  it.each([
+    ['at Quote agreed (a purchase in flight)', 'quote_agreed'],
+    ['even on a row that says Label made', 'label_made'],
+  ])('a CLAIM token is not a shipment %s: 409 and EasyPost is never called', async (_label, status) => {
+    const row = fakeDb.seedOrder({ status, easypost_shipment_id: 'claim:0b9d2c0e-0000-4000-8000-000000000001', label_created_at: new Date().toISOString(), easypost_mode: 'test' })
+    const res = await voidPOST(request(`/api/admin/mail-in/${row.id}/label/void`), ctx(String(row.id)))
+    expect(res.status).toBe(409)
+    expect((await res.json()).error).toBe('A label is already being made for this kit')
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(row.easypost_shipment_id).toBe('claim:0b9d2c0e-0000-4000-8000-000000000001')
   })
 
   it('after a void a fresh label may be made, and the refund flag is cleared', async () => {
