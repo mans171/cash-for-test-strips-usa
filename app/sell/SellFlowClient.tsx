@@ -712,7 +712,8 @@ export function SellFlowClient() {
             className={`w-full border rounded-lg px-3 py-2 ${phoneError ? "border-red-400" : "border-gray-200"}`}
           />
           <p id="sell-phone-help" className="text-xs text-gray-500 mt-1">
-            So a buyer can text you a quote. We will only text you about this sale.
+            So a buyer can text you a quote. We will only text you about this sale.{" "}
+            <a href="/privacy" className="underline hover:text-gray-700">Privacy</a>
           </p>
           {phoneError && <p id="sell-phone-error" role="alert" className="text-red-600 text-sm mt-1">{phoneError}</p>}
         </div>

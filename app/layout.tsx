@@ -71,6 +71,9 @@ export default function RootLayout({
               <Link href="/buyer" className="hover:text-white transition-colors">
                 Manage Your Listing
               </Link>
+              <Link href="/privacy" className="hover:text-white transition-colors">
+                Privacy
+              </Link>
               <a href={`mailto:${PUBLIC_EMAIL}`} className="hover:text-white transition-colors">
                 Contact
               </a>
