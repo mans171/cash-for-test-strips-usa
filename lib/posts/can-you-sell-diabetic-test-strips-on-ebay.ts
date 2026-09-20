@@ -22,7 +22,7 @@ export const canYouSellDiabeticTestStripsOnEbay: RegistryPost = {
   description:
     "eBay restricts and routinely removes medical test-strip listings. What happens in practice and the direct-buyer route that skips the risk entirely.",
   datePublished: "2026-09-14",
-  dateModified: "2026-09-14",
+  dateModified: "2026-09-20",
   bodyHtml: `
 <p>Technically yes, but in practice eBay is the wrong platform for this. eBay
 restricts medical test-strip listings, and listings that go up come back down
@@ -81,7 +81,8 @@ photograph the sealed boxes with the brand name, lot number, and expiration
 date clearly visible, send the photos to get a quote, and receive a figure back.
 If it works for you, you either ship the boxes — the buyer typically provides
 the prepaid label — or arrange a local handover. No listing, no auction, no
-platform fees, no waiting on a buyer to appear.</p>
+platform fees, no waiting on a buyer to appear. To sell by mail from any state,
+<a href="/mail-in-kit">start a mail-in kit</a>.</p>
 
 <p>This is also the model for larger lots. Someone clearing a full cupboard of
 mixed brands and different dates gets one quote rather than a separate auction

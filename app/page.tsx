@@ -123,6 +123,12 @@ export default async function HomePage() {
             >
               Call or text {OWNER_PHONE}
             </a>
+            <Link
+              href="/mail-in-kit"
+              className="bg-electric text-ink-deep font-extrabold text-sm px-7 py-3.5 rounded-lg hover:bg-white transition-colors"
+            >
+              Start a mail-in kit
+            </Link>
             <a
               href={SMS_HREF}
               className="text-white/80 font-bold text-sm px-5 py-3.5 underline decoration-electric decoration-2 underline-offset-4 hover:text-electric transition-colors"

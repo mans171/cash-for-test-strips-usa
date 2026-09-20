@@ -115,11 +115,18 @@ export default async function SellTestStripsHub() {
                 body: hasMailIn
                   ? "Mail-in buyers accept sealed, unexpired boxes from anywhere in the US. Your state page shows that option alongside the nearest in-person buyers."
                   : "Your state page shows the closest listed buyers and roughly how far away each one is.",
+                // The mail-in offer is a real form, so say where it is.
+                kitLink: hasMailIn,
               },
-            ].map(({ title, body }) => (
+            ].map(({ title, body, kitLink }) => (
               <div key={title}>
                 <h3 className="font-semibold text-gray-900 mb-1 text-sm">{title}</h3>
                 <p className="text-sm text-gray-500 leading-relaxed">{body}</p>
+                {kitLink && (
+                  <Link href="/mail-in-kit" className={`${btnPrimary} mt-3 !px-4 !py-2 !text-xs`}>
+                    Start a mail-in kit
+                  </Link>
+                )}
               </div>
             ))}
           </div>

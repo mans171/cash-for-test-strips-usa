@@ -223,6 +223,15 @@ export default async function CityPage({ params }: Props) {
           <h2 className="text-xl font-extrabold text-gray-900 mb-2">
             Prefer to mail your strips instead?
           </h2>
+          {/* Neutral on purpose: partner-answered city pages speak in the
+              buyer's name, so this line carries no "we". */}
+          <p className="text-sm text-gray-600 mb-4">
+            You can also mail sealed boxes in —{" "}
+            <Link href="/mail-in-kit" className="text-cash font-semibold underline">
+              start a mail-in kit
+            </Link>
+            .
+          </p>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <BuyerCard company={mailIn} />
           </div>

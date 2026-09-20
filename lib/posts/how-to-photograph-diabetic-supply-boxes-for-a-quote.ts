@@ -111,7 +111,8 @@ spread over an hour.</p>
 <p>If you are texting directly, <a href="/directory">the directory</a> lists
 buyers by state with contact numbers. You can also text <strong>${OWNER_PHONE}</strong>
 — that number handles in-person pickups in and around Albany, New York, and
-mail-in quotes for sellers anywhere in the country. The
+mail-in quotes for sellers anywhere in the country. If you are mailing your
+boxes, the <a href="/mail-in-kit">mail-in kit form</a> is the place to start. The
 <a href="/sell-test-strips">sell page</a> walks through what happens after the
 photos, from the quote to the handoff.</p>
 
