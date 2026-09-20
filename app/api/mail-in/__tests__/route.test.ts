@@ -131,6 +131,11 @@ describe('POST /api/mail-in', () => {
     expect(fakeDb.state.touched).toBe(0)
   })
 
+  it('accepts a seller in Washington DC', async () => {
+    const res = await POST(request({ ...valid, city: 'Washington', state: 'DC', zip: '20001' }))
+    expect(res.status).toBe(201)
+  })
+
   it.each(['account_number', 'routing_number', 'bank_account'])('refuses a %s field outright', async (key) => {
     const res = await POST(request({ ...valid, payout_method: 'ach', [key]: '021000021' }))
     expect(res.status).toBe(400)

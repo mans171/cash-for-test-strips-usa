@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { sendEmail, escapeHtml } from '@/lib/email'
 import { OWNER_EMAIL } from '@/lib/owner'
-import { STATE_LABELS, VALID_STATE_CODES } from '@/lib/states'
+import { MAIL_IN_STATE_LABELS, MAIL_IN_STATE_CODES } from '@/lib/states'
 import { isHoneypotTripped } from '@/lib/honeypot'
 import { checkRateLimit, clientIp, RATE_LIMIT_MESSAGE } from '@/lib/rate-limit'
 import { checkSameOrigin } from '@/lib/admin-auth'
@@ -57,7 +57,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const parsed = parseSellerInput(body, VALID_STATE_CODES)
+    const parsed = parseSellerInput(body, MAIL_IN_STATE_CODES)
     if (!parsed.ok) {
       return NextResponse.json({ error: parsed.error }, { status: 400 })
     }
@@ -97,7 +97,7 @@ export async function POST(request: Request) {
             '<h2>New mail-in kit: ' + escapeHtml(orderNumber) + '</h2>',
             '<p><strong>' + escapeHtml(input.name) + '</strong><br>Phone: ' + escapeHtml(input.phone) +
               (input.email ? '<br>Email: ' + escapeHtml(input.email) : '') + '</p>',
-            '<p>Ships from: ' + escapeHtml(input.city) + ', ' + escapeHtml(STATE_LABELS[input.state] ?? input.state) + '</p>',
+            '<p>Ships from: ' + escapeHtml(input.city) + ', ' + escapeHtml(MAIL_IN_STATE_LABELS[input.state] ?? input.state) + '</p>',
             '<p>Wants to be paid by: ' + escapeHtml(PAYOUT_METHOD_LABELS[input.payout_method]) + '</p>',
             '<ul>' + input.expected_items.map((i) => '<li>' + escapeHtml(i.product) + ' x ' + i.boxes + '</li>').join('') + '</ul>',
             '<p>Total boxes: ' + totalBoxes(input.expected_items) + '</p>',

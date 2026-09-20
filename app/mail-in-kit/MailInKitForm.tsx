@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { PRODUCT_BRANDS } from "@/lib/product-catalog";
-import { STATE_LABELS } from "@/lib/states";
+import { MAIL_IN_STATE_LABELS } from "@/lib/states";
 import { HONEYPOT_FIELD } from "@/lib/honeypot";
 import { OWNER_PHONE } from "@/lib/owner";
 import { PAYOUT_METHODS, PAYOUT_METHOD_LABELS, totalBoxes, type MailInItem, type PayoutMethod } from "@/lib/mail-in";
@@ -298,9 +298,7 @@ export function MailInKitForm() {
               <label className={LABEL} htmlFor="kit-state">State</label>
               <select id="kit-state" className={INPUT} autoComplete="address-level1" value={contact.state} onChange={(e) => setField({ state: e.target.value })}>
                 <option value="">Choose…</option>
-                {Object.entries(STATE_LABELS)
-                  .filter(([code]) => code !== "CANADA")
-                  .map(([code, label]) => (
+                {Object.entries(MAIL_IN_STATE_LABELS).map(([code, label]) => (
                     <option key={code} value={code}>{label}</option>
                   ))}
               </select>
