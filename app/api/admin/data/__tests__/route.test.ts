@@ -77,7 +77,7 @@ describe('GET /api/admin/data', () => {
     const claim = await createClaim({ companyId: company!.id, userId, submittedPhone: '5559994301' })
     cleanupClaimIds.push(claim.id)
 
-    const response = await GET(makeRequest(signSession()))
+    const response = await GET(makeRequest(await signSession()))
     const body = await response.json()
     expect(response.status).toBe(200)
 

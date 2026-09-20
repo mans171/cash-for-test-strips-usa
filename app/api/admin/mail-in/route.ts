@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { isValidSession, ADMIN_SESSION_COOKIE_NAME } from '@/lib/admin-auth'
+import { requireAdmin } from '@/lib/admin-auth'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import {
   MAIL_IN_STATUSES,
@@ -18,12 +18,6 @@ import {
 // client is the only way in — which is why the session check below comes
 // first in every handler, before anything touches the database.
 
-function getCookie(request: Request, name: string): string | undefined {
-  const header = request.headers.get('cookie') ?? ''
-  const match = header.split(';').map((c) => c.trim()).find((c) => c.startsWith(`${name}=`))
-  return match?.slice(name.length + 1)
-}
-
 // The board shows every open kit. A cap keeps one response bounded (and under
 // PostgREST's silent 1000-row limit); `truncated` tells the UI when it bit.
 // The summary strip never depends on this list — it uses exact counts.
@@ -33,10 +27,8 @@ const CREATE_ATTEMPTS = 4
 
 export async function GET(request: Request) {
   try {
-    const session = getCookie(request, ADMIN_SESSION_COOKIE_NAME)
-    if (!isValidSession(session)) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const denied = await requireAdmin(request)
+    if (denied) return denied
 
     const params = new URL(request.url).searchParams
     const statusParam = params.get('status')
@@ -101,10 +93,8 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const session = getCookie(request, ADMIN_SESSION_COOKIE_NAME)
-    if (!isValidSession(session)) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const denied = await requireAdmin(request)
+    if (denied) return denied
 
     const body = await request.json().catch(() => null)
     const parsed = parseCreateInput(body)

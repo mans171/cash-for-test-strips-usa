@@ -17,7 +17,14 @@ vi.mock('@/lib/supabase-admin', () => ({
   ),
 }))
 
-import { ADMIN_SESSION_COOKIE_NAME, signSession } from '@/lib/admin-auth'
+// The session's credential version normally comes from admin_credentials.
+// Pinned here so a valid session needs no database (lib/admin-credential-version.ts).
+vi.mock('@/lib/admin-credential-version', () => ({
+  getCredentialVersion: async () => 'a'.repeat(32),
+  clearCredentialVersionCache: () => {},
+}))
+
+import { ADMIN_SESSION_COOKIE_NAME, buildSession } from '@/lib/admin-auth'
 import { GET as listGET, POST as listPOST } from '../route'
 import { GET as detailGET, PATCH as detailPATCH } from '../[id]/route'
 
@@ -41,7 +48,7 @@ const forgedCookies: Array<[string, string | undefined]> = [
   ['no cookie', undefined],
   ['an unsigned value', 'admin-authenticated'],
   ['a wrong signature', `admin-authenticated.${'0'.repeat(64)}`],
-  ['a tampered valid cookie', `${signSession()}x`],
+  ['a tampered valid cookie', `${buildSession('a'.repeat(32))}x`],
 ]
 
 beforeEach(() => touched.mockClear())
@@ -73,7 +80,7 @@ describe.each(forgedCookies)('mail-in admin routes with %s', (_label, cookie) =>
 })
 
 describe('mail-in admin routes with a valid session reject bad input before the database', () => {
-  const cookie = signSession()
+  const cookie = buildSession('a'.repeat(32))
 
   it('GET list: unknown status -> 400', async () => {
     const res = await listGET(request('GET', '/api/admin/mail-in?status=shipped', cookie))
