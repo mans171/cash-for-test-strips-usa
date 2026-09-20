@@ -41,7 +41,7 @@ export const howToPackDiabeticSuppliesForShipping: RegistryPost = {
 about ten minutes. Choose a rigid outer box a little bigger than your
 supplies — a reused shipping box works fine if it is sturdy and any old labels
 or barcodes on the outside are removed or covered. Pad the inside until
-nothing shifts when you shake it, keep every product box sealed and in its
+nothing can slide around, keep every product box sealed and in its
 original packaging, and tape every seam in an H pattern. Attach the label flat
 on the largest face with no tape over the barcode, then drop the box off the
 same day you pack it. That is the whole method.</p>
@@ -74,22 +74,21 @@ address — tape over every old barcode completely.</p>
 <h2>Keeping every product box sealed</h2>
 
 <p>Pack each product box exactly as it sits. Do not open, unwrap, or repack
-anything. A buyer purchases sealed, intact supplies; once a box has been
-opened, its contents cannot be verified or resold.</p>
+anything. Buyers purchase sealed supplies in their original packaging, so the
+product boxes should reach them looking the way they reached you.</p>
 
 <p>Do not put tape directly on any product box. Tape on original packaging
-pulls the label surface when removed and can look like tampering. Leave the
+tears the printed surface when it comes off. Leave the
 product boxes as they came to you. If a box has a pharmacy label on it, leave
-that on too — buyers handle labeled packaging routinely, and the label does
-not affect the sale. Attempting to peel it can damage the packaging underneath,
+that on too — buyers handle labeled packaging routinely. Attempting to peel it can damage the packaging underneath,
 which is the one thing you are trying to protect.</p>
 
-<h2>Padding so nothing shifts: the shake test</h2>
+<h2>Padding so nothing shifts in the carton</h2>
 
 <p>Fill every gap in the outer box until nothing moves. Packing paper,
 bubble wrap, foam peanuts, or tightly crumpled newsprint all work. The
-standard is simple: pick up the sealed box and shake it. If you can hear or
-feel anything shifting, open it and add more fill.</p>
+standard is simple: close the flaps and tilt the carton from side to side. If
+you feel anything slide, open it and add more fill.</p>
 
 <p>Two specific gaps to check:</p>
 
@@ -103,11 +102,9 @@ feel anything shifting, open it and add more fill.</p>
   every outer face — including the bottom.</li>
 </ul>
 
-<p>Crushed corners are the most common thing that changes what a buyer can do
-with a box after it arrives. A corner that was square when it left your hands
-but collapsed during shipping is a packaging defect, and the buyer may have
-to come back to you about it. The shake test catches the packing gaps that cause it before
-anything ships.</p>
+<p>Crushed corners are the most common shipping damage, and loose space in
+the carton is what causes them. Filling those two gaps is what keeps a box
+square from your hands to the buyer's.</p>
 
 <h2>Sensors and pods: pack and drop off the same day</h2>
 
@@ -205,8 +202,7 @@ number printed on your label. Your kit status page — linked in the
 confirmation you received when you set up your kit — also updates as the
 shipment moves.</p>
 
-<p>When the buyer receives the shipment, they check in and inspect your
-supplies. You will see the status update on your kit page. Once checked in,
+<p>When the buyer receives the shipment, they check your kit in. You will see the status update on your kit page. Once checked in,
 payment goes out by the method you chose when you set up the kit: Zelle, Cash App, Venmo, bank transfer, or check. The
 <a href="/blog/how-to-sell-diabetic-supplies-by-mail">mail-in guide</a>
 covers payment timing and what to do if the quoted figure is revised after
@@ -234,11 +230,11 @@ for a quote on supplies anywhere in the country.</p>
     },
     {
       q: "What kind of padding should I use?",
-      a: "Packing paper, bubble wrap, foam peanuts, or tightly crumpled newsprint all work. The test is simple: once the box is sealed, shake it. If anything moves, add more fill. No particular material is required — the goal is that nothing shifts during transit.",
+      a: "Packing paper, bubble wrap, foam peanuts, or tightly crumpled newsprint all work. The test is simple: close the flaps and tilt the carton. If anything slides, add more fill. No particular material is required — the goal is that nothing shifts during transit.",
     },
     {
       q: "Can I put tape on the product boxes to keep them together?",
-      a: "No. Leave every product box exactly as it is. Tape on original packaging can pull the label surface when removed and may look like tampering. Only the outer shipping box needs taping.",
+      a: "No. Leave every product box exactly as it is. Tape on original packaging tears the printed surface when it comes off. Only the outer shipping box needs taping.",
     },
     {
       q: "Do I need to remove the pharmacy label from any of the boxes?",
