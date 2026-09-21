@@ -32,8 +32,8 @@ export const pharmacyLabelOnBox: RegistryPost = {
   title: "Pharmacy Label on the Box — Should You Remove It Before Selling?",
   description:
     "Leave it on. Peeling a pharmacy label risks tearing the packaging that gives the box its value. Here is what sellers need to know before texting a photo for a quote.",
-  datePublished: "2026-10-01",
-  dateModified: "2026-10-01",
+  datePublished: "2026-09-20",
+  dateModified: "2026-09-20",
   bodyHtml: `
 <p>If you have sealed boxes of diabetic supplies and there is a pharmacy
 sticker on the side — your name, your address, a string of codes — you may
