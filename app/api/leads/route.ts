@@ -9,9 +9,39 @@ import { isHoneypotTripped } from '@/lib/honeypot'
 import { checkRateLimit, clientIp, RATE_LIMIT_MESSAGE } from '@/lib/rate-limit'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { supabaseAdmin } from '@/lib/supabase-admin'
+import { phoneDigits, UUID_PATTERN } from '@/lib/sell-starts'
 
 const VALID_CONDITIONS = new Set(['sealed', 'unsealed'])
 const MAX_ITEMS = 50
+
+/**
+ * /sell saves a "start" (lib/sell-starts.ts) when the seller reaches the buyers
+ * list, and sends its id along with the final request. Stamp that start as
+ * finished so it leaves the admin's "Started, didn't finish" list.
+ *
+ * Matched on the id AND the same phone digits, so a visitor who guesses or
+ * copies an id cannot complete someone else's start. NEVER throws: the lead is
+ * already saved, and a missing table, a missing service-role key or a failed
+ * update must not turn a good submission into an error.
+ */
+async function markSellStartCompleted(sellStartId: unknown, phone: string | undefined, leadId: string): Promise<void> {
+  try {
+    if (typeof sellStartId !== 'string' || !UUID_PATTERN.test(sellStartId)) return
+    const digits = phoneDigits(phone)
+    if (!digits) return
+    const nowIso = new Date().toISOString()
+    const { error } = await supabaseAdmin
+      .from('sell_starts')
+      .update({ completed_lead_id: leadId, completed_at: nowIso, updated_at: nowIso })
+      .eq('id', sellStartId)
+      .eq('phone', digits)
+      .is('completed_at', null)
+    if (error) console.warn('[POST /api/leads] could not mark the sell start completed', error.message)
+  } catch (startError) {
+    console.warn('[POST /api/leads] could not mark the sell start completed', startError instanceof Error ? startError.message : 'unknown error')
+  }
+}
 
 function isValidItem(item: unknown): item is OrderItem {
   if (!item || typeof item !== 'object') return false
@@ -71,7 +101,7 @@ export async function POST(request: Request) {
       console.warn('[POST /api/leads] session read failed, continuing anonymously', sessionError)
     }
 
-    const { items, matchedCompanyId, channel, sourcePage, name, email, phone } = body ?? {}
+    const { items, matchedCompanyId, channel, sourcePage, name, email, phone, sellStartId } = body ?? {}
 
     if (!Array.isArray(items) || items.length === 0) {
       return NextResponse.json({ error: 'At least one item is required' }, { status: 400 })
@@ -114,6 +144,8 @@ export async function POST(request: Request) {
       },
       sessionClient ?? undefined
     )
+
+    await markSellStartCompleted(sellStartId, trimmedPhone, lead.id)
 
     if (channel === 'sms') {
       const message = buildQuoteMessage(items as OrderItem[], name.trim())

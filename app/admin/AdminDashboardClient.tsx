@@ -2,6 +2,8 @@
 
 import { Fragment, useEffect, useState } from "react";
 import { MailInTab } from "./MailInTab";
+import { SellStartsSection } from "./SellStartsSection";
+import type { SellStartForAdmin } from "@/lib/sell-starts";
 
 type SubmissionPayload = {
   name: string;
@@ -59,6 +61,11 @@ type DashboardData = {
   leads: Array<{ id: string; items: unknown; channel: string; created_at: string; name: string | null; email: string | null; phone: string | null }>;
   clicks: Array<{ id: string; company_id: string; created_at: string }>;
   missingPhones: Array<{ id: string; name: string; city: string | null }>;
+  // "Started, didn't finish" on the leads tab. Optional so an older API
+  // response (or a failed section) never breaks the rest of the dashboard.
+  sellStarts?: SellStartForAdmin[];
+  sellStartsError?: boolean;
+  serverNow?: string;
 };
 
 export function AdminDashboardClient() {
@@ -134,6 +141,9 @@ export function AdminDashboardClient() {
 
   if (!data) return <p>Loading...</p>;
 
+  const sellStarts = data.sellStarts ?? [];
+  const waitingStarts = sellStarts.filter((s) => !s.contacted_at).length;
+
   return (
     <div>
       <div className="flex flex-wrap gap-2 mb-6">
@@ -144,6 +154,14 @@ export function AdminDashboardClient() {
             className={`text-sm px-3 py-1.5 rounded-full border ${tab === t ? "bg-emerald-600 text-white border-emerald-600" : "border-gray-200 text-gray-600"}`}
           >
             {t} ({data[t].length})
+            {t === "leads" && waitingStarts > 0 && (
+              <span
+                title="Started, didn't finish — not contacted yet"
+                className="ml-1.5 inline-block rounded-full bg-amber-400 text-gray-900 text-[11px] font-semibold px-1.5"
+              >
+                {waitingStarts} started
+              </span>
+            )}
           </button>
         ))}
         {/* Mail-in loads its own data (see MailInTab), so it has no count here
@@ -216,7 +234,17 @@ export function AdminDashboardClient() {
       )}
 
       {tab === "leads" && (
+        <SellStartsSection
+          starts={sellStarts}
+          loadFailed={Boolean(data.sellStartsError)}
+          serverNow={data.serverNow ?? new Date(0).toISOString()}
+          onChanged={load}
+        />
+      )}
+
+      {tab === "leads" && (
         <div className="flex flex-col gap-2">
+          <h2 className="font-semibold text-gray-900">Completed leads</h2>
           {data.leads.map((l) => (
             <div key={l.id} className="border border-gray-100 rounded-lg p-3 text-sm">
               <p>

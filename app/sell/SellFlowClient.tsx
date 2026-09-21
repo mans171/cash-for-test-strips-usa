@@ -13,6 +13,11 @@ import { HONEYPOT_FIELD } from "@/lib/honeypot";
 import { OWNER_PHONE, PUBLIC_EMAIL } from "@/lib/owner";
 import { honorsBonus, BONUS_FORM_COPY } from "@/lib/bonus";
 import { OrdersNudge } from "@/app/components/OrdersNudge";
+import { isTenDigitPhone, PHONE_ERROR, startSignature } from "@/lib/sell-starts";
+
+// Where the saved "start" (see saveStart below) is remembered for this tab, so
+// going back and forward does not save the same start twice.
+const SELL_START_STORAGE_KEY = "c4ts_sell_start";
 
 type Stage = "build" | "results" | "sent";
 
@@ -77,6 +82,26 @@ export function SellFlowClient() {
   const [honeypot, setHoneypot] = useState("");
   const { user } = useUser();
   const hasAutoFilledRef = useRef<string | null>(null);
+  const [phoneError, setPhoneError] = useState<string | null>(null);
+  // The start we already saved: its id (sent along with the final request so
+  // the start is marked finished) and a signature of the phone + items it was
+  // saved with. A ref, not state: nothing renders from it, and handleSend must
+  // read the latest value rather than one captured by an older render.
+  const savedStartRef = useRef<{ id: string; signature: string } | null>(null);
+  // Signature of a save that is still on the wire, so a quick back-and-forward
+  // cannot send the same start twice before the first answer lands.
+  const startInFlightRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    try {
+      const stored = JSON.parse(window.sessionStorage.getItem(SELL_START_STORAGE_KEY) ?? "null");
+      if (stored && typeof stored.id === "string" && typeof stored.signature === "string") {
+        savedStartRef.current = { id: stored.id, signature: stored.signature };
+      }
+    } catch {
+      // Private window, blocked storage or junk in the slot: start fresh.
+    }
+  }, []);
 
   useEffect(() => {
     if (!user || hasAutoFilledRef.current === user.id) return;
@@ -204,6 +229,42 @@ export function SellFlowClient() {
     setMailIn(body.mailIn ?? null);
   }
 
+  // Saves "this seller started" so the owner can follow up by hand if they
+  // leave before sending. Fire-and-forget and silent BY DESIGN: whatever goes
+  // wrong here — route down, rate limit, table missing — the seller carries on
+  // to their buyers and never sees it. One POST per distinct phone + items:
+  // going back and forward without changing either sends nothing.
+  function saveStart() {
+    const signature = startSignature(customerPhone, items);
+    if (savedStartRef.current?.signature === signature || startInFlightRef.current === signature) return;
+    startInFlightRef.current = signature;
+    fetch("/api/sell-starts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        phone: customerPhone,
+        name: customerName.trim() || undefined,
+        state,
+        items,
+        [HONEYPOT_FIELD]: honeypot,
+      }),
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((body) => {
+        if (!body || typeof body.id !== "string") return;
+        savedStartRef.current = { id: body.id, signature };
+        try {
+          window.sessionStorage.setItem(SELL_START_STORAGE_KEY, JSON.stringify(savedStartRef.current));
+        } catch {
+          // Storage unavailable: the ref still covers this page view.
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (startInFlightRef.current === signature) startInFlightRef.current = null;
+      });
+  }
+
   async function handleFindBuyers(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -215,6 +276,12 @@ export function SellFlowClient() {
       setError("Fill in brand and count for every item.");
       return;
     }
+    if (!isTenDigitPhone(customerPhone)) {
+      setPhoneError(PHONE_ERROR);
+      return;
+    }
+    setPhoneError(null);
+    saveStart();
     // No account step: contacts are public since 2026-09-12, so a seller
     // goes straight from their order to the matched buyer's contact form.
     setLoading(true);
@@ -244,6 +311,7 @@ export function SellFlowClient() {
           name: customerName,
           email: customerEmail || undefined,
           phone: customerPhone || undefined,
+          sellStartId: savedStartRef.current?.id,
           [HONEYPOT_FIELD]: honeypot,
         }),
       });
@@ -624,6 +692,52 @@ export function SellFlowClient() {
       >
         + Add another item
       </button>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="min-w-0">
+          <label htmlFor="sell-phone" className="text-sm font-medium text-gray-700 block mb-1">Your mobile number</label>
+          <input
+            id="sell-phone"
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+            value={customerPhone}
+            onChange={(e) => {
+              setCustomerPhone(e.target.value);
+              if (phoneError) setPhoneError(null);
+            }}
+            placeholder="(555) 123-4567"
+            aria-invalid={phoneError ? true : undefined}
+            aria-describedby={phoneError ? "sell-phone-help sell-phone-error" : "sell-phone-help"}
+            className={`w-full border rounded-lg px-3 py-2 ${phoneError ? "border-red-400" : "border-gray-200"}`}
+          />
+          <p id="sell-phone-help" className="text-xs text-gray-500 mt-1">
+            So a buyer can text you a quote. We will only text you about this sale.{" "}
+            <a href="/privacy" className="underline hover:text-gray-700">Privacy</a>
+          </p>
+          {phoneError && <p id="sell-phone-error" role="alert" className="text-red-600 text-sm mt-1">{phoneError}</p>}
+        </div>
+        <div className="min-w-0">
+          <label htmlFor="sell-first-name" className="text-sm font-medium text-gray-700 block mb-1">First name</label>
+          <input
+            id="sell-first-name"
+            autoComplete="given-name"
+            value={customerName}
+            onChange={(e) => setCustomerName(e.target.value)}
+            className="w-full border border-gray-200 rounded-lg px-3 py-2"
+          />
+        </div>
+        <div style={{ position: "absolute", left: "-10000px", width: "1px", height: "1px", overflow: "hidden" }}>
+          <input
+            name={HONEYPOT_FIELD}
+            value={honeypot}
+            onChange={(e) => setHoneypot(e.target.value)}
+            autoComplete="off"
+            tabIndex={-1}
+            aria-hidden="true"
+          />
+        </div>
+      </div>
 
       {error && <p className="text-red-600 text-sm">{error}</p>}
       <button

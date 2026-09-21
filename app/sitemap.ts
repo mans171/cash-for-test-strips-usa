@@ -29,6 +29,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // /buyer is login-gated; Google rejected it on 2026-09-01 and it must not
     // appear in the sitemap. The page itself carries noindex robots metadata.
     { url: `${BASE_URL}/about`, changeFrequency: 'monthly', priority: 0.6 },
+    { url: `${BASE_URL}/privacy`, changeFrequency: 'yearly', priority: 0.2 },
     { url: `${BASE_URL}/is-it-legal-to-sell-diabetic-test-strips`, changeFrequency: 'monthly', priority: 0.8 },
     { url: `${BASE_URL}/how-much-are-diabetic-test-strips-worth`, changeFrequency: 'monthly', priority: 0.8 },
     // Hand-written feature post; its own route, not part of the state set.
