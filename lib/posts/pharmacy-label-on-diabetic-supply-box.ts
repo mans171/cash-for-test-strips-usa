@@ -44,10 +44,8 @@ the box. You do not. Leave it on.</p>
 
 <p>A pharmacy label typically carries your name, your address, the dispensing
 date, the pharmacy's name and phone number, directions for use, and the
-pharmacy's internal reference number for the transaction. None of that
-information is secret in any formal sense — it is the same kind of
-information you would find on any pharmacy bag — but it is understandably
-personal.</p>
+pharmacy's internal reference number. It is the same kind of information
+you would find on any pharmacy bag, and it is understandably personal.</p>
 
 <p>The label is an ordinary feature of almost every box that changes hands.
 Nearly every box that goes through a resale comes with one. It does not need
@@ -61,11 +59,10 @@ try to peel one off a cardboard box, you are as likely to pull up a layer of
 the box surface as you are to get a clean peel. Once that happens, the
 packaging is visibly damaged.</p>
 
-<p>A box in good original condition is what has value. A box with a torn or
-scuffed surface — even if the packaging underneath is undamaged — raises
-questions about handling. The same goes for adhesive residue left behind by a
-partial peel. None of that makes a box worthless, but it is an unnecessary
-complication you create by trying to fix something that was not a problem.</p>
+<p>A box in good original condition is what has value. A torn or
+scuffed surface, or sticky residue left behind by a partial peel, is damage
+you did not have before you started. It is an unnecessary complication you
+create by trying to fix something that was not a problem.</p>
 
 <p>Leave the label on. It is part of the box now, and that is fine.</p>
 
@@ -90,14 +87,13 @@ box. The label travels with it. That is expected and normal.</p>
 
 <p>It is worth being honest about what the label actually exposes. Your name
 and address are on it — but they appear on a lot of things that leave your
-house: return labels, packages, junk mail. A buyer receiving sealed boxes is
-not building a profile on you.</p>
+house: return labels, packages, junk mail.</p>
 
 <p>If you are using a reputable buyer — one who quotes before you ship and has
 a clear process — the label is the least of your concerns. The things worth
 checking are whether the quote is confirmed before anything ships, whether the
 payment method works for you, and whether the packaging arrives undamaged.
-The <a href="/mail-in-kit">mail-in guide</a> covers those steps.</p>
+The <a href="/mail-in-kit">mail-in kit page</a> shows how that works with us.</p>
 
 <p>If you would like to know how a specific buyer handles labels and personal
 information after a sale, that is a reasonable question to ask. A
@@ -108,8 +104,7 @@ straightforward buyer will give you a straightforward answer.</p>
 <p>Stop where you are and do not pull it the rest of the way. Describe the
 situation when you text and send your photos as-is: the label started to come
 off, here is the brand, sending photos now. A buyer who has been doing this
-for any length of time has seen it before and will let you know what it means
-for the quote.</p>
+for any length of time has seen it before and will tell you what to do next.</p>
 
 <h2>Sending photos for a quote</h2>
 
@@ -133,8 +128,7 @@ creates some kind of complication.</p>
 
 <p>In most cases it does not — a label with another person's name is ordinary
 and rarely an issue. When you text for a quote, the person you reach will let
-you know if they need anything further. You do not need to explain how you
-came to have the supplies, and you will not be asked to.</p>
+you know if they need anything further.</p>
 `,
   faqs: [
     {
@@ -147,7 +141,7 @@ came to have the supplies, and you will not be asked to.</p>
     },
     {
       q: "Will the pharmacy's reference number on the label cause a problem?",
-      a: "No. That number identifies the dispensing transaction on the pharmacy's side. It does not follow the box in any way that matters for a private sale, and you are not asked about it.",
+      a: "It is the pharmacy's own record number, and there is nothing you need to do about it. Leave the label as it is and photograph the box as-is. If the person you text needs anything more, they will tell you.",
     },
     {
       q: "What if the label is already half-peeled?",
@@ -159,11 +153,11 @@ came to have the supplies, and you will not be asked to.</p>
     },
     {
       q: "Can I cover my name with a marker or tape before I ship?",
-      a: "Do not write on the box or tape over it. Writing can raise questions about the box's handling; tape can damage the surface when removed. If privacy is the concern, ask the buyer when you text how labels are handled after a purchase — that is the right question, not something to solve by altering the box.",
+      a: "Do not write on the box or tape over it. Marker cannot be undone, and tape can tear the surface when it comes off. If privacy is the concern, ask the buyer when you text how labels are handled after a purchase — that is the right question, not something to solve by altering the box.",
     },
     {
       q: "The label has a relative's name on it and that person has passed away. Does that create a problem?",
-      a: "In most cases, no — a label with a relative's name is ordinary and rarely an issue. When you text for a quote, the person you reach will let you know if they need anything further. You will not be asked to explain how you came to have the supplies.",
+      a: "In most cases, no — a label with a relative's name is ordinary and rarely an issue. When you text for a quote, the person you reach will let you know if they need anything further.",
     },
   ],
 }
