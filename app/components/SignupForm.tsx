@@ -4,6 +4,7 @@
 import { useEffect, useState } from "react"
 import { createBrowserSupabaseClient } from "@/lib/supabase/client"
 import { useUser } from "@/lib/auth-client"
+import { pushEvent } from "@/lib/data-layer"
 
 export function SignupForm({
   onSuccess,
@@ -52,6 +53,8 @@ export function SignupForm({
       return
     }
 
+    // Funnel: an account now exists. Role only; the email never travels.
+    pushEvent({ event: "sign_up", role })
     onSuccess()
   }
 

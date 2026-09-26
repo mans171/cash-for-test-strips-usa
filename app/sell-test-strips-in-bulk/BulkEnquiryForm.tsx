@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { OWNER_PHONE } from '@/lib/owner'
 import { STATE_LABELS } from '@/lib/states'
 import { HONEYPOT_FIELD } from '@/lib/honeypot'
 import { OrdersNudge } from '@/app/components/OrdersNudge'
+import { pushEvent } from '@/lib/data-layer'
 
 const INPUT = 'w-full border border-gray-200 rounded-lg px-3 py-2 text-sm'
 const LABEL = 'block text-sm font-medium text-gray-700 mb-1'
@@ -12,6 +13,14 @@ const LABEL = 'block text-sm font-medium text-gray-700 mb-1'
 export function BulkEnquiryForm() {
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
   const [message, setMessage] = useState('')
+  const startSentRef = useRef(false)
+
+  // Funnel denominator: the first time any field gets focus.
+  function onFirstFocus() {
+    if (startSentRef.current) return
+    startSentRef.current = true
+    pushEvent({ event: 'bulk_form_start' })
+  }
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -30,6 +39,11 @@ export function BulkEnquiryForm() {
         setStatus('error')
         setMessage(data.error || 'Something went wrong. Please call instead.')
         return
+      }
+      // Browser half of the Lead; same event id as the server's Conversions
+      // API send, so Meta keeps one.
+      if (typeof data.eventId === 'string') {
+        pushEvent({ event: 'bulk_lead_submit', event_id: data.eventId, lead_type: 'bulk' })
       }
       setStatus('sent')
     } catch {
@@ -52,7 +66,7 @@ export function BulkEnquiryForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex flex-col gap-3">
+    <form onSubmit={onSubmit} onFocus={onFirstFocus} className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex flex-col gap-3">
       <div>
         <label className={LABEL} htmlFor="bulk-name">Your name</label>
         <input id="bulk-name" name="name" required className={INPUT} autoComplete="name" />

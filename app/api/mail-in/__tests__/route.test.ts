@@ -50,7 +50,7 @@ describe('POST /api/mail-in', () => {
     expect(res.status).toBe(201)
     expect(body.order_number).toMatch(/^MK-[0-9A-Z]{6}$/)
     expect(body.status_path).toMatch(/^\/kit\/[0-9a-f]{64}$/)
-    expect(Object.keys(body).sort()).toEqual(['ok', 'order_number', 'status_path'])
+    expect(Object.keys(body).sort()).toEqual(['event_id', 'ok', 'order_number', 'status_path'])
 
     expect(fakeDb.tables.mail_in_orders).toHaveLength(1)
     const row = fakeDb.tables.mail_in_orders[0]

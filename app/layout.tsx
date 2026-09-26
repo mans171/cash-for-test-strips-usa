@@ -4,6 +4,7 @@ import Link from "next/link";
 import SiteNav from "./SiteNav";
 import "./globals.css";
 import { PUBLIC_EMAIL } from "@/lib/owner";
+import { TagManager } from "@/app/components/TagManager";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-geist-sans" });
 
@@ -74,12 +75,18 @@ export default function RootLayout({
               <Link href="/privacy" className="hover:text-white transition-colors">
                 Privacy
               </Link>
+              <Link href="/privacy#do-not-sell" className="hover:text-white transition-colors">
+                Do Not Sell or Share My Personal Information
+              </Link>
               <a href={`mailto:${PUBLIC_EMAIL}`} className="hover:text-white transition-colors">
                 Contact
               </a>
             </div>
           </div>
         </footer>
+        {/* Renders nothing unless NEXT_PUBLIC_GTM_ID is set, and never loads on
+            /admin, /kit/<token> or for a visitor who opted out. */}
+        <TagManager />
       </body>
     </html>
   );
