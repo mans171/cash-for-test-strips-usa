@@ -6,6 +6,7 @@ import { MAIL_IN_STATE_LABELS, MAIL_IN_STATE_CODES } from '@/lib/states'
 import { isHoneypotTripped } from '@/lib/honeypot'
 import { checkRateLimit, clientIp, RATE_LIMIT_MESSAGE } from '@/lib/rate-limit'
 import { checkSameOrigin } from '@/lib/admin-auth'
+import { reportLead } from '@/lib/meta-capi'
 import {
   PAYOUT_METHOD_LABELS,
   expirationText,
@@ -112,7 +113,20 @@ export async function POST(request: Request) {
         console.error('[POST /api/mail-in] owner alert failed', mailError instanceof Error ? mailError.message : 'unknown error')
       }
 
-      return NextResponse.json({ ok: true, order_number: orderNumber, status_path: sellerLinkPath(token) }, { status: 201 })
+      // Meta Conversions API half of the Lead, after the kit is saved. Never
+      // throws, gives up after 3 s; `event_id` lets the browser pixel dedupe.
+      // Contact details only: the address, items and payout never go to Meta.
+      const eventId = await reportLead(request, {
+        leadType: 'mail_kit',
+        email: input.email,
+        phone: input.phone,
+        fallbackPath: '/mail-in-kit',
+      })
+
+      return NextResponse.json(
+        { ok: true, order_number: orderNumber, status_path: sellerLinkPath(token), event_id: eventId },
+        { status: 201 }
+      )
     }
 
     console.error('[POST /api/mail-in] could not generate a unique order number')

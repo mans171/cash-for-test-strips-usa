@@ -14,6 +14,7 @@ import { OWNER_PHONE, PUBLIC_EMAIL } from "@/lib/owner";
 import { honorsBonus, BONUS_FORM_COPY } from "@/lib/bonus";
 import { OrdersNudge } from "@/app/components/OrdersNudge";
 import { isTenDigitPhone, PHONE_ERROR, startSignature } from "@/lib/sell-starts";
+import { pushEvent, productCategoryCode } from "@/lib/data-layer";
 
 // Where the saved "start" (see saveStart below) is remembered for this tab, so
 // going back and forward does not save the same start twice.
@@ -91,6 +92,22 @@ export function SellFlowClient() {
   // Signature of a save that is still on the wire, so a quick back-and-forward
   // cannot send the same start twice before the first answer lands.
   const startInFlightRef = useRef<string | null>(null);
+  // Once-per-page-load funnel flags (see lib/data-layer.ts). Refs: nothing
+  // renders from them.
+  const sellStartSentRef = useRef(false);
+  const phoneCapturedSentRef = useRef(false);
+
+  // Funnel: the visitor's first action on the wizard is picking a product.
+  function trackStart() {
+    if (sellStartSentRef.current) return;
+    sellStartSentRef.current = true;
+    pushEvent({ event: "sell_start" });
+  }
+
+  // Funnel: an item's product is fully chosen. Category only, never the brand.
+  function trackProductSelected(index: number, brand: (typeof PRODUCT_BRANDS)[number]) {
+    pushEvent({ event: "sell_product_selected", product_category: productCategoryCode(brand.category), item_number: index + 1 });
+  }
 
   useEffect(() => {
     try {
@@ -171,12 +188,14 @@ export function SellFlowClient() {
   }
 
   function selectBrand(index: number, brand: (typeof PRODUCT_BRANDS)[number]) {
+    trackStart();
     setSelectedBrandIdentities((prev) => prev.map((id, i) => (i === index ? brandIdentity(brand) : id)));
     if (brand.lines.length === 1) {
       const onlyLine = brand.lines[0];
       setSelectedLines((prev) => prev.map((l, i) => (i === index ? onlyLine.label : l)));
       updateItem(index, { brand: composeBrandString(brand, onlyLine) });
       selectMonths(index, DEFAULT_EXPIRATION_MONTHS);
+      trackProductSelected(index, brand);
     } else {
       setSelectedLines((prev) => prev.map((l, i) => (i === index ? "" : l)));
       updateItem(index, { brand: "" });
@@ -187,7 +206,10 @@ export function SellFlowClient() {
     const chosenLine = brand.lines.find((l) => l.label === lineLabel);
     setSelectedLines((prev) => prev.map((l, i) => (i === index ? lineLabel : l)));
     updateItem(index, { brand: chosenLine ? composeBrandString(brand, chosenLine) : "" });
-    if (chosenLine) selectMonths(index, DEFAULT_EXPIRATION_MONTHS);
+    if (chosenLine) {
+      selectMonths(index, DEFAULT_EXPIRATION_MONTHS);
+      trackProductSelected(index, brand);
+    }
   }
 
   function clearProduct(index: number) {
@@ -227,6 +249,7 @@ export function SellFlowClient() {
     }
     setBuyers(body.buyers ?? []);
     setMailIn(body.mailIn ?? null);
+    return { buyerCount: Array.isArray(body.buyers) ? body.buyers.length : 0, mailInOffered: Boolean(body.mailIn) };
   }
 
   // Saves "this seller started" so the owner can follow up by hand if they
@@ -253,6 +276,12 @@ export function SellFlowClient() {
       .then((body) => {
         if (!body || typeof body.id !== "string") return;
         savedStartRef.current = { id: body.id, signature };
+        // Funnel: screen one's phone really was saved (the "Started, didn't
+        // finish" row exists). The number itself never enters the dataLayer.
+        if (!phoneCapturedSentRef.current) {
+          phoneCapturedSentRef.current = true;
+          pushEvent({ event: "sell_phone_captured" });
+        }
         try {
           window.sessionStorage.setItem(SELL_START_STORAGE_KEY, JSON.stringify(savedStartRef.current));
         } catch {
@@ -286,8 +315,10 @@ export function SellFlowClient() {
     // goes straight from their order to the matched buyer's contact form.
     setLoading(true);
     try {
-      await runMatch(state);
+      const match = await runMatch(state);
       setStage("results");
+      // Funnel: step two, the buyers list. A zero count is the no-buyer screen.
+      pushEvent({ event: "sell_buyers_shown", buyer_count: match.buyerCount, mail_in_offered: match.mailInOffered, state });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Couldn't reach the server. Check your connection and try again.");
     } finally {
@@ -319,6 +350,11 @@ export function SellFlowClient() {
       if (!res.ok) {
         setError(body.error ?? "Something went wrong");
         return;
+      }
+      // The browser half of the Lead. `eventId` came from the server, which
+      // sent the same id to the Conversions API, so Meta counts one lead.
+      if (typeof body.eventId === "string") {
+        pushEvent({ event: "lead_submit", event_id: body.eventId, lead_type: "sell", channel, item_count: items.length });
       }
       setStage("sent");
       setSentChannel(channel);

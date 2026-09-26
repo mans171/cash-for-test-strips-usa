@@ -8,6 +8,7 @@ import { isHoneypotTripped } from '@/lib/honeypot'
 import { checkRateLimit, clientIp, RATE_LIMIT_MESSAGE } from '@/lib/rate-limit'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { reportLead } from '@/lib/meta-capi'
 
 // PUBLIC ON PURPOSE. A reseller gives us their details and asks us to call;
 // making them create an account first would cost inquiries and protects
@@ -159,7 +160,16 @@ export async function POST(request: Request) {
         .join('\n'),
     })
 
-    return NextResponse.json({ ok: true, id })
+    // Meta Conversions API half of the Lead, after the row is saved. Never
+    // throws, gives up after 3 s; `eventId` lets the browser pixel dedupe.
+    const eventId = await reportLead(request, {
+      leadType: 'bulk',
+      email,
+      phone,
+      fallbackPath: '/sell-test-strips-in-bulk',
+    })
+
+    return NextResponse.json({ ok: true, id, eventId })
   } catch (err) {
     console.error('bulk lead route threw', err)
     return NextResponse.json({ error: 'Something went wrong' }, { status: 500 })

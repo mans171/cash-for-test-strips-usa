@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { PRODUCT_BRANDS } from "@/lib/product-catalog";
 import { MAIL_IN_STATE_LABELS } from "@/lib/states";
 import { HONEYPOT_FIELD } from "@/lib/honeypot";
 import { OWNER_PHONE } from "@/lib/owner";
+import { pushEvent } from "@/lib/data-layer";
 import { PAYOUT_METHODS, PAYOUT_METHOD_LABELS, expirationChoices, totalBoxes, type MailInItem, type PayoutMethod } from "@/lib/mail-in";
 
 // Three steps, then a confirmation whose primary button is the seller's FINAL
@@ -75,12 +75,19 @@ export function MailInKitForm() {
   const [error, setError] = useState("");
   const [sending, setSending] = useState(false);
   const [done, setDone] = useState<Done | null>(null);
+  // Once-per-page-load flag for the funnel's first event.
+  const startSentRef = useRef(false);
 
   const setField = (patch: Partial<typeof contact>) => setContact((prev) => ({ ...prev, ...patch }));
 
   function addItem(product: string) {
     const name = product.trim();
     if (!name) return;
+    // Funnel: the first item added is the start. The product never travels.
+    if (!startSentRef.current) {
+      startSentRef.current = true;
+      pushEvent({ event: "mail_kit_start" });
+    }
     setItems((prev) => {
       const existing = prev.findIndex((item) => item.product === name);
       if (existing >= 0) return prev.map((item, i) => (i === existing ? { ...item, boxes: item.boxes + 1 } : item));
@@ -113,6 +120,7 @@ export function MailInKitForm() {
       if (items.length === 0) return setError("Add at least one product so we know what to quote.");
       if (items.some((item) => !Number.isInteger(item.boxes) || item.boxes < 1)) return setError("Each product needs a box count of 1 or more.");
       setStep(2);
+      pushEvent({ event: "mail_kit_step", step: 2 });
     } else if (step === 2) {
       if (!contact.name.trim()) return setError("Please enter your name.");
       if (contact.phone.replace(/\D/g, "").length < 10) return setError("Please enter a phone number we can text your quote to.");
@@ -120,6 +128,7 @@ export function MailInKitForm() {
       if (!contact.state) return setError("Please choose your state.");
       if (!/^\d{5}(-\d{4})?$/.test(contact.zip.trim())) return setError("Please enter a 5-digit ZIP code.");
       setStep(3);
+      pushEvent({ event: "mail_kit_step", step: 3 });
     }
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -146,6 +155,11 @@ export function MailInKitForm() {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) return setError(data.error || "Something went wrong. Please call or text us instead.");
+      // The browser half of the Lead, sharing the server's event id so Meta
+      // keeps one. Counts only: no product, address or payout detail.
+      if (typeof data.event_id === "string") {
+        pushEvent({ event: "mail_kit_request", event_id: data.event_id, lead_type: "mail_kit", item_count: items.length });
+      }
       setDone({ orderNumber: data.order_number ?? "", statusPath: data.status_path ?? "" });
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch {
@@ -178,7 +192,10 @@ export function MailInKitForm() {
         {done.statusPath && (
           <p className="text-sm text-gray-600">
             Follow your kit any time on{" "}
-            <Link href={done.statusPath} className="text-cash font-semibold underline">your status page</Link>. Save that link — it is private to you.
+            {/* A plain link, not next/link, on purpose: a full page load means
+                Tag Manager is not running on the private status page, whose URL
+                carries the seller's secret token. See lib/tracking-consent.ts. */}
+            <a href={done.statusPath} className="text-cash font-semibold underline">your status page</a>. Save that link — it is private to you.
           </p>
         )}
       </div>

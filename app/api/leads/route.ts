@@ -11,6 +11,7 @@ import { createServerSupabaseClient } from '@/lib/supabase/server'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { phoneDigits, UUID_PATTERN } from '@/lib/sell-starts'
+import { reportLead } from '@/lib/meta-capi'
 
 const VALID_CONDITIONS = new Set(['sealed', 'unsealed'])
 const MAX_ITEMS = 50
@@ -147,9 +148,18 @@ export async function POST(request: Request) {
 
     await markSellStartCompleted(sellStartId, trimmedPhone, lead.id)
 
+    // The Meta Conversions API half of the Lead, sent only once the request
+    // has really gone through (below: after the buyer email succeeds), so a
+    // failed send the seller retries is not counted twice. `eventId` goes back
+    // to the browser, whose pixel sends the same id and Meta keeps one.
+    // reportLead never throws and gives up after 3 s.
+    const trackLead = () =>
+      reportLead(request, { leadType: 'sell', email: trimmedEmail, phone: trimmedPhone, fallbackPath: '/sell' })
+
     if (channel === 'sms') {
       const message = buildQuoteMessage(items as OrderItem[], name.trim())
-      return NextResponse.json({ leadId: lead.id, message })
+      const eventId = await trackLead()
+      return NextResponse.json({ leadId: lead.id, message, eventId })
     }
 
     const { subject, html } = buildBuyerEmail(items as OrderItem[], name.trim(), trimmedPhone, trimmedEmail)
@@ -161,7 +171,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Couldn't send your request. Please try again." }, { status: 500 })
     }
 
-    return NextResponse.json({ leadId: lead.id })
+    const eventId = await trackLead()
+    return NextResponse.json({ leadId: lead.id, eventId })
   } catch (error) {
     console.error('[POST /api/leads]', error)
     return NextResponse.json({ error: 'Something went wrong. Please try again.' }, { status: 500 })
